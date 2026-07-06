@@ -24,7 +24,7 @@ Phase 2b のクライアント作業環境 (DiscordSub ワークスペースの 
 
 ```sh
 cd cinny   # cinnyapp/cinny の dev ブランチ (5e00d51 時点で検証)
-git apply <selfmatrix>/docs/patches/cinny-typecheck-fix.patch
+git apply <selfmatrix-workspace>/patches/cinny-typecheck-fix.patch
 npm install          # package-lock.json を typescript 5.9.3 に同期
 npm run typecheck    # → エラー 0 件
 ```

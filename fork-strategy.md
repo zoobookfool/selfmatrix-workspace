@@ -44,3 +44,14 @@ Cinny本体の差分は小さく保ちます。Matrix SDK、暗号化、sync 周
 - upstream copyright / license notice を消さない
 - 自分の変更点と日付が追えるようにする
 - UI上の「ソースコード」「ライセンス」導線を消さない
+
+## スパイク(技術検証)の置き場所
+
+フォークで何かを検証するときは、**コードはフォークの `spike/*` ブランチ、記録(目的・手順・結果・判断)は
+この workspace リポジトリの文書**に置きます。フォークの `product/*` ブランチや `docs/` には作業文書を
+足しません(upstream との差分を最小に保つため)。
+
+実例:
+
+- cinny `spike/call-popout`(コード)↔ [popout-spike.md](popout-spike.md)(記録)
+- element-call `spike/media-params`(コード)↔ [client-spike-results.md](client-spike-results.md)(記録)

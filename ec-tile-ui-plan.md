@@ -1,5 +1,10 @@
 # EC タイル UI 実装計画 (Phase 2b、2026-07-03)
 
+> **historical note**: この文書は ui-design-notes v1.2 時点の実装計画と完了記録です。
+> 現行の UI 正本は [ui-design-notes.md](ui-design-notes.md) (v1.4) と
+> [mocks/ui-mock.html](mocks/ui-mock.html) (v2.2) であり、v1.4 で確定した未実装差分は
+> roadmap.md の Phase 8「UI 設計 v1.4 と実装の差分」を正としてください。
+
 **進捗 (2026-07-04): 全スライス完了。** selfmatrix-element-call の product ブランチに実装・
 統合検証済み (Slice 1: c3038861 / 2: 9d73dfd2 / 3: 04cc3a75 / 4: 8ac61b97 / 5: 64b1de6e /
 6a: 627a4aa7 / 6b: 5e25914f)。各スライスは cinny 統合環境 + 実画面共有の Playwright 検証付き。
@@ -15,7 +20,7 @@
 - 発話検出の実発火はヘッドレス検証環境では確認不可 (フェイク音声では LiveKit の判定が
   発火しない。upstream の既存 speaking 表示も同様) — 実マイクでの目視確認は実使用時に
 
-ui-design-notes.md (v1.2) の通話画面要件を selfmatrix-element-call (v0.20.1 ベース) に実装するための
+ui-design-notes.md (v1.2 当時) の通話画面要件を selfmatrix-element-call (v0.20.1 ベース) に実装するための
 計画。実装箇所の調査結果 (2026-07-03、4 方向のコードマッピング) に基づく。
 
 ## 調査で確定した構造上の事実

@@ -21,7 +21,7 @@
 
 - Discord 風 UI(Space=サーバー、Room=チャンネルの見せ方) `MUST`
 - E2EE ルームを標準運用にする `MUST`
-- 内容は既存の docs/architecture.md の方針を踏襲する
+- 内容は既存の selfmatrix の [docs/architecture.md](https://github.com/zoobookfool/selfmatrix/blob/main/docs/architecture.md) の方針を踏襲する
 
 ## 3. 通話・配信(WebRTC / MatrixRTC 系統)
 

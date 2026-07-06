@@ -64,7 +64,7 @@ Phase 2b (Cinny fork) で目指す画面の合意事項。スパイク項目1の
 | 配信オプトイン視聴(購読制御) | element-call | LiveKit track subscription 制御 |
 | メディアパラメータ(高画質化) | element-call | src/livekit/options.ts(スパイク項目2で実証済み) |
 | サーバー枠・チャンネル枠のドッキング | cinny | ClientLayout 系。DOM 構造は upstream のまま CSS(flex-direction / order)+設定切替で実現 |
-| 通話画面ポップアウト | cinny | CallEmbed(iframe widget)を別ウィンドウへ再ホスト。要技術検証 |
+| 通話画面ポップアウト | cinny | CallEmbed(iframe widget)を別ウィンドウへ再ホスト。spike/call-popout で実証済み。残作業は製品実装・統合検証 |
 | 配置設定の保存 | cinny | Matrix account data(端末間同期が効く) |
 
 ## リスク・注意
@@ -73,8 +73,8 @@ Phase 2b (Cinny fork) で目指す画面の合意事項。スパイク項目1の
   レイアウト層の追加 + CSS 切替で実装し、upstream 追従の衝突面を最小化する
 - EC のタイル UI は upstream でも活発に変わる箇所 → 新レイアウトは別コンポーネント追加で
   既存を温存する
-- **ポップアウトは技術検証が必要**(widget の別ウィンドウ再ホスト、E2EE セッションの扱い)。
-  Phase 2b の早い段階で小さく検証すること
+- **方式は実証済み**(widget の別ウィンドウ再ホスト、E2EE セッションの扱いは spike/call-popout で確認済み)。
+  本実装では再 join 中の表示・メインへ戻す導線・複数人通話時の見え方を重点検証する
 - 初回セットアップの促しは「うるさくない」形にする(モーダル連発にしない)
 
 ## 改訂履歴
@@ -93,7 +93,7 @@ Phase 2b (Cinny fork) で目指す画面の合意事項。スパイク項目1の
   ②グリッドは正方形詰め・視聴オプトイン外はタイル化しない(画面を分割しない)を明文化
   ③ポップアウトの主対象を「通話 UI 全体」に再昇格(目的 = 通話とチャットの同時利用)。
   配信単体ポップアウトは補助へ ④初回セットアップ案内は初回利用時 1 回のみと明確化。
-  モック正本を docs/mocks/ui-mock.html に配置
+  モック正本を mocks/ui-mock.html に配置
 
 - 2026-07-02 v1.2: ポップアウトの対象を「通話画面全体」から「配信ストリーム単位(Discord 方式、
   再接続なし)」に変更。技術検証で両方式の実現可能性を確認済み(popout-spike.md)。
