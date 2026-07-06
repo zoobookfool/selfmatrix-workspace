@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SelfMatrix UI モック v2.1 (ui-design-notes v1.3)</title>
+<title>SelfMatrix UI モック v2.2 (ui-design-notes v1.4)</title>
 <style>
   :root{
     --bg-deep:#1E1F22; --bg-mid:#2B2D31; --bg-chat:#313338; --bg-raise:#3A3C42;
@@ -69,6 +69,8 @@
   .tile.selected .selbadge{display:block}
   .mini{flex:0 0 auto;width:150px;height:86px}
   .mini .cap,.mini .acts,.mini .selbadge{display:none}
+  .mini{cursor:pointer}
+  .mini:hover{outline:2px solid var(--accent);outline-offset:-2px}
 
   .pill{position:absolute;display:flex;gap:8px;align-items:center;background:rgba(0,0,0,.62);
     border-radius:999px;padding:5px 12px 5px 6px;cursor:grab;user-select:none;touch-action:none;z-index:5}
@@ -186,8 +188,8 @@
 
 <div class="top">
   <div>
-    <h1>SelfMatrix UI モック v2.1</h1>
-    <div class="sub">ui-design-notes <b>v1.3</b> (2026-07-06 フィードバック反映)。★ = v1.2 からの変更点。番号は下の合意リスト対応</div>
+    <h1>SelfMatrix UI モック v2.2</h1>
+    <div class="sub">ui-design-notes <b>v1.4</b> (2026-07-06 第2回フィードバック反映)。★ = v1.2 からの変更点。番号は下の合意リスト対応</div>
   </div>
   <div class="tabs">
     <button class="tab on" data-p="call">① 通話画面</button>
@@ -204,7 +206,7 @@
         <button data-m="grid">グリッド</button>
       </div>
     </div>
-    <label class="chk" id="emphWrap"><input type="checkbox" id="emphSel"> 強調選択 <span class="note" title="合意②★: グリッド中に ON にしてタイルを選ぶと、選択タイルが大きく・非選択がミニタイルに。1 枚だけ選ぶと注視モードへ (合意③)">2</span></label>
+    <label class="chk" id="emphWrap"><input type="checkbox" id="emphSel"> 強調選択 <span class="note" title="合意②★: 選択したタイルだけでグリッドを組み直し (3 枚以上も可)、選択外はミニタイルへ。モードはグリッドのまま — 1 枚選択は見た目が注視相当になるだけ (合意③)">2</span></label>
     <div class="grp"><span class="lbl">ミニタイル位置 <span class="note" title="合意⑤: 上下左右">5</span></span>
       <div class="seg" id="dockSeg">
         <button data-d="top">上</button><button data-d="bottom" class="on">下</button>
@@ -245,7 +247,18 @@
     <div class="ctlbar">
       <button class="cbtn" title="マイク">🎙</button>
       <button class="cbtn" title="スピーカー">🔊</button>
-      <button class="cbtn" title="画面共有">🖥</button>
+      <button class="cbtn" title="画面共有 (クリックで配信設定)" id="shareBtn">🖥</button>
+      <div id="sharePop" style="display:none;position:absolute;bottom:56px;left:50%;transform:translateX(-50%);
+        background:#111214;border:1px solid var(--line);border-radius:12px;padding:12px 14px;z-index:12;
+        box-shadow:0 10px 30px rgba(0,0,0,.5);min-width:260px">
+        <div class="lbl" style="margin-bottom:6px">配信の設定 <span class="note" title="合意⑪★: 画質と FPS を選べる (Discord 準拠)">11</span></div>
+        <div class="grp" style="margin-bottom:8px"><span class="lbl" style="width:38px">画質</span>
+          <div class="seg"><button>480p</button><button>720p</button><button class="on">1080p</button><button>4K</button></div></div>
+        <div class="grp" style="margin-bottom:10px"><span class="lbl" style="width:38px">FPS</span>
+          <div class="seg"><button>15</button><button class="on">30</button><button>60</button></div></div>
+        <button style="width:100%;background:var(--accent);border:0;color:#fff;font-weight:700;
+          border-radius:8px;padding:8px 0;cursor:pointer">共有を開始</button>
+      </div>
       <button class="cbtn pop" id="popBtn" title="通話UIを別ウィンドウへ (合意⑦★)">🗗 ポップアウト</button>
       <button class="cbtn leave">退出</button>
     </div>
@@ -305,8 +318,8 @@
   <h2>合意リスト (ui-design-notes v1.3) — ★は 2026-07-06 の変更</h2>
   <ol>
     <li><b>1.</b> 配信特化・カメラ非対応。視聴はオプトイン = 見ていない配信は購読しない</li>
-    <li><b>2.★</b> 表示モードは<b>注視⇔グリッドの 2 モード切替</b>。グリッドは<b>正方形に詰める</b>配置で、<b>視聴をオプトインした配信だけ</b>がタイルになる (未視聴は上部の「視聴できる配信」導線に出るだけで、画面は分割されない)。グリッド中の<b>「強調選択」ON</b> で任意のタイルを選ぶと、選択タイルが大きく並び非選択はミニタイルへ。OFF に戻せば均等グリッドに戻る</li>
-    <li><b>3.</b> 強調選択で 1 枚だけ選ぶと注視モードへ</li>
+    <li><b>2.★</b> 表示モードは<b>注視⇔グリッドの 2 モード切替</b>。グリッドは<b>正方形に詰める</b>配置で、<b>視聴をオプトインした配信だけ</b>がタイルになる (未視聴は「視聴できる配信」導線のみ、画面は分割されない)。グリッド中の<b>「強調選択」ON</b> で選んだタイルだけでグリッドを組み直し (<b>3 枚以上も選択可</b>)、選択外はミニタイルへ。OFF で均等グリッドに戻る。<b>注視モード中はミニタイルをクリックすると注視対象が切り替わる</b></li>
+    <li><b>3.★</b> 強調 1 枚のときは<b>見た目が注視モードと同じになるだけ</b>で、モードはあくまでグリッドのまま (モード切替は起きない)</li>
     <li><b>4.</b> ミニタイルは実映像を流し続ける (simulcast 低解像度層)</li>
     <li><b>5.</b> ミニタイル位置は上下左右から選択</li>
     <li><b>6.</b> 話者表示は StreamKit 風オーバーレイ (緑リング/ミュートアイコン、ピルはドラッグ可 — 掴んで動かせます)</li>
@@ -314,6 +327,7 @@
     <li><b>8.</b> シェル: サーバー枠・チャンネル枠とも上下左右 (上下配置時はチップ列)</li>
     <li><b>9.</b> 既定は Discord 風: 枠は左、ミニタイル下、注視モード</li>
     <li><b>10.★</b> 配置セットアップの案内は <b>SelfMatrix の初回利用時に 1 回だけ</b> (デモボタンで表示)。通話参加時には毎回出さない</li>
+    <li><b>11.★</b> <b>配信の設定 (画質と FPS) を配信者が選べる — Discord 準拠</b> (🖥 ボタンでピッカー表示。既定の上限は 4K60)</li>
     <li><b>+.</b> ミニタイルに名前ピルは出さない / 画面共有で自動レイアウト切替はせずトースト通知</li>
   </ol>
 </div>
@@ -398,7 +412,7 @@
       const f = w.find(p => p.id === focusId) || w[0] || peers[0];
       stage.innerHTML = tileHTML(f, { big: true });
       stripPeers = w.filter(p => p.id !== f.id);
-    } else if (emph && selected.size >= 2) {
+    } else if (emph && selected.size >= 1) {
       const sel = w.filter(p => selected.has(p.id));
       const d = gridDims(sel.length);
       stage.style.gridTemplateColumns = `repeat(${d.c}, 1fr)`;
@@ -439,23 +453,17 @@
     if (!t) return;
     const id = t.dataset.tile;
     selected.has(id) ? selected.delete(id) : selected.add(id);
-    if (selected.size === 1 && emphConfirm()) return; // 1枚なら注視へ (合意③)
+    // 合意③★: 1 枚選択は「見た目が注視相当」になるだけで、モードはグリッドのまま
     render();
   });
-  // 強調 1 枚 → 注視へは「選び終わった」判定が要るので、モックでは 600ms 猶予で判定
-  let emphTimer;
-  function emphConfirm() {
-    clearTimeout(emphTimer);
-    emphTimer = setTimeout(() => {
-      if (selected.size === 1) {
-        focusId = [...selected][0];
-        selected.clear(); emph = false; emphChk.checked = false;
-        mode = 'focus'; syncMode(); render();
-      }
-    }, 600);
-    render();
-    return true;
-  }
+
+  strip.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-tile]');
+    if (!t) return;
+    const id = t.dataset.tile;
+    if (mode === 'focus') { focusId = id; render(); }        // 合意②★: ミニタイルクリックで注視切替
+    else if (emph) { selected.add(id); render(); }            // 強調中は選択に追加
+  });
 
   avail.addEventListener('click', (e) => {
     const b = e.target.closest('[data-act="watch"]');
@@ -545,6 +553,22 @@
     document.querySelectorAll('#sSeg button').forEach(x => x.classList.toggle('on', x.dataset.v === 'left'));
     document.querySelectorAll('#cSeg button').forEach(x => x.classList.toggle('on', x.dataset.v === 'left'));
   });
+  // ---- 配信設定 (合意⑪: 画質/FPS ピッカー、Discord 準拠) ----
+  const sharePop = document.getElementById('sharePop');
+  document.getElementById('shareBtn').addEventListener('click', () => {
+    sharePop.style.display = sharePop.style.display === 'none' ? 'block' : 'none';
+  });
+  sharePop.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.parentElement.classList.contains('seg')) {
+      b.parentElement.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    } else {
+      sharePop.style.display = 'none'; // 「共有を開始」(モックなので閉じるだけ)
+    }
+  });
+
   const fr = document.getElementById('firstrun');
   document.getElementById('showFirstRun').addEventListener('click', () => { fr.style.display = 'flex'; });
   document.getElementById('frSkip').addEventListener('click', () => { fr.style.display = 'none'; });
