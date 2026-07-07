@@ -7,7 +7,7 @@
 
 進行の型 (確立済み): **GPT が実装 → Claude がレビュー + 独立再現テスト → 差し戻し or 反映 → 記録**。
 
-## M0: プロトタイプ堅牢化 (レビュー must-fix の消化) — **差し戻し中 (2026-07-07 レビュー)**
+## M0: プロトタイプ堅牢化 (レビュー must-fix の消化) — **完了 (2026-07-07、コミット 4c82206)**
 
 [reviews/claude-review-native-prototype-20260707.md](../reviews/claude-review-native-prototype-20260707.md) の指摘対応。
 
@@ -20,12 +20,13 @@
 
 **受け入れ**: must-fix 5 件全消化。`npm test` が実装の回帰を実際に検知できることをレビュアーが確認。
 
-**GPT 実装状況 (2026-07-07)**: must-fix 5 件の実装対応済み → **受け入れレビューで差し戻し**
-([reviews/claude-review-m0-20260707.md](../reviews/claude-review-m0-20260707.md))。
-4/5 は実装確認済みで再作業不要。ただし受け入れ条件の変異テストで 2 種のすり抜けを実証
-(①応答内容を検証していない ②assert の実呼び出し経路がテストされていない)。
-+ sourceIsSelf 未使用 / memory probe の pass 条件 / npm test 欠落 / 記載場所 2 件。
-再修正 → 再レビューで完了判定。
+**完了 (2026-07-07、Claude 実装 4c82206)**: GPT の 1 次対応 (9b45b6b) を受け入れレビューで
+差し戻し ([reviews/claude-review-m0-20260707.md](../reviews/claude-review-m0-20260707.md)) 後、
+Claude が残りを実装。純関数を widget-bridge-protocol.cjs へ分離し main.cjs は委譲、CLI が応答内容を
+検証、assert の実呼び出し経路をテスト、sourceIsSelf 必須化、拒否メッセージを pass 判定から除外
+(acceptedWidgetMessages)、npm test 追加、記載場所是正、Playwright 証跡保存。
+**受け入れ条件クリア: 変異バッテリー a〜f 全て npm test で検知されることを実測。**
+次は M1 (実 LiveKit join + NativeWidgetTransport アダプタ + アプリ単位音声スパイク)。
 
 ## M1: 通話コアの成立 (スパイク完了 → 正式 GO/NO-GO)
 
