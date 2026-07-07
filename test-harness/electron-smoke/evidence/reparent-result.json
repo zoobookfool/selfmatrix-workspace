@@ -1,0 +1,83 @@
+{
+  "pass": true,
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46",
+  "finalState": {
+    "loadCount": 1,
+    "unloads": 0,
+    "messages": [
+      "echo:hello"
+    ],
+    "pcConnectionState": "connected",
+    "dataChannelState": "open"
+  },
+  "navigationEvents": [
+    {
+      "url": "file://<selfmatrix-workspace>/test-harness/electron-smoke/src/reparent-call.html",
+      "isInPlace": false,
+      "isMainFrame": true
+    }
+  ],
+  "events": [
+    {
+      "t": 1783413117996,
+      "type": "moved",
+      "index": 1,
+      "owner": "call"
+    },
+    {
+      "t": 1783413118197,
+      "type": "moved",
+      "index": 2,
+      "owner": "main"
+    },
+    {
+      "t": 1783413118399,
+      "type": "moved",
+      "index": 3,
+      "owner": "call"
+    },
+    {
+      "t": 1783413118600,
+      "type": "moved",
+      "index": 4,
+      "owner": "main"
+    },
+    {
+      "t": 1783413118803,
+      "type": "moved",
+      "index": 5,
+      "owner": "call"
+    },
+    {
+      "t": 1783413119005,
+      "type": "moved",
+      "index": 6,
+      "owner": "main"
+    },
+    {
+      "t": 1783413119206,
+      "type": "moved",
+      "index": 7,
+      "owner": "call"
+    },
+    {
+      "t": 1783413119407,
+      "type": "moved",
+      "index": 8,
+      "owner": "main"
+    },
+    {
+      "t": 1783413119609,
+      "type": "moved",
+      "index": 9,
+      "owner": "call"
+    },
+    {
+      "t": 1783413119811,
+      "type": "moved",
+      "index": 10,
+      "owner": "main"
+    }
+  ]
+}

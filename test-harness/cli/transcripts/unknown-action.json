@@ -1,6 +1,6 @@
 {
-  "scenario": "device-mute",
-  "description": "Widget reports microphone enabled and camera disabled through actual preload forwarding.",
+  "scenario": "unknown-action",
+  "description": "Unknown fromWidget action is rejected by the native implementation response policy.",
   "widgetId": "selfmatrix-native-prototype-call",
   "callOrigin": "https://app.selfmatrix.test",
   "parentOrigin": "https://app.selfmatrix.test",
@@ -14,22 +14,16 @@
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-001",
-        "action": "io.element.device_mute",
-        "data": {
-          "audio_enabled": true,
-          "video_enabled": false
-        }
+        "action": "com.selfmatrix.unknown",
+        "data": {}
       },
       "forwarded": {
         "data": {
           "api": "fromWidget",
           "widgetId": "selfmatrix-native-prototype-call",
           "requestId": "widgetapi-harness-001",
-          "action": "io.element.device_mute",
-          "data": {
-            "audio_enabled": true,
-            "video_enabled": false
-          }
+          "action": "com.selfmatrix.unknown",
+          "data": {}
         },
         "origin": "https://app.selfmatrix.test",
         "sourceIsSelf": true
@@ -45,24 +39,26 @@
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-001",
-        "action": "io.element.device_mute",
-        "data": {
-          "audio_enabled": true,
-          "video_enabled": false
-        },
-        "response": {}
+        "action": "com.selfmatrix.unknown",
+        "data": {},
+        "response": {
+          "error": {
+            "message": "Unknown widget action: com.selfmatrix.unknown"
+          }
+        }
       },
       "forwarded": {
         "data": {
           "api": "fromWidget",
           "widgetId": "selfmatrix-native-prototype-call",
           "requestId": "widgetapi-harness-001",
-          "action": "io.element.device_mute",
-          "data": {
-            "audio_enabled": true,
-            "video_enabled": false
-          },
-          "response": {}
+          "action": "com.selfmatrix.unknown",
+          "data": {},
+          "response": {
+            "error": {
+              "message": "Unknown widget action: com.selfmatrix.unknown"
+            }
+          }
         },
         "origin": "https://app.selfmatrix.test",
         "sourceIsSelf": true
@@ -74,12 +70,13 @@
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-001",
-        "action": "io.element.device_mute",
-        "data": {
-          "audio_enabled": true,
-          "video_enabled": false
-        },
-        "response": {}
+        "action": "com.selfmatrix.unknown",
+        "data": {},
+        "response": {
+          "error": {
+            "message": "Unknown widget action: com.selfmatrix.unknown"
+          }
+        }
       }
     }
   ]

@@ -13,8 +13,8 @@
 - クライアントのネイティブ化は [native-client-decision.md](../design/native-client-decision.md) で **条件付き GO** と判断した。
   これは `selfmatrix-desktop` 実装着手 GO であり、production release GO ではない。release gate は実 EC + dev MatrixRTC join / 共有中移動 / 実 UI からの system audio。
 - ネイティブ版の前段として、重い Electron 実機テストへ全部を押し込まないための [test-harness.md](../design/test-harness.md) を追加した。
-  Web UI harness / Widget protocol CLI / Electron smoke に分け、ネイティブ固有でない不具合を先に安く落とす方針。`npm test`、Playwright UI test、Electron reparent/displayMedia smoke は PASS 済み。
-- `native-prototype/` を追加した。実 Cinny/EC の build artifact を同一 local origin で配信し、EC を `WebContentsView` として起動、Widget API bridge、別窓移動/戻し、`io.element.join` 送信まで smoke PASS。Windows loopback audio も probe PASS。
+  Web UI harness / Widget protocol CLI / Electron smoke に分け、ネイティブ固有でない不具合を先に安く落とす方針。`npm test`、Playwright UI test、Electron reparent/displayMedia smoke は PASS 済み。Widget protocol CLI は M0 で native-prototype の実装関数 + preload 実ファイルを使う形へ修正済み。
+- `native-prototype/` を追加した。実 Cinny/EC の build artifact を同一 local origin で配信し、EC を `WebContentsView` として起動、Widget API bridge、別窓移動/戻し、`io.element.join` 送信まで smoke PASS。Windows loopback audio も probe PASS。M0 で origin/widgetId 検証、同一 origin assertion、call view `sandbox: true`、evidence JSON commit、メモリ 3 点測定を追加。
 
 ## 次の判断ゲート
 

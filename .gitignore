@@ -2,8 +2,4 @@ test-harness/node_modules/
 test-harness/artifacts/
 test-harness/playwright-report/
 test-harness/test-results/
-test-harness/electron-smoke/evidence/*.json
-!test-harness/electron-smoke/evidence/.gitkeep
 native-prototype/node_modules/
-native-prototype/evidence/*.json
-!native-prototype/evidence/.gitkeep

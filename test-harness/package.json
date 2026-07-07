@@ -11,7 +11,8 @@
     "test:web:static": "node web/tests/static-contract.mjs",
     "test:web": "playwright test",
     "smoke:electron:reparent": "electron electron-smoke/src/reparent-probe.cjs",
-    "smoke:electron:display-media": "electron electron-smoke/src/display-media-probe.cjs"
+    "smoke:electron:display-media": "electron electron-smoke/src/display-media-probe.cjs",
+    "smoke:electron:all": "npm run smoke:electron:reparent && npm run smoke:electron:display-media"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.0",

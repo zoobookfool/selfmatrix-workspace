@@ -7,7 +7,7 @@
 
 進行の型 (確立済み): **GPT が実装 → Claude がレビュー + 独立再現テスト → 差し戻し or 反映 → 記録**。
 
-## M0: プロトタイプ堅牢化 (レビュー must-fix の消化) — 着手可能
+## M0: プロトタイプ堅牢化 (レビュー must-fix の消化) — 実装済み・レビュー待ち
 
 [reviews/claude-review-native-prototype-20260707.md](../reviews/claude-review-native-prototype-20260707.md) の指摘対応。
 
@@ -19,6 +19,11 @@
 - design/test-harness.md の stale な「未実施」リスト更新
 
 **受け入れ**: must-fix 5 件全消化。`npm test` が実装の回帰を実際に検知できることをレビュアーが確認。
+
+**GPT 実装状況 (2026-07-07)**: must-fix 5 件の実装対応済み。
+Widget protocol CLI は native-prototype の `main.cjs` 実装関数と preload 実ファイルを使う形へ変更し、
+origin/widgetId 検証、同一 origin assertion、call view `sandbox: true`、evidence JSON commit、M0 summary、
+memory probe を追加。受け入れ完了は Claude レビュー待ち。
 
 ## M1: 通話コアの成立 (スパイク完了 → 正式 GO/NO-GO)
 

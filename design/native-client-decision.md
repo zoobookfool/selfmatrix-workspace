@@ -17,7 +17,7 @@ SelfMatrix は Electron 版 `selfmatrix-desktop` の作成へ進めてよい。
 | ゲート | 結果 | 根拠 |
 | --- | --- | --- |
 | 安い UI 回帰 | PASS | `test-harness` の Playwright UI test で、配信タイル右クリック音量と話者 overlay 右クリック音量の入口を確認 |
-| Widget protocol 回帰 | PASS | `npm test` で `preload-voice-join` / `device-mute` / `bridge-origin-mismatch` / static contract が PASS |
+| Widget protocol 回帰 | PASS | M0 後の `npm test` で、native-prototype の `main.cjs` 実装関数と preload 実ファイルを使い `preload-voice-join` / `device-mute` / unknown action / origin mismatch / widgetId mismatch / static contract が PASS |
 | `WebContentsView` 再親子付け | PASS | Electron 43 / Chrome 150。10 回移動後も `loadCount=1`、`unloads=0`、WebRTC data channel `open` |
 | 画面共有 constraints | PASS | `getDisplayMedia` で 1280x720/30fps を取得し、1920x1080/60fps へ `applyConstraints` 成功 |
 | system audio | PASS | Windows で `audio: "loopback"` を返し、`audioTrackCount=1`、`deviceId="loopback"` の audio track を取得 |
@@ -31,6 +31,7 @@ SelfMatrix は Electron 版 `selfmatrix-desktop` の作成へ進めてよい。
 - 実アカウント / dev MatrixRTC / LiveKit での authenticated join は未確認。
 - 画面共有中の `WebContentsView` 移動で、LiveKit publish track が維持されるかは未確認。
 - EC の実 UI から source picker / 画質/FPS / loopback audio を選んだ時の一連の UX は未実装。
+- session partition / localStorage 契約 (画質ピッカー等) が分離後も実運用で維持されるかは未確認。
 - Cinny 本体の `ClientWidgetApi` は `iframe.contentWindow` 固定のため、そのままでは `WebContentsView` に接続できない。
 - 署名なし自動更新、release 権限、checksum/provenance、rollback、最低バージョン強制は設計を詰める必要がある。
 

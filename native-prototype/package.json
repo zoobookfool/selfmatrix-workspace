@@ -6,7 +6,8 @@
   "main": "src/main.cjs",
   "scripts": {
     "start": "electron src/main.cjs",
-    "smoke": "electron src/main.cjs --smoke"
+    "smoke": "electron src/main.cjs --smoke",
+    "memory": "electron src/main.cjs --memory-probe"
   },
   "devDependencies": {
     "electron": "43.0.0"

@@ -11,7 +11,8 @@ SelfMatrix のネイティブ版に入る前段の検証入口です。
 npm test
 ```
 
-Widget protocol CLI を個別に走らせる:
+Widget protocol CLI を個別に走らせる。CLI は `native-prototype/src/main.cjs` の bridge 実装関数と
+`native-prototype/src/widget-bridge-preload.cjs` の実ファイルを VM 上で実行して検証します。
 
 ```powershell
 npm run harness:widget -- --scenario preload-voice-join --write-transcripts

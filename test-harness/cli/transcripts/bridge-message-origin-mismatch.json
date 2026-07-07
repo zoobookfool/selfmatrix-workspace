@@ -1,0 +1,47 @@
+{
+  "scenario": "bridge-message-origin-mismatch",
+  "description": "Reject Widget API messages whose event origin is not the call view origin.",
+  "widgetId": "selfmatrix-native-prototype-call",
+  "callOrigin": "https://app.selfmatrix.test",
+  "parentOrigin": "https://app.selfmatrix.test",
+  "messageOrigin": "https://evil.selfmatrix.test",
+  "pass": true,
+  "events": [
+    {
+      "kind": "request",
+      "channel": "widget-api-message",
+      "request": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-harness-001",
+        "action": "content_loaded",
+        "data": {}
+      },
+      "forwarded": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "selfmatrix-native-prototype-call",
+          "requestId": "widgetapi-harness-001",
+          "action": "content_loaded",
+          "data": {}
+        },
+        "origin": "https://evil.selfmatrix.test",
+        "sourceIsSelf": true
+      },
+      "validation": {
+        "ok": false,
+        "code": "origin_mismatch",
+        "message": "Unexpected widget origin: https://evil.selfmatrix.test",
+        "expectedOrigin": "https://app.selfmatrix.test",
+        "actualOrigin": "https://evil.selfmatrix.test"
+      }
+    }
+  ],
+  "failure": {
+    "ok": false,
+    "code": "origin_mismatch",
+    "message": "Unexpected widget origin: https://evil.selfmatrix.test",
+    "expectedOrigin": "https://app.selfmatrix.test",
+    "actualOrigin": "https://evil.selfmatrix.test"
+  }
+}

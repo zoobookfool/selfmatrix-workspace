@@ -28,6 +28,12 @@ smoke:
 npm run smoke
 ```
 
+memory probe:
+
+```powershell
+npm run memory
+```
+
 ローカル artifact の場所は環境変数で上書きできます。
 
 ```powershell

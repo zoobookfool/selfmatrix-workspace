@@ -1,23 +1,70 @@
 {
   "scenario": "preload-voice-join",
-  "description": "Widget boot, content_loaded, host join request, and device_mute update.",
-  "widgetId": "selfmatrix-call-widget",
+  "description": "Widget boot, content_loaded, host join request, and device_mute update through native bridge code.",
+  "widgetId": "selfmatrix-native-prototype-call",
   "callOrigin": "https://app.selfmatrix.test",
   "parentOrigin": "https://app.selfmatrix.test",
+  "messageOrigin": "https://app.selfmatrix.test",
   "pass": true,
   "events": [
     {
-      "direction": "fromWidget",
+      "kind": "request",
+      "channel": "widget-api-message",
       "request": {
         "api": "fromWidget",
-        "widgetId": "selfmatrix-call-widget",
+        "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-001",
         "action": "supported_api_versions",
         "data": {}
       },
+      "forwarded": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "selfmatrix-native-prototype-call",
+          "requestId": "widgetapi-harness-001",
+          "action": "supported_api_versions",
+          "data": {}
+        },
+        "origin": "https://app.selfmatrix.test",
+        "sourceIsSelf": true
+      },
+      "validation": {
+        "ok": true
+      }
+    },
+    {
+      "kind": "response-loopback",
+      "channel": "widget-api-message",
+      "request": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-harness-001",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": []
+        }
+      },
+      "forwarded": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "selfmatrix-native-prototype-call",
+          "requestId": "widgetapi-harness-001",
+          "action": "supported_api_versions",
+          "data": {},
+          "response": {
+            "supported_versions": []
+          }
+        },
+        "origin": "https://app.selfmatrix.test",
+        "sourceIsSelf": true
+      },
+      "validation": {
+        "ok": true
+      },
       "response": {
         "api": "fromWidget",
-        "widgetId": "selfmatrix-call-widget",
+        "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-001",
         "action": "supported_api_versions",
         "data": {},
@@ -27,17 +74,59 @@
       }
     },
     {
-      "direction": "fromWidget",
+      "kind": "request",
+      "channel": "widget-api-message",
       "request": {
         "api": "fromWidget",
-        "widgetId": "selfmatrix-call-widget",
+        "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-002",
         "action": "content_loaded",
         "data": {}
       },
+      "forwarded": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "selfmatrix-native-prototype-call",
+          "requestId": "widgetapi-harness-002",
+          "action": "content_loaded",
+          "data": {}
+        },
+        "origin": "https://app.selfmatrix.test",
+        "sourceIsSelf": true
+      },
+      "validation": {
+        "ok": true
+      }
+    },
+    {
+      "kind": "response-loopback",
+      "channel": "widget-api-message",
+      "request": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-harness-002",
+        "action": "content_loaded",
+        "data": {},
+        "response": {}
+      },
+      "forwarded": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "selfmatrix-native-prototype-call",
+          "requestId": "widgetapi-harness-002",
+          "action": "content_loaded",
+          "data": {},
+          "response": {}
+        },
+        "origin": "https://app.selfmatrix.test",
+        "sourceIsSelf": true
+      },
+      "validation": {
+        "ok": true
+      },
       "response": {
         "api": "fromWidget",
-        "widgetId": "selfmatrix-call-widget",
+        "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-002",
         "action": "content_loaded",
         "data": {},
@@ -45,34 +134,42 @@
       }
     },
     {
-      "direction": "toWidget",
+      "kind": "request",
+      "channel": "widget-api-message",
       "request": {
         "api": "toWidget",
-        "widgetId": "selfmatrix-call-widget",
-        "requestId": "widgetapi-harness-003",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "native-prototype-harness-003",
         "action": "io.element.join",
         "data": {
           "audioInput": null,
           "videoInput": null
         }
       },
-      "response": {
-        "api": "toWidget",
-        "widgetId": "selfmatrix-call-widget",
-        "requestId": "widgetapi-harness-003",
-        "action": "io.element.join",
+      "forwarded": {
         "data": {
-          "audioInput": null,
-          "videoInput": null
+          "api": "toWidget",
+          "widgetId": "selfmatrix-native-prototype-call",
+          "requestId": "native-prototype-harness-003",
+          "action": "io.element.join",
+          "data": {
+            "audioInput": null,
+            "videoInput": null
+          }
         },
-        "response": {}
+        "origin": "https://app.selfmatrix.test",
+        "sourceIsSelf": true
+      },
+      "validation": {
+        "ok": true
       }
     },
     {
-      "direction": "fromWidget",
+      "kind": "request",
+      "channel": "widget-api-message",
       "request": {
         "api": "fromWidget",
-        "widgetId": "selfmatrix-call-widget",
+        "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-004",
         "action": "io.element.device_mute",
         "data": {
@@ -80,9 +177,59 @@
           "video_enabled": false
         }
       },
+      "forwarded": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "selfmatrix-native-prototype-call",
+          "requestId": "widgetapi-harness-004",
+          "action": "io.element.device_mute",
+          "data": {
+            "audio_enabled": true,
+            "video_enabled": false
+          }
+        },
+        "origin": "https://app.selfmatrix.test",
+        "sourceIsSelf": true
+      },
+      "validation": {
+        "ok": true
+      }
+    },
+    {
+      "kind": "response-loopback",
+      "channel": "widget-api-message",
+      "request": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-harness-004",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        },
+        "response": {}
+      },
+      "forwarded": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "selfmatrix-native-prototype-call",
+          "requestId": "widgetapi-harness-004",
+          "action": "io.element.device_mute",
+          "data": {
+            "audio_enabled": true,
+            "video_enabled": false
+          },
+          "response": {}
+        },
+        "origin": "https://app.selfmatrix.test",
+        "sourceIsSelf": true
+      },
+      "validation": {
+        "ok": true
+      },
       "response": {
         "api": "fromWidget",
-        "widgetId": "selfmatrix-call-widget",
+        "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-004",
         "action": "io.element.device_mute",
         "data": {

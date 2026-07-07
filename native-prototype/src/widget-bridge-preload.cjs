@@ -2,7 +2,13 @@ const { ipcRenderer } = require("electron");
 
 window.addEventListener("message", (event) => {
   const data = event.data;
-  if (!data || typeof data !== "object" || !data.api || !data.requestId || !data.widgetId) {
+  if (
+    !data ||
+    typeof data !== "object" ||
+    (data.api !== "fromWidget" && data.api !== "toWidget") ||
+    !data.requestId ||
+    !data.widgetId
+  ) {
     return;
   }
 
@@ -14,9 +20,9 @@ window.addEventListener("message", (event) => {
 });
 
 ipcRenderer.on("widget-api-response", (_event, response) => {
-  window.postMessage(response, "*");
+  window.postMessage(response, window.location.origin);
 });
 
 ipcRenderer.on("widget-api-to-widget", (_event, request) => {
-  window.postMessage(request, "*");
+  window.postMessage(request, window.location.origin);
 });

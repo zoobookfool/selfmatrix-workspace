@@ -1,0 +1,125 @@
+{
+  "pass": true,
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46",
+  "origin": "http://127.0.0.1:<local-port>",
+  "hardNavigationCount": 1,
+  "sawJoinRequest": true,
+  "cinnyDistExists": true,
+  "ecDistExists": true,
+  "callViewState": "attached",
+  "widgetMessages": [
+    {
+      "t": 1783413115633,
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783413115624",
+        "action": "supported_api_versions",
+        "data": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783413115685,
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783413115624",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": []
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783413115689,
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783413115685",
+        "action": "content_loaded",
+        "data": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783413115717,
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783413115685",
+        "action": "content_loaded",
+        "data": {},
+        "response": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783413116288,
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783413116288",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783413116290,
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783413116288",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        },
+        "response": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783413116510,
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "native-prototype-001",
+        "action": "io.element.join",
+        "data": {
+          "audioInput": null,
+          "videoInput": null
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    }
+  ],
+  "navigationEvents": [
+    {
+      "t": 1783413115078,
+      "url": "http://127.0.0.1:<local-port>/ec/index.html?widgetId=selfmatrix-native-prototype-call&parentUrl=http%3A%2F%2F127.0.0.1%3A%3Clocal-port%3E%2Fdesktop-shell.html&roomId=%21prototype%3Aselfmatrix.test&userId=%40prototype%3Aselfmatrix.test&deviceId=NATIVEPROTOTYPE&baseUrl=https%3A%2F%2Fmatrix.example.invalid&intent=join_existing_voice&preload=true&skipLobby=true&disableVideo=true&hideVideoButton=true&theme=dark",
+      "isInPlace": false,
+      "isMainFrame": true
+    },
+    {
+      "t": 1783413115661,
+      "url": "http://127.0.0.1:<local-port>/ec/index.html?widgetId=selfmatrix-native-prototype-call&parentUrl=http%3A%2F%2F127.0.0.1%3A%3Clocal-port%3E%2Fdesktop-shell.html&roomId=%21prototype%3Aselfmatrix.test&userId=%40prototype%3Aselfmatrix.test&deviceId=NATIVEPROTOTYPE&baseUrl=https%3A%2F%2Fmatrix.example.invalid&intent=join_existing_voice&preload=true&skipLobby=true&disableVideo=true&hideVideoButton=true&theme=dark",
+      "isInPlace": true,
+      "isMainFrame": true
+    }
+  ]
+}

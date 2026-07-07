@@ -1,6 +1,7 @@
 const { app, BrowserWindow, WebContentsView } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 
 const evidenceDir = path.join(__dirname, "..", "evidence");
 const resultPath = path.join(evidenceDir, "reparent-result.json");
@@ -65,7 +66,9 @@ async function main() {
 
   mainWindow.contentView.addChildView(view);
   view.setBounds({ x: 0, y: 0, width: 900, height: 600 });
-  await view.webContents.loadFile(path.join(__dirname, "reparent-call.html"));
+  const probeFile = path.join(__dirname, "reparent-call.html");
+  const probeUrl = pathToFileURL(probeFile).href;
+  await view.webContents.loadFile(probeFile);
 
   await waitForState(
     view,
@@ -93,7 +96,10 @@ async function main() {
     electron: process.versions.electron,
     chrome: process.versions.chrome,
     finalState,
-    navigationEvents,
+    navigationEvents: navigationEvents.map((event) => ({
+      ...event,
+      url: event.url === probeUrl ? "file://<selfmatrix-workspace>/test-harness/electron-smoke/src/reparent-call.html" : event.url,
+    })),
     events,
   };
 

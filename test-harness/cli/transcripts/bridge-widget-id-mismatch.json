@@ -1,0 +1,47 @@
+{
+  "scenario": "bridge-widget-id-mismatch",
+  "description": "Reject Widget API messages whose widgetId does not match the active call view.",
+  "widgetId": "unexpected-widget",
+  "callOrigin": "https://app.selfmatrix.test",
+  "parentOrigin": "https://app.selfmatrix.test",
+  "messageOrigin": "https://app.selfmatrix.test",
+  "pass": true,
+  "events": [
+    {
+      "kind": "request",
+      "channel": "widget-api-message",
+      "request": {
+        "api": "fromWidget",
+        "widgetId": "unexpected-widget",
+        "requestId": "widgetapi-harness-001",
+        "action": "content_loaded",
+        "data": {}
+      },
+      "forwarded": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "unexpected-widget",
+          "requestId": "widgetapi-harness-001",
+          "action": "content_loaded",
+          "data": {}
+        },
+        "origin": "https://app.selfmatrix.test",
+        "sourceIsSelf": true
+      },
+      "validation": {
+        "ok": false,
+        "code": "widget_id_mismatch",
+        "message": "Unexpected widgetId: unexpected-widget",
+        "expectedWidgetId": "selfmatrix-native-prototype-call",
+        "actualWidgetId": "unexpected-widget"
+      }
+    }
+  ],
+  "failure": {
+    "ok": false,
+    "code": "widget_id_mismatch",
+    "message": "Unexpected widgetId: unexpected-widget",
+    "expectedWidgetId": "selfmatrix-native-prototype-call",
+    "actualWidgetId": "unexpected-widget"
+  }
+}
