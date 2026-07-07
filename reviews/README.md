@@ -17,3 +17,4 @@
 - 未対応の P1/P2 指摘は [backlog.md](../planning/backlog.md) にも追加する。
 - 対応済みにした場合は、修正 commit / 実装記録 / 本番反映日を「結論 / 状態」に追記する。
 - 古いレビュー本文は削除しない。判断の履歴として残す。
+- [claude-review-native-prototype-20260707.md](claude-review-native-prototype-20260707.md) — ネイティブ化スパイク実測 + prototype (f7d0e4b..beb7d85)。技術クレームは独立再現で確認 (案 B 成立)。must-fix 5 件 (widget-protocol CLI のトートロジー等)、対応待ち
