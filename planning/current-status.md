@@ -7,7 +7,8 @@
 - SelfMatrix は Synapse + PostgreSQL + Cinny fork + Element Call fork + LiveKit SFU の構成で稼働済み。
 - UI 仕様の正本は [ui-design-notes.md](../design/ui-design-notes.md) v1.5。見た目合わせの視覚基準は [mocks/ui-mock.html](../design/mocks/ui-mock.html) v2.2。
   モック v2.2 は v1.4 時点の内容を含むため、v1.5 の追加仕様と衝突する場合は ui-design-notes を優先する。
-- 通話 UI は画面共有特化、視聴オプトイン、画質/FPS ピッカー、話者オーバーレイ、ユーザー/配信音量調整、RNNoise ノイズ抑制まで実装済み。
+- 通話 UI は画面共有特化、視聴オプトイン、画質/FPS ピッカー、話者オーバーレイ、配信タイル音量調整、RNNoise ノイズ抑制まで実装済み。
+  話者オーバーレイ右クリックからのユーザー単位音量調整は未実装扱いで、[backlog.md](backlog.md) を正とする。
 - 別ウィンドウ通話開始モードは [call-window-mode.md](../design/call-window-mode.md) v1.4 で UI 合意済みだが、実装はネイティブ化検討の結論待ち。
 - クライアントのネイティブ化は [native-client-rethink.md](../design/native-client-rethink.md) v0.1 のドラフト段階。次の判断ゲートは [desktop-window-spike.md](../spikes/desktop-window-spike.md)。
 
@@ -24,8 +25,10 @@
 
 - desktop window spike
 - グリッド配信タイルのストリーム単体ポップアウト `🗗`
+- 話者オーバーレイ右クリックからのユーザー単位音量調整
 - SFU 切断時の自動再参加
 - 4K60 x 3 本 + 10 人相当の負荷・品質検証
+- RNNoise 既定 ON の聴感評価
 - ネイティブ化する場合の外部ミュート制御
 
 ## 読み順

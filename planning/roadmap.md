@@ -77,8 +77,9 @@ Exit criteria:
 **UI 仕様の現行正本は [ui-design-notes.md](../design/ui-design-notes.md) (v1.5)。**
 [mocks/ui-mock.html](../design/mocks/ui-mock.html) (v2.2) は見た目合わせの視覚基準であり、
 v1.5 の追加仕様と衝突する場合は ui-design-notes を優先する。
-以下は Phase 2b 着手当時 (v1.2) の計画記述であり、履歴として残しています。現在の未実装差分は
-本ロードマップの Phase 8「UI 設計 v1.4 と実装の差分」を正としてください。ポップアウトの主対象は
+以下は Phase 2b 着手当時 (v1.2) の計画記述であり、履歴として残しています。
+当時の未実装差分と実装履歴は本ロードマップの Phase 8「UI 設計 v1.4 と実装の差分」に残しています。
+現在の未完了・保留事項は [backlog.md](backlog.md) を正としてください。ポップアウトの主対象は
 その後の合意で「通話 UI 全体」に変わっています (配信単体ポップアウトは補助機能)。
 
 **(履歴、2026-07-02 当時)** UI の合意事項は ui-design-notes.md (v1.2) を正とします。

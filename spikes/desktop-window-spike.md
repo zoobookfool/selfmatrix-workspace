@@ -50,6 +50,8 @@ Electron の `WebContentsView` に EC widget / LiveKit 通話を載せ、同じ 
 - Element Call dev backend または既存 dev 環境で 2 ユーザー通話を作る。
 - 片方を Electron spike app の call view で参加させる。
 - 通話中に 10 回以上、メイン <-> 別窓へ view を移動する。
+- 別窓側で画面共有を開始する。共有対象ピッカー、画質/FPS 選択、共有開始、共有停止まで確認する。
+- 共有中にも 3 回以上 view を移動し、送信 track と視聴側表示が維持されるか確認する。
 
 合格条件:
 
@@ -57,6 +59,8 @@ Electron の `WebContentsView` に EC widget / LiveKit 通話を載せ、同じ 
 - 受信/送信 track が途切れない、または視聴上の瞬断が 1 秒未満で自動復帰する。
 - EC の internal state が初期化されない。
 - 他参加者から見て leave/join イベントが増えない。
+- 別窓内から共有対象ピッカーを開き、720p/1080p/ソース解像度と 15/30/60fps の選択値を反映して共有開始できる。
+- 共有中の再親子付けで送信 track が作り直されず、視聴側の配信タイルが消えない。
 
 ## 失敗条件
 
@@ -65,6 +69,8 @@ Electron の `WebContentsView` に EC widget / LiveKit 通話を載せ、同じ 
 - view 移動で EC が reload する。
 - LiveKit が reconnect / rejoin / participant replacement を起こす。
 - Matrix widget API の親子関係が壊れ、shell と call view の制御が不安定になる。
+- 別窓内で画面共有ピッカー、画質/FPS 選択、共有開始・停止のいずれかが実用できない。
+- 共有中の view 移動で送信 track が停止・再作成される。
 - 主要 OS のどれかで実用できないほど表示・入力・画面共有ピッカーが壊れる。
 
 ## 判断
@@ -75,5 +81,5 @@ Electron の `WebContentsView` に EC widget / LiveKit 通話を載せ、同じ 
 ## 実装メモ
 
 - `BrowserView` は使わず `WebContentsView` を使う。
-- 共有対象ピッカー、最前面固定、外部ミュート制御はこのスパイクの主目的ではない。まず「無再接続移動」だけを判定する。
+- 最前面固定、外部ミュート制御はこのスパイクの主目的ではない。画面共有ピッカーと画質/FPS 選択は、別窓通話の必須操作として Phase 3 の合否に含める。
 - 成果物は fork/product ブランチへ混ぜず、実験コードを一時 repo または `spike/*` ブランチに置き、結果だけをこの文書へ追記する。
