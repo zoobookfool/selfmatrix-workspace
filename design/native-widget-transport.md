@@ -195,6 +195,34 @@ workspace の実行可能コード運用ルール (native-milestones 末尾) に
    pass 条件に組み込んで担保。in-call 実コントロールでの検証は step 3 で行う。
 3. **結合**: cinny 本体に `native/` 4 ファイルを実装し、prototype シェルから実 dev スタック
    (`pnpm backend`) へ join。M1 受け入れ (2 ユーザー通話 + 配信 + 無再接続の窓往復 E2E) へ接続。
+   **3a (cinny 側実装) は 2026-07-07 完了** — fork の `spike/native-shell` ブランチに
+   `native/` 4 ファイル + ファクトリ分岐 (typecheck 0 / build 成功)。
+
+### step 3b 実装要件 (3a レビューからの引き継ぎ)
+
+シェル (prototype) 側を cinny の `nativeBridge.ts` 契約に合わせて改修する際の必須事項:
+
+1. **`openCallView(completeWidgetUrl)` の URL 検証**: URL は cinny レンダラ (低信頼側) が
+   組み立てる。シェルは**無検証で loadURL してはならない** — EC dist の既知 base
+   (prototype では `<origin>/ec/`) への assertSameOrigin / prefix 検証を必須とする。
+   web 版の base は `window.location.origin` + `/public/element-call/index.html` なので、
+   ネイティブでは cinny 側 config か URL 書き換えで `/ec/` 配下へマップする必要がある
+2. **transport 契約の形状変更**: prototype 現行の `ensureCallView`/静的 `/widget-config.json`
+   方式から、claim 済み transport の `openCallView`/`closeCallView` (URL 駆動・部屋ごと) へ。
+   `native:widget-host-ready` ゲートは cinny 側では不要 (ClientWidgetApi 構築が同期で
+   openCallView より必ず先行するため) — ただしこの順序不変条件が崩れる変更をしたら復活させる
+3. **call-control 語彙の実装**: `NativeCallControlAction` の 7 action
+   (toggleScreenshare/toggleSpotlight/toggleEmphasis/toggleReactions/toggleSettings/
+   setSoundOn/setSoundOff) を call view preload に実装 (現行の `toggleTarget` は step 2 の
+   単体実証専用で流用不可)。**sound もカテゴリ B 相当**と判明 (web 版は `<audio>.muted` を
+   直接書く) — payload を持たない invoke のため on/off を action 名で分離した
+4. **カテゴリ B の状態 push (再同期)**: 3a の NativeCallControl は自分のクリック成功時のみ
+   状態更新する optimistic 実装 (実 DOM とズレても補正されない)。call view preload からの
+   MutationObserver 由来 state push を実装し、**「push による再同期が働くこと」を 3b/3c の
+   受け入れ条件に含める**
+5. **native では popout を提供しない** (M3 の再親子付けで置き換えるため、3a で popout/popin に
+   native ガードを実装済み)。話者ハイライト (`useCallSpeakers` の document 依存) も native では
+   不活性 — 代替シグナルは M3 以降で検討 (LATER)
 
 ## 4. リスク
 
