@@ -1,0 +1,281 @@
+{
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46",
+  "rawParentReachedShell": false,
+  "parentIsSelf": true,
+  "bridgeCapturedWidgetMessages": 3,
+  "bridgeDeliveredToShell": true,
+  "shellToWidgetDelivered": true,
+  "shellAfterRaw": [
+    {
+      "data": {
+        "via": "preload-bridge",
+        "payload": {
+          "from": "widget",
+          "label": "raw-parent-postMessage",
+          "time": 1783404128576
+        }
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    }
+  ],
+  "shellAfterManual": [
+    {
+      "data": {
+        "via": "preload-bridge",
+        "payload": {
+          "from": "widget",
+          "label": "raw-parent-postMessage",
+          "time": 1783404128576
+        }
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "via": "preload-bridge",
+        "payload": {
+          "from": "widget",
+          "label": "manual-after-load",
+          "time": 1783404129369
+        }
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    }
+  ],
+  "widgetAfterRaw": {
+    "parentIsSelf": true,
+    "received": [
+      {
+        "data": {
+          "from": "widget",
+          "label": "raw-parent-postMessage",
+          "time": 1783404128576
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      }
+    ],
+    "sent": [
+      {
+        "from": "widget",
+        "label": "raw-parent-postMessage",
+        "time": 1783404128576
+      }
+    ]
+  },
+  "widgetAfterManual": {
+    "parentIsSelf": true,
+    "received": [
+      {
+        "data": {
+          "from": "widget",
+          "label": "raw-parent-postMessage",
+          "time": 1783404128576
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      },
+      {
+        "data": {
+          "from": "widget",
+          "label": "manual-after-load",
+          "time": 1783404129369
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      }
+    ],
+    "sent": [
+      {
+        "from": "widget",
+        "label": "raw-parent-postMessage",
+        "time": 1783404128576
+      },
+      {
+        "from": "widget",
+        "label": "manual-after-load",
+        "time": 1783404129369
+      }
+    ]
+  },
+  "widgetAfterShellMessage": {
+    "parentIsSelf": true,
+    "received": [
+      {
+        "data": {
+          "from": "widget",
+          "label": "raw-parent-postMessage",
+          "time": 1783404128576
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      },
+      {
+        "data": {
+          "from": "widget",
+          "label": "manual-after-load",
+          "time": 1783404129369
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      },
+      {
+        "data": {
+          "from": "shell",
+          "label": "main-ipc-to-widget",
+          "time": 1783404129869
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      }
+    ],
+    "sent": [
+      {
+        "from": "widget",
+        "label": "raw-parent-postMessage",
+        "time": 1783404128576
+      },
+      {
+        "from": "widget",
+        "label": "manual-after-load",
+        "time": 1783404129369
+      }
+    ]
+  },
+  "bridgedMessages": [
+    {
+      "data": {
+        "from": "widget",
+        "label": "raw-parent-postMessage",
+        "time": 1783404128576
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "from": "widget",
+        "label": "manual-after-load",
+        "time": 1783404129369
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "from": "shell",
+        "label": "main-ipc-to-widget",
+        "time": 1783404129869
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    }
+  ],
+  "events": [
+    {
+      "t": 1783404128577,
+      "type": "bridge-widget-message",
+      "data": {
+        "from": "widget",
+        "label": "raw-parent-postMessage",
+        "time": 1783404128576
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404129368,
+      "type": "after-raw",
+      "shellAfterRaw": [
+        {
+          "data": {
+            "via": "preload-bridge",
+            "payload": {
+              "from": "widget",
+              "label": "raw-parent-postMessage",
+              "time": 1783404128576
+            }
+          },
+          "origin": "null",
+          "sourceIsSelf": true
+        }
+      ],
+      "widgetAfterRaw": {
+        "parentIsSelf": true,
+        "received": [
+          {
+            "data": {
+              "from": "widget",
+              "label": "raw-parent-postMessage",
+              "time": 1783404128576
+            },
+            "origin": "null",
+            "sourceIsSelf": true
+          }
+        ],
+        "sent": [
+          {
+            "from": "widget",
+            "label": "raw-parent-postMessage",
+            "time": 1783404128576
+          }
+        ]
+      },
+      "bridgedMessages": [
+        {
+          "data": {
+            "from": "widget",
+            "label": "raw-parent-postMessage",
+            "time": 1783404128576
+          },
+          "origin": "null",
+          "sourceIsSelf": true
+        },
+        {
+          "data": {
+            "from": "widget",
+            "label": "manual-after-load",
+            "time": 1783404129369
+          },
+          "origin": "null",
+          "sourceIsSelf": true
+        },
+        {
+          "data": {
+            "from": "shell",
+            "label": "main-ipc-to-widget",
+            "time": 1783404129869
+          },
+          "origin": "null",
+          "sourceIsSelf": true
+        }
+      ]
+    },
+    {
+      "t": 1783404129369,
+      "type": "bridge-widget-message",
+      "data": {
+        "from": "widget",
+        "label": "manual-after-load",
+        "time": 1783404129369
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404129870,
+      "type": "bridge-widget-message",
+      "data": {
+        "from": "shell",
+        "label": "main-ipc-to-widget",
+        "time": 1783404129869
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    }
+  ]
+}

@@ -1,0 +1,455 @@
+{
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46",
+  "node": "24.17.0",
+  "partition": "probe-1783403921025",
+  "pass": true,
+  "failures": [],
+  "navigationAfterInitialLoad": 0,
+  "initialState": {
+    "loadId": "1783403921360-5f9f90fe0158a8",
+    "loadCount": 1,
+    "counter": 1,
+    "pc1State": "connected",
+    "pc2State": "connected",
+    "dataOpen": true,
+    "messagesReceived": 0,
+    "unloads": 0,
+    "errors": []
+  },
+  "finalState": {
+    "loadId": "1783403921360-5f9f90fe0158a8",
+    "loadCount": 1,
+    "counter": 6,
+    "pc1State": "connected",
+    "pc2State": "connected",
+    "dataOpen": true,
+    "messagesReceived": 5,
+    "unloads": 0,
+    "errors": []
+  },
+  "samples": [
+    {
+      "index": 1,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 2,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 1,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "index": 2,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 2,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 1,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "index": 3,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 3,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 2,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "index": 4,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 3,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 2,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "index": 5,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 4,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 3,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "index": 6,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 4,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 3,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "index": 7,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 5,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 4,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "index": 8,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 5,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 4,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "index": 9,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 6,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 5,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "index": 10,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 6,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 5,
+        "unloads": 0,
+        "errors": []
+      }
+    }
+  ],
+  "events": [
+    {
+      "t": 1783403921119,
+      "type": "did-start-navigation",
+      "url": "file:///<local-spike-dir>/call.html",
+      "isInPlace": false,
+      "isMainFrame": true,
+      "finishedInitialLoad": false
+    },
+    {
+      "t": 1783403923997,
+      "type": "renderer-console",
+      "level": 2,
+      "message": "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security\n  Policy set or a policy with \"unsafe-eval\" enabled. This exposes users of\n  this app to unnecessary security risks.\n\nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged."
+    },
+    {
+      "t": 1783403924098,
+      "type": "initial-state",
+      "loadId": "1783403921360-5f9f90fe0158a8",
+      "loadCount": 1,
+      "counter": 1,
+      "pc1State": "connected",
+      "pc2State": "connected",
+      "dataOpen": true,
+      "messagesReceived": 0,
+      "unloads": 0,
+      "errors": []
+    },
+    {
+      "t": 1783403924099,
+      "type": "reparent-start",
+      "index": 1,
+      "target": "Probe Popout"
+    },
+    {
+      "t": 1783403924609,
+      "type": "reparent-sample",
+      "index": 1,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 2,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 1,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403924609,
+      "type": "reparent-start",
+      "index": 2,
+      "target": "Probe Main"
+    },
+    {
+      "t": 1783403925112,
+      "type": "reparent-sample",
+      "index": 2,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 2,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 1,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403925112,
+      "type": "reparent-start",
+      "index": 3,
+      "target": "Probe Popout"
+    },
+    {
+      "t": 1783403925614,
+      "type": "reparent-sample",
+      "index": 3,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 3,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 2,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403925614,
+      "type": "reparent-start",
+      "index": 4,
+      "target": "Probe Main"
+    },
+    {
+      "t": 1783403926116,
+      "type": "reparent-sample",
+      "index": 4,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 3,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 2,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403926116,
+      "type": "reparent-start",
+      "index": 5,
+      "target": "Probe Popout"
+    },
+    {
+      "t": 1783403926618,
+      "type": "reparent-sample",
+      "index": 5,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 4,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 3,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403926619,
+      "type": "reparent-start",
+      "index": 6,
+      "target": "Probe Main"
+    },
+    {
+      "t": 1783403927122,
+      "type": "reparent-sample",
+      "index": 6,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 4,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 3,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403927122,
+      "type": "reparent-start",
+      "index": 7,
+      "target": "Probe Popout"
+    },
+    {
+      "t": 1783403927625,
+      "type": "reparent-sample",
+      "index": 7,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 5,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 4,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403927625,
+      "type": "reparent-start",
+      "index": 8,
+      "target": "Probe Main"
+    },
+    {
+      "t": 1783403928130,
+      "type": "reparent-sample",
+      "index": 8,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 5,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 4,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403928130,
+      "type": "reparent-start",
+      "index": 9,
+      "target": "Probe Popout"
+    },
+    {
+      "t": 1783403928631,
+      "type": "reparent-sample",
+      "index": 9,
+      "host": "Probe Popout",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 6,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 5,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403928632,
+      "type": "reparent-start",
+      "index": 10,
+      "target": "Probe Main"
+    },
+    {
+      "t": 1783403929134,
+      "type": "reparent-sample",
+      "index": 10,
+      "host": "Probe Main",
+      "sample": {
+        "loadId": "1783403921360-5f9f90fe0158a8",
+        "loadCount": 1,
+        "counter": 6,
+        "pc1State": "connected",
+        "pc2State": "connected",
+        "dataOpen": true,
+        "messagesReceived": 5,
+        "unloads": 0,
+        "errors": []
+      }
+    },
+    {
+      "t": 1783403929135,
+      "type": "final-state",
+      "loadId": "1783403921360-5f9f90fe0158a8",
+      "loadCount": 1,
+      "counter": 6,
+      "pc1State": "connected",
+      "pc2State": "connected",
+      "dataOpen": true,
+      "messagesReceived": 5,
+      "unloads": 0,
+      "errors": []
+    }
+  ]
+}

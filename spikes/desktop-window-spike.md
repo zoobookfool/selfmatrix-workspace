@@ -1,6 +1,6 @@
-# Desktop Window Spike: WebContentsView 再親子付け検証 (未実施)
+# Desktop Window Spike: WebContentsView 再親子付け検証 (一部実測中)
 
-**状態: 次の判断ゲート。** [native-client-rethink.md](../design/native-client-rethink.md) の案 B
+**状態: 次の判断ゲート、一部実測中。** [native-client-rethink.md](../design/native-client-rethink.md) の案 B
 (Electron シェル + 通話を WebContentsView 分離) が成立するかを、実装前に小さく検証する。
 
 ## 検証したい仮説
@@ -104,3 +104,51 @@ Electron の `WebContentsView` に EC widget / LiveKit 通話を載せ、同じ 
 5. **dev TLS CA**: NODE_EXTRA_CA_CERTS は Electron で効かない既知問題があるため、dev backend への
    接続は `setCertificateVerifyProc` 等の dev 専用処置を用意してから検証を始める (これが無いと
    イテレーション自体が止まる)
+
+## 初回実測メモ (2026-07-07、GPT)
+
+証跡:
+
+- [phase1-reparent-result.json](desktop-window-spike-evidence/phase1-reparent-result.json)
+- [phase2-parent-bridge-result.json](desktop-window-spike-evidence/phase2-parent-bridge-result.json)
+
+環境:
+
+- Electron 43.0.0
+- Chrome 150.0.7871.46
+- Node 24.18.0
+- Windows 11
+
+### Phase 1: 最小 WebContentsView 再親子付け
+
+結果: **PASS**。
+
+- 1 つの `WebContentsView` を main window と popout window の間で 10 回再親子付けした
+- renderer の `loadCount` は 1 のまま
+- `beforeunload` は発火しない
+- `RTCPeerConnection` loopback は `connected` のまま
+- datachannel は open のまま、メッセージ受信も継続
+- initial load 後の main-frame navigation は 0
+
+この段階では「WebContentsView の再親子付け自体で即 reload する」という blocker は確認されなかった。
+
+### Phase 2: `window.parent` / widget message bridge
+
+結果: **raw は NG、preload/IPC bridge は成立**。
+
+- top-level `WebContentsView` 内では `window.parent === window`
+- widget 側が `window.parent.postMessage(...)` しても、shell 側の WebContentsView には素では届かない
+- ただし widget 側 preload が `window` の `message` event を拾い、IPC で main process へ渡し、
+  main process から shell WebContentsView へ `window.postMessage(...)` する bridge では widget -> shell が届いた
+- main process から widget WebContentsView へ IPC し、preload が `window.postMessage(...)` する形で shell -> widget 相当も届いた
+
+判断:
+
+- Fable の `window.parent` 懸念は正しい。案 B は **bridge なしでは成立しない**
+- ただし preload/IPC bridge で中継できる見込みはあるため、この時点では案 B を棄却しない
+- 次は `matrix-widget-api` 実物のメッセージ形式で bridge できるか、EC widget の boot と join flow で確認する
+
+補足:
+
+- parent bridge probe は結果 JSON を書けたが、Electron 子プロセスが残りコマンドが timeout した。
+  probe runner 側の終了処理は要修正。検証結果そのものは `parent-result.json` に保存済み
