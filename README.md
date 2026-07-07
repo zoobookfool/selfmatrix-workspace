@@ -24,6 +24,7 @@
 
 - [ui-design-notes.md](ui-design-notes.md) — UI 合意の正本 (v1.4)
 - [mocks/ui-mock.html](mocks/ui-mock.html) — 操作できる UI モック (v2.2、ブラウザで直接開ける)
+- [native-client-rethink.md](native-client-rethink.md) — クライアントのネイティブアプリ化 (要件再定義の検討ドラフト)
 - [call-window-mode.md](call-window-mode.md) — 別ウィンドウ通話開始モードの設計検討 (ドラフト)
 - [ec-tile-ui-plan.md](ec-tile-ui-plan.md) — EC タイル UI の実装計画と進捗
 - [i18n.md](i18n.md) — 多言語対応 (言語パック方式) の設計
