@@ -70,6 +70,22 @@ document.getElementById("hangup-call").addEventListener("click", async () => {
   }
 });
 
+// M1 step 2 (B 単体実証): call view preload (call-control-preload.cjs) の対象コントロールを
+// RPC 経由でクリックする手動トリガー。詳細は call-control-preload.cjs 冒頭コメント参照。
+// F7 (受け入れレビュー修正): callControlInvoke は claimWidgetTransport() の claim-once 対象へ
+// 移設済みのため、常時公開の window.selfmatrixNative からは触れない。shell-widget-host.js が
+// 公開する window.selfmatrixWidgetHost.callControlToggle() 経由で叩く (join-call 等の
+// window.selfmatrixWidgetHost.sendAction() 呼び出しと同じ経路)。
+document.getElementById("call-control-toggle").addEventListener("click", async () => {
+  log("call control invoke: toggleTarget");
+  try {
+    const result = await window.selfmatrixWidgetHost.callControlToggle();
+    log("call control result", result);
+  } catch (error) {
+    log("call control invoke failed", { error: String(error) });
+  }
+});
+
 function attachWidgetHostLogging() {
   if (!window.selfmatrixWidgetHost) {
     setTimeout(attachWidgetHostLogging, 50);

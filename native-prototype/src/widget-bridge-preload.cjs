@@ -1,5 +1,15 @@
 const { ipcRenderer } = require("electron");
 
+// M1 step 2 (B 単体実証) の注記: CallControl 相当の DOM 操作ロジックは call-control-preload.cjs に
+// 分離してあるが、このファイルからは require しない。call view は sandbox:true で動いており、
+// 実測の結果 sandbox 下の preload の require() は "electron" 以外 (node: 組み込みや相対パスの
+// 自前ファイルを含む) を解決できない (`Error: module not found: path` 等)。そのため
+// call-control-preload.cjs は main.cjs が `session.fromPartition(CALL_VIEW_PARTITION)
+// .registerPreloadScript()` で「2 本目の独立した preload」として登録する方式にした
+// (詳細は main.cjs の ensureCallView() 冒頭コメントと call-control-preload.cjs 冒頭コメント参照)。
+// 同一フレームの preload はこのファイルと並行して読み込まれるが、互いの変数を共有しないので
+// (electron の require もそれぞれが独立して行う)、ここでの変更は不要。
+
 // EC (widget) はこの WebContentsView のトップレベル window で動く (実 iframe には入っていない)
 // ため window.parent === window の自己ループで postMessage する。ここではその 'message' を
 // そのまま素通しで main へ転送する (M0 から流用、ロジック変更なし)。

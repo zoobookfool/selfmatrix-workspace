@@ -1,0 +1,57 @@
+{
+  "pass": true,
+  "deviationsFromDesign": "(1) prototype はバックエンド無しのため EC は ErrorView (Room not found) を描画し、ロビー/在室 UI (マイク/カメラトグル) には到達しない — CallControl.ts の data-testid セレクタは実在しない。(2) CallControl.ts 精読の結果、そもそも toggleMicrophone/toggleVideo は DOM クリックではなく widget action (ElementWidgetActions.DeviceMute 経由の transport.send) で実装されており、querySelector/.click() が使われるのは screenshare/spotlight/grid/emphasis/reactions/settings 側のみだった。(3) 対象は実在する唯一の操作可能コントロール (ErrorView.tsx の CloseWidgetButton, [role=\"button\"][data-kind=\"primary\"], data-testid 無し) を採用。(4) このボタン自身の属性は EC 側では click しても変化しない (host が io.element.close を処理しないため) ので、実クリックイベントを 起点に preload が data-selfmatrix-pressed 属性を独自にトグルして観測対象にした。詳細は call-control-preload.cjs 冒頭コメント参照。(5) 実クリックが EC 本体の DOM に届いたことは、preload 自身の合成属性観測 (domChanged/statePushSeen) だけでは自己完結してしまい検知できないため、独立した傍証として invoke 実行後に受理された io.element.close (from-view) の出現を realClickConfirmed として pass 条件に組み込んでいる (F6, 受け入れレビュー修正)。",
+  "callControlToCallControlTsMapping": "screenshareButton ([data-testid=incall_screenshare], 属性 data-kind を監視) / spotlightButton (input[value=spotlight], 属性を監視) と同型のパターン (querySelector → .click() → attributes MutationObserver) を、実在する唯一の対象 (CloseWidgetButton) に適用した。real な in-call UI に 差し替わる際は TARGET_SELECTOR と観測属性名を差し替えるだけで良い設計にしてある (call-control-preload.cjs)。注意: spotlightButton/emphasisButton は <input> の checkbox/radio で、実際に監視すべき checked は DOM 属性ではなくプロパティのため、属性ベースの MutationObserver では 変化を拾えない (CallControl.ts は click 直後に refreshEmphasisState() で明示的に再読込している)。step 3 でこれらの対象に適用する際は同じ対策 (click 後の明示再読取り等) が必要。",
+  "targetSelector": "[role=\"button\"][data-kind=\"primary\"]",
+  "targetFound": true,
+  "action": "toggleTarget",
+  "before": "false",
+  "after": "true",
+  "rpcRoundTrip": true,
+  "domChanged": true,
+  "statePushSeen": true,
+  "realClickConfirmed": true,
+  "statePushCount": 1,
+  "mutationPushCount": 1,
+  "invokeError": null,
+  "statePushes": [
+    {
+      "t": 1783428424172,
+      "direction": "state-push",
+      "reason": "mutation-observed",
+      "selector": "[role=\"button\"][data-kind=\"primary\"]",
+      "pressed": true
+    }
+  ],
+  "callControlMessages": [
+    {
+      "t": 1783428424170,
+      "direction": "to-view",
+      "correlationId": "call-control-1-1783428424170",
+      "action": "toggleTarget"
+    },
+    {
+      "t": 1783428424171,
+      "direction": "from-view",
+      "correlationId": "call-control-1-1783428424170",
+      "result": {
+        "ok": true,
+        "action": "toggleTarget",
+        "selector": "[role=\"button\"][data-kind=\"primary\"]",
+        "before": "false",
+        "after": "true",
+        "invokeCount": 1
+      }
+    },
+    {
+      "t": 1783428424172,
+      "direction": "state-push",
+      "reason": "mutation-observed",
+      "selector": "[role=\"button\"][data-kind=\"primary\"]",
+      "pressed": true
+    }
+  ],
+  "preloadErrors": [],
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46"
+}

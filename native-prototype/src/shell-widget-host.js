@@ -126,6 +126,16 @@
         listeners.add(callback);
         return () => listeners.delete(callback);
       },
+      // M1 step 2 (F7, 受け入れレビュー修正): call-control RPC の安全なラッパー。
+      // callControlInvoke 自体は claimWidgetTransport() の claim-once 対象 (widgetTransport 変数、
+      // このファイルの先頭で一度だけ払い出し済み) に移設済みなので、常時公開のグローバルからは
+      // 到達できない。desktop-shell.js の手動ボタンや main.cjs の smoke ヘルパー
+      // (invokeCallControlFromShell()) はここ経由でのみ叩く。引数を取らず対象アクションを固定する
+      // ことで、公開面を「実在する 1 コントロールのトグル」だけに絞ってある — 対象を実コントロールに
+      // 差し替える step 3 でも、この関数の中身 (呼び出す action 名) を差し替えるだけで済む設計。
+      callControlToggle() {
+        return widgetTransport.callControlInvoke("toggleTarget");
+      },
     };
 
     widgetTransport.notifyWidgetHostReady();

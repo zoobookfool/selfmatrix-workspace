@@ -43,6 +43,20 @@ function claimWidgetTransport() {
     // 終えるまで EC の読み込みを遅延させる (でないと起動直後に EC が送る supported_api_versions /
     // content_loaded を取りこぼす競合が起き得る)。shell-widget-host.js の boot() 完了時に呼ばれる。
     notifyWidgetHostReady: () => ipcRenderer.send("native:widget-host-ready"),
+    // M1 step 2 (B 単体実証): NativeCallControl 相当の RPC 入口。ipcMain.handle 側 (main.cjs) が
+    // correlationId を発行して call view preload (call-control-preload.cjs) と往復するので、
+    // ここは ipcRenderer.invoke を薄く呼ぶだけで済む (往復の相関はすべて main.cjs 側の責務)。
+    // F7 (受け入れレビュー修正): 当初はこの RPC を claim-once の外、selfmatrixNative に常時公開して
+    // いた ("この RPC はユーザーが通話 UI 上のボタンを直接クリックするのと機能的に同値だから安全"
+    // という理由づけだったが、これは F2b の claimWidgetTransport() が塞いだはずの「同一オリジン
+    // iframe (cinny 埋め込み) から window.parent.selfmatrixNative 経由で送信 API に触れられる」経路を
+    // この新チャンネルで再発させていた。実コントロール (画面共有トグル等) に対象が差し替わる step 3
+    // では「ユーザー操作なしに他フレームから操作を起こせる面」になり得るため、送信 API
+    // (sendToView/notifyWidgetHostReady) と同じ claim-once の対象に統合し、常時公開から外す。
+    // host 側 (shell-widget-host.js) はここから受け取ったこの関数を使い、window.selfmatrixWidgetHost に
+    // 安全なラッパー (callControlToggle()) を公開する。到達境界の再設計は design の「残存リスク」節と
+    // 合わせて M2 セキュリティ監査で見直すこと。
+    callControlInvoke: (action) => ipcRenderer.invoke("native:call-control:invoke", action),
   };
 }
 

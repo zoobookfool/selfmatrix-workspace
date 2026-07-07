@@ -37,6 +37,18 @@ const {
 const SPOOF_ACTION = "selfmatrix.test.spoof";
 const SPOOF_WIDGET_ID = "spoofed-widget-id";
 
+// M1 step 2 (B 単体実証): native:call-control:invoke の correlationId 方式往復管理。
+// main は action の意味を解釈しない中継役に徹する (design/native-widget-transport.md §2.2) —
+// ここで持つのは「どの応答をどの ipcMain.handle() 呼び出しに戻すか」の相関だけで、
+// action や result の中身は一切見ない。
+const pendingCallControlInvokes = new Map();
+let callControlInvokeSeq = 0;
+
+// call view (EC WebContentsView) の永続パーティション名。ensureCallView() の
+// WebContentsView 生成と、call-control-preload.cjs を 2 本目の preload として登録する
+// session.fromPartition() の両方から同じ文字列を参照する必要があるため定数化した。
+const CALL_VIEW_PARTITION = "persist:selfmatrix-native-prototype-call";
+
 const appRoot = path.resolve(__dirname, "..");
 const evidenceDir = path.join(appRoot, "evidence");
 const isSmoke = process.argv.includes("--smoke");
@@ -50,6 +62,12 @@ const state = {
   callView: null,
   callViewState: "none",
   widgetMessages: [],
+  // M1 step 2 (B 単体実証): native:call-control:* (invoke 要求/応答/MutationObserver state push) の
+  // 全メッセージをここに記録する。widgetMessages と同じ「main は中継するだけ、判定は別関数に外出し」
+  // という方針を踏襲する。
+  callControlMessages: [],
+  // 診断用 (call view 側 preload の読み込み時例外を記録。ensureCallView() 参照)。
+  preloadErrors: [],
   navigationEvents: [],
   widgetHostReady: null,
   resolveWidgetHostReady: null,
@@ -265,13 +283,26 @@ async function ensureCallView() {
       "The shell's ClientWidgetApi never finished booting (see desktop-shell.html script load order).",
   );
 
+  // M1 step 2 (B 単体実証): CallControl 相当の DOM 操作ロジック (call-control-preload.cjs) を
+  // 2 本目の preload として同じ call view partition/session に登録する。webPreferences.preload
+  // (widget-bridge-preload.cjs) からの require では分離できなかった理由は
+  // call-control-preload.cjs 冒頭のコメント参照 (sandbox 下の preload の require() は
+  // "electron" 以外を解決できないことを実測で確認した)。session.registerPreloadScript() は
+  // ファイルとしての分離を保ったまま、同じフレームに追加の preload を読み込ませられる。
+  // ensureCallView() はこの関数の先頭の早期 return により call view 1 個の寿命中に一度しか
+  // 呼ばれないため、登録も一度きりで良い。
+  session.fromPartition(CALL_VIEW_PARTITION).registerPreloadScript({
+    filePath: path.join(__dirname, "call-control-preload.cjs"),
+    type: "frame",
+  });
+
   const view = new WebContentsView({
     webPreferences: {
       preload: path.join(__dirname, "widget-bridge-preload.cjs"),
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      partition: "persist:selfmatrix-native-prototype-call",
+      partition: CALL_VIEW_PARTITION,
     },
   });
   state.callView = view;
@@ -281,6 +312,12 @@ async function ensureCallView() {
   });
   view.webContents.on("render-process-gone", (_event, details) => {
     state.widgetMessages.push({ t: Date.now(), type: "render-process-gone", details });
+  });
+  // 診断用: call view 側のいずれかの preload (widget-bridge-preload.cjs /
+  // call-control-preload.cjs) が読み込み時に例外を投げた場合、smoke は「対象が見つからず
+  // タイムアウトし続ける」形でしか失敗が見えず原因追跡が難しい。preload-error を記録しておく。
+  view.webContents.on("preload-error", (_event, preloadPath, error) => {
+    state.preloadErrors.push({ t: Date.now(), preloadPath, error: String(error && error.stack ? error.stack : error) });
   });
 
   state.mainWindow.contentView.addChildView(view);
@@ -334,6 +371,102 @@ function sendWidgetActionFromShell(action, data) {
     `window.selfmatrixWidgetHost.sendAction(${JSON.stringify(action)}, ${payload}).catch(() => {})`,
     true,
   );
+}
+
+// M1 step 2 (B 単体実証): runSmoke() が shell 側の window.selfmatrixWidgetHost.callControlToggle()
+// を executeJavaScript 経由で叩く薄いヘルパー。sendWidgetActionFromShell() と同じパターン:
+// main 自身は RPC の中身を組み立てない。
+// F7 (受け入れレビュー修正): 以前は window.selfmatrixNative.callControlInvoke(action) を常時公開の
+// selfmatrixNative から直接叩いていたが、これは claimWidgetTransport() が塞いだはずの「同一オリジン
+// iframe (cinny 埋め込み) から window.parent 経由で送信 API に触れられる」経路をこの新チャンネルで
+// 再発させていた。callControlInvoke は claimWidgetTransport() が返すオブジェクトへ移設し、host は
+// shell-widget-host.js が公開する window.selfmatrixWidgetHost.callControlToggle() 経由でのみ叩く
+// (詳細は shell-preload.cjs / shell-widget-host.js のコメント参照)。
+function invokeCallControlFromShell() {
+  return state.mainWindow.webContents.executeJavaScript(
+    `window.selfmatrixWidgetHost.callControlToggle()`,
+    true,
+  );
+}
+
+// EC 側の React マウント (ErrorView 到達までの非同期チェーン) 完了を待つため、対象コントロールが
+// 見つかるまで invoke を再試行する。call-control-preload.cjs の invoke() は対象が無ければ
+// 副作用なしで { ok:false, reason:"target_not_found" } を返すだけなので、再試行は安全に冪等。
+async function waitForCallControlInvoke(timeoutMs = 10000) {
+  const started = Date.now();
+  let lastResult = null;
+  let lastError = null;
+  while (Date.now() - started < timeoutMs) {
+    try {
+      lastResult = await invokeCallControlFromShell();
+      lastError = null;
+      if (lastResult && lastResult.ok) return { result: lastResult, error: null };
+    } catch (error) {
+      lastError = error;
+    }
+    await wait(300);
+  }
+  return { result: lastResult, error: lastError };
+}
+
+// M1 step 2 の受け入れ判定。4 つの pass フィールドはそれぞれ独立した変異観点に対応する
+// (完了報告の変異テスト観点参照):
+//   - rpcRoundTrip: shell→main→callView→main→shell の往復が correlationId 相関込みで完走したこと。
+//     main.cjs の relay (ipcMain.handle/ipcMain.on の correlationId 相関) を壊すと確実に false になる。
+//   - domChanged: 実際に対象要素の data-selfmatrix-pressed 属性が click 前後で変化したこと。
+//     call-control-preload.cjs の click() 呼び出しを no-op化すると before===after になり false になる。
+//   - statePushSeen: MutationObserver 由来の state push (reason:"mutation-observed") が
+//     main まで届いたこと。call-control-preload.cjs の observe() 登録を削除すると、click 自体は
+//     成功して domChanged は true のままでも push が届かず false になる。
+//   - realClickConfirmed (F6, 受け入れレビュー修正): domChanged/statePushSeen は preload 自身が
+//     付ける合成属性 data-selfmatrix-pressed の自己完結観測に過ぎない。call-control-preload.cjs の
+//     invoke() 内で target.click() を「属性を直接トグルするだけのコード」に置き換える回帰が入っても、
+//     preload が自分で属性を書き換えて自分の MutationObserver で気付くだけなので domChanged/
+//     statePushSeen は変化せず検知できない。これを塞ぐため、click() が本当に EC 本体 (ErrorView の
+//     CloseWidgetButton) の React onClick を発火させたことの独立した傍証として、invoke 実行後に
+//     EC が実際に送信した io.element.close (from-view、validateWidgetBridgeMessage を通過し受理
+//     されたもの。widget-message-rejected は数えない) の出現を確認する。この傍証は
+//     「クリック → CloseWidgetButton の onClick → widget.api.transport.send(Close)」という
+//     EC 側の実装に依存している。
+//     **この判定は M1 step 2 の対象 (ErrorView.tsx の CloseWidgetButton) に固有の傍証である**。
+//     step 3 で対象を実コントロール (画面共有トグル等) に差し替える際は、io.element.close の代わりに
+//     その対象が実際に送信する widget action / DOM 状態変化など、対象固有の独立シグナルに
+//     置き換えること。
+function analyzeCallControl(invokeResult, invokeError, invokeStartedAt) {
+  const statePushes = state.callControlMessages.filter((message) => message.direction === "state-push");
+  const mutationPushes = statePushes.filter((message) => message.reason === "mutation-observed");
+
+  const rpcRoundTrip = invokeError === null && Boolean(invokeResult) && invokeResult.ok === true;
+  const domChanged =
+    rpcRoundTrip &&
+    typeof invokeResult.before === "string" &&
+    typeof invokeResult.after === "string" &&
+    invokeResult.before !== invokeResult.after;
+  const statePushSeen = mutationPushes.length > 0;
+  const realClickConfirmed = acceptedWidgetMessages().some(
+    (message) =>
+      message.direction === "from-view" &&
+      message.data?.action === "io.element.close" &&
+      typeof invokeStartedAt === "number" &&
+      message.t >= invokeStartedAt,
+  );
+
+  return {
+    pass: rpcRoundTrip && domChanged && statePushSeen && realClickConfirmed,
+    rpcRoundTrip,
+    domChanged,
+    statePushSeen,
+    realClickConfirmed,
+    invokeError: invokeError ? String(invokeError.message || invokeError) : null,
+    targetSelector: invokeResult?.selector ?? null,
+    targetFound: Boolean(invokeResult?.ok || (invokeResult && invokeResult.reason !== "target_not_found")),
+    action: invokeResult?.action ?? null,
+    before: invokeResult?.before ?? null,
+    after: invokeResult?.after ?? null,
+    statePushCount: statePushes.length,
+    mutationPushCount: mutationPushes.length,
+    statePushes,
+  };
 }
 
 function setupIpc() {
@@ -400,6 +533,50 @@ function setupIpc() {
 
     state.widgetMessages.push({ t: Date.now(), direction: "to-view", data: message });
     state.callView?.webContents.send("native:widget-to-view", message);
+  });
+
+  // M1 step 2 (B 単体実証): shell (host) → callView preload への RPC。ipcRenderer.invoke 側
+  // (shell-preload.cjs の callControlInvoke) はこの handle が返す Promise をそのまま受け取る。
+  // ここから先 (main → callView) は webContents.send/ipcRenderer.send の fire-and-forget しか
+  // 無いため、correlationId を発行して pendingCallControlInvokes で相関を取り、call view preload
+  // からの native:call-control:invoke-result で resolve する。call view が無い/応答が無ければ
+  // reject/timeout する — main は action の中身を一切解釈しない (design §2.2)。
+  ipcMain.handle("native:call-control:invoke", (_event, action) => {
+    return new Promise((resolve, reject) => {
+      if (!state.callView) {
+        reject(new Error("native:call-control:invoke: call view is not attached"));
+        return;
+      }
+      callControlInvokeSeq += 1;
+      const correlationId = `call-control-${callControlInvokeSeq}-${Date.now()}`;
+      const timer = setTimeout(() => {
+        pendingCallControlInvokes.delete(correlationId);
+        reject(new Error(`native:call-control:invoke timed out waiting for correlationId ${correlationId}`));
+      }, 5000);
+      pendingCallControlInvokes.set(correlationId, { resolve, reject, timer });
+      state.callControlMessages.push({ t: Date.now(), direction: "to-view", correlationId, action });
+      state.callView.webContents.send("native:call-control:invoke", { correlationId, action });
+    });
+  });
+
+  // callView preload (call-control-preload.cjs) からの応答。correlationId が pending map に
+  // 無ければ (未知/期限切れ) 記録するだけで何もしない — ここでも中身の解釈はしない。
+  ipcMain.on("native:call-control:invoke-result", (_event, payload) => {
+    const { correlationId, result } = payload || {};
+    state.callControlMessages.push({ t: Date.now(), direction: "from-view", correlationId, result });
+    const pending = pendingCallControlInvokes.get(correlationId);
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    pendingCallControlInvokes.delete(correlationId);
+    pending.resolve(result);
+  });
+
+  // call-control-preload.cjs の MutationObserver 由来の state push。素通し転送で shell (host)
+  // 側の window にも中継する (design §2.2 の StateUpdate 相当。widget-to-view/from-view と同じ
+  // 「main は中継するだけ」の形)。
+  ipcMain.on("native:call-control:state", (_event, payload) => {
+    state.callControlMessages.push({ t: Date.now(), direction: "state-push", ...payload });
+    state.mainWindow?.webContents.send("native:call-control:state", payload);
   });
 }
 
@@ -620,6 +797,17 @@ async function runSmoke() {
   // 実際に呼んで確認する。
   const claimGuard = await verifyClaimGuard();
 
+  // M1 step 2 (B 単体実証): shell から call-control RPC を叩き、call view preload 内の実 DOM
+  // (対象コントロールの特定と選定理由は call-control-preload.cjs 冒頭コメント参照) を実際にクリック
+  // させる。EC の React マウント (ErrorView 到達までの非同期チェーン) 完了まで再試行する。
+  // F6: realClickConfirmed の判定基準時刻として、最初の invoke 試行開始時刻を記録しておく
+  // (analyzeCallControl() コメント参照)。
+  const callControlInvokeStartedAt = Date.now();
+  const callControlOutcome = await waitForCallControlInvoke();
+  // MutationObserver → IPC push → main 中継が届くまでの猶予。
+  await wait(500);
+  const callControl = analyzeCallControl(callControlOutcome.result, callControlOutcome.error, callControlInvokeStartedAt);
+
   const hardNavigationCount = state.navigationEvents.filter((event) => event.isMainFrame && !event.isInPlace).length;
   const sawJoinRequest = acceptedWidgetMessages().some(
     (message) => message.direction === "to-view" && message.data?.api === "toWidget" && message.data?.action === "io.element.join",
@@ -639,7 +827,8 @@ async function runSmoke() {
       handshake.spoofRejected &&
       !handshake.spoofLeaked &&
       handshake.unexpectedRejectedCount === 0 &&
-      Boolean(claimGuard),
+      Boolean(claimGuard) &&
+      callControl.pass,
     electron: process.versions.electron,
     chrome: process.versions.chrome,
     origin: state.origin.replace(/:\d+$/, ":<local-port>"),
@@ -648,12 +837,15 @@ async function runSmoke() {
     sawContentLoaded,
     handshake,
     claimGuard,
+    callControl,
     cinnyDistExists: fs.existsSync(path.join(cinnyDist, "index.html")),
     ecDistExists: fs.existsSync(path.join(ecDist, "index.html")),
     callViewState: state.callViewState,
+    preloadErrors: state.preloadErrors,
     widgetMessages: state.widgetMessages.map((message) => ({
       ...sanitizeEvidenceMessage(message),
     })),
+    callControlMessages: state.callControlMessages,
     navigationEvents: state.navigationEvents.map((event) => ({
       ...event,
       url: sanitizeEvidenceString(event.url),
@@ -688,6 +880,57 @@ async function runSmoke() {
   fs.writeFileSync(
     path.join(evidenceDir, "handshake-result.json"),
     `${JSON.stringify(handshakeResult, null, 2)}\n`,
+    "utf8",
+  );
+
+  // M1 step 2 (B 単体実証) 専用の証跡。選定した対象コントロールの特定情報とクリック前後の実測値、
+  // 3 つの pass フィールドの根拠 (analyzeCallControl() 参照) をまとめる。
+  const callControlResult = {
+    pass: callControl.pass,
+    deviationsFromDesign:
+      "(1) prototype はバックエンド無しのため EC は ErrorView (Room not found) を描画し、ロビー/" +
+      "在室 UI (マイク/カメラトグル) には到達しない — CallControl.ts の data-testid セレクタは実在しない。" +
+      "(2) CallControl.ts 精読の結果、そもそも toggleMicrophone/toggleVideo は DOM クリックではなく " +
+      "widget action (ElementWidgetActions.DeviceMute 経由の transport.send) で実装されており、" +
+      "querySelector/.click() が使われるのは screenshare/spotlight/grid/emphasis/reactions/settings 側のみ" +
+      "だった。(3) 対象は実在する唯一の操作可能コントロール (ErrorView.tsx の CloseWidgetButton, " +
+      '[role="button"][data-kind="primary"], data-testid 無し) を採用。(4) このボタン自身の属性は EC 側では ' +
+      "click しても変化しない (host が io.element.close を処理しないため) ので、実クリックイベントを " +
+      "起点に preload が data-selfmatrix-pressed 属性を独自にトグルして観測対象にした。詳細は " +
+      "call-control-preload.cjs 冒頭コメント参照。(5) 実クリックが EC 本体の DOM に届いたことは、preload " +
+      "自身の合成属性観測 (domChanged/statePushSeen) だけでは自己完結してしまい検知できないため、独立" +
+      "した傍証として invoke 実行後に受理された io.element.close (from-view) の出現を realClickConfirmed " +
+      "として pass 条件に組み込んでいる (F6, 受け入れレビュー修正)。",
+    callControlToCallControlTsMapping:
+      "screenshareButton ([data-testid=incall_screenshare], 属性 data-kind を監視) / spotlightButton " +
+      "(input[value=spotlight], 属性を監視) と同型のパターン (querySelector → .click() → attributes " +
+      "MutationObserver) を、実在する唯一の対象 (CloseWidgetButton) に適用した。real な in-call UI に " +
+      "差し替わる際は TARGET_SELECTOR と観測属性名を差し替えるだけで良い設計にしてある " +
+      "(call-control-preload.cjs)。注意: spotlightButton/emphasisButton は <input> の checkbox/radio で、" +
+      "実際に監視すべき checked は DOM 属性ではなくプロパティのため、属性ベースの MutationObserver では " +
+      "変化を拾えない (CallControl.ts は click 直後に refreshEmphasisState() で明示的に再読込している)。" +
+      "step 3 でこれらの対象に適用する際は同じ対策 (click 後の明示再読取り等) が必要。",
+    targetSelector: callControl.targetSelector,
+    targetFound: callControl.targetFound,
+    action: callControl.action,
+    before: callControl.before,
+    after: callControl.after,
+    rpcRoundTrip: callControl.rpcRoundTrip,
+    domChanged: callControl.domChanged,
+    statePushSeen: callControl.statePushSeen,
+    realClickConfirmed: callControl.realClickConfirmed,
+    statePushCount: callControl.statePushCount,
+    mutationPushCount: callControl.mutationPushCount,
+    invokeError: callControl.invokeError,
+    statePushes: callControl.statePushes,
+    callControlMessages: state.callControlMessages,
+    preloadErrors: state.preloadErrors,
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+  };
+  fs.writeFileSync(
+    path.join(evidenceDir, "call-control-result.json"),
+    `${JSON.stringify(callControlResult, null, 2)}\n`,
     "utf8",
   );
 

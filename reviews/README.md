@@ -4,6 +4,7 @@
 
 | 日付 | ファイル | 対象 | 結論 / 状態 |
 | --- | --- | --- | --- |
+| 2026-07-07 | [claude-review-m1-step2-20260707.md](claude-review-m1-step2-20260707.md) | M1 step 2 (CallControl DOM 移設の単体実証) | 変異 4 種全検知。realClickConfirmed 未組込等 major 3 件を F6〜F9 即日修正して**受け入れ** |
 | 2026-07-07 | [claude-review-m1-step1-20260707.md](claude-review-m1-step1-20260707.md) | M1 step 1 (実 ClientWidgetApi トランスポート) | 変異 d すり抜けで差し戻し → F1〜F5 即日修正・全変異検知を実測して**受け入れ** |
 | 2026-07-07 | [claude-review-gpt-round2-20260707.md](claude-review-gpt-round2-20260707.md) | EC `99a01f02` / cinny `5207a20` | critical 1 件。視聴中配信が emphasis で消える問題は EC `db6693f7` で修正済み |
 | 2026-07-06 | [gpt-review-2026-07-06-276bbbd.md](gpt-review-2026-07-06-276bbbd.md) | selfmatrix 系 docs/ops | 当時のレビュー記録。対応済み項目は roadmap Phase 8 と各実装履歴へ移動済み |

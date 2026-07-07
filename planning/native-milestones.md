@@ -37,7 +37,10 @@ Claude が残りを実装。純関数を widget-bridge-protocol.cjs へ分離し
 supported_api_versions 14 件 / capabilities 53 承認 / content_loaded ack を証跡化
 (native-prototype/evidence/handshake-result.json)。受け入れは変異バッテリー 6 種全検知
 ([reviews/claude-review-m1-step1-20260707.md](../reviews/claude-review-m1-step1-20260707.md))。
-次は step 2 (B 単体 = CallControl の preload 移設ミニマム版)。
+step 2 (B 単体 = CallControl の DOM 移設。RPC + MutationObserver + registerPreloadScript) も
+**2026-07-07 完了** — マイク/ビデオは widget action と判明し DOM 対象が縮小、(B) リスク高→中
+([reviews/claude-review-m1-step2-20260707.md](../reviews/claude-review-m1-step2-20260707.md))。
+次は step 3 (結合 = cinny 本体に native/ 実装 + 実 dev スタックへの join)。
 
 - **NativeWidgetTransport / NativeCallHost アダプタ**: cinny の ClientWidgetApi/CallWidgetDriver
   (iframe.contentWindow 前提) を WebContentsView に接続する層。設計分析の結果、
