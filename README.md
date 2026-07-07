@@ -22,33 +22,51 @@
 | `reviews/` | AI レビューの記録 |
 | `fixes/` | 個別修正の記録とパッチ |
 
+## 文書の読み方
+
+| 状態 | 意味 |
+| --- | --- |
+| 正本 | 現時点の合意。実装・レビュー・他 AI への依頼はこの内容を優先する |
+| ドラフト | 検討中。結論が出るまで requirements / roadmap へは反映しない |
+| 実装保留 | UI 合意または設計は確定済みだが、別の判断ゲート待ちで実装しない |
+| 履歴 | 当時の判断・証跡。最新方針は正本または current-status/backlog を見る |
+
 ## 目次
 
 ### 計画・要件 (`planning/`)
 
-- [requirements.md](planning/requirements.md) — 要件の正本 (MUST/SHOULD/LATER/OUT)
-- [roadmap.md](planning/roadmap.md) — Phase 0〜8 の進行計画と各 Phase の完了記録
-- [fork-strategy.md](planning/fork-strategy.md) — fork 運用方針 (upstream 追従・差分最小化)
+| 文書 | 状態 | 次アクション / 読み方 |
+| --- | --- | --- |
+| [requirements.md](planning/requirements.md) | 正本 | MUST/SHOULD/LATER/OUT の要件判断はここを優先 |
+| [current-status.md](planning/current-status.md) | 正本 | 今どこまで進んでいて、次に何を見るかの短い入口 |
+| [backlog.md](planning/backlog.md) | 正本 | Phase 8 以降の未完了・保留・判断ゲート |
+| [roadmap.md](planning/roadmap.md) | 履歴 + 計画 | Phase 0〜8 の進行記録。現在の短期タスクは backlog を見る |
+| [fork-strategy.md](planning/fork-strategy.md) | 正本 | fork 運用方針 (upstream 追従・差分最小化) |
 
 ### UI 設計 (`design/`)
 
-- [ui-design-notes.md](design/ui-design-notes.md) — UI 合意の正本 (v1.4)
-- [mocks/ui-mock.html](design/mocks/ui-mock.html) — 操作できる UI モック (v2.2、ブラウザで直接開ける)
-- [native-client-rethink.md](design/native-client-rethink.md) — クライアントのネイティブアプリ化 (要件再定義の検討ドラフト)
-- [call-window-mode.md](design/call-window-mode.md) — 別ウィンドウ通話開始モードの設計検討 (ドラフト)
-- [ec-tile-ui-plan.md](design/ec-tile-ui-plan.md) — EC タイル UI の実装計画と進捗
-- [i18n.md](design/i18n.md) — 多言語対応 (言語パック方式) の設計
+| 文書 | 状態 | 次アクション / 読み方 |
+| --- | --- | --- |
+| [ui-design-notes.md](design/ui-design-notes.md) | 正本 | UI 合意 v1.5。通話・配信・シェルの現行方針 |
+| [mocks/ui-mock.html](design/mocks/ui-mock.html) | 正本 | 操作できる UI モック v2.2。見た目合わせの基準 |
+| [call-window-mode.md](design/call-window-mode.md) | 実装保留 | 別ウィンドウ通話開始モード v1.4。ネイティブ化検討の結論待ち |
+| [native-client-rethink.md](design/native-client-rethink.md) | ドラフト | クライアントのネイティブアプリ化。desktop window spike で検証する |
+| [ec-tile-ui-plan.md](design/ec-tile-ui-plan.md) | 履歴 | EC タイル UI の実装計画と進捗 |
+| [i18n.md](design/i18n.md) | 正本 | 多言語対応 (言語パック方式) の設計 |
 
 ### スパイク・検証記録 (`spikes/`)
 
-- [client-spike.md](spikes/client-spike.md) / [client-spike-results.md](spikes/client-spike-results.md) — クライアント選定スパイク (Phase 2a)
-- [popout-spike.md](spikes/popout-spike.md) — ポップアウト検証 (+ [popout-spike-evidence/](spikes/popout-spike-evidence))
-- [hires-spike.md](spikes/hires-spike.md) — ハイレゾ音声スパイク (JackTrip)
-- [bandwidth-comparison.md](spikes/bandwidth-comparison.md) — VPS 帯域比較
+| 文書 | 状態 | 次アクション / 読み方 |
+| --- | --- | --- |
+| [desktop-window-spike.md](spikes/desktop-window-spike.md) | 未実施 | 次の判断ゲート。Electron WebContentsView で無再接続移動を検証 |
+| [client-spike.md](spikes/client-spike.md) / [client-spike-results.md](spikes/client-spike-results.md) | 履歴 | クライアント選定スパイク (Phase 2a) |
+| [popout-spike.md](spikes/popout-spike.md) | 履歴 | ポップアウト検証 (+ [popout-spike-evidence/](spikes/popout-spike-evidence)) |
+| [hires-spike.md](spikes/hires-spike.md) | 履歴 | ハイレゾ音声スパイク (JackTrip) |
+| [bandwidth-comparison.md](spikes/bandwidth-comparison.md) | 履歴 | VPS 帯域比較 |
 
 ### レビュー記録 (`reviews/`)
 
-- [reviews/](reviews/) — AI レビューの記録 (Sonnet 5 / Opus 4.8 / GPT)。指摘の対応状況は roadmap の該当節を参照
+- [reviews/README.md](reviews/README.md) — AI レビューの索引。対象・結論・対応状況をここで確認
 
 ### 修正記録 (`fixes/`)
 

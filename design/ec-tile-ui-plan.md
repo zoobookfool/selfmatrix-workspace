@@ -1,9 +1,9 @@
 # EC タイル UI 実装計画 (Phase 2b、2026-07-03)
 
 > **historical note**: この文書は ui-design-notes v1.2 時点の実装計画と完了記録です。
-> 現行の UI 正本は [ui-design-notes.md](ui-design-notes.md) (v1.4) と
-> [mocks/ui-mock.html](mocks/ui-mock.html) (v2.2) であり、v1.4 で確定した未実装差分は
-> roadmap.md の Phase 8「UI 設計 v1.4 と実装の差分」を正としてください。
+> 現行の UI 正本は [ui-design-notes.md](ui-design-notes.md) (v1.5) と
+> [mocks/ui-mock.html](mocks/ui-mock.html) (v2.2) です。v1.4 までの実装差分の履歴は
+> roadmap.md の Phase 8 を参照してください。
 
 **進捗 (2026-07-04): 全スライス完了。** selfmatrix-element-call の product ブランチに実装・
 統合検証済み (Slice 1: c3038861 / 2: 9d73dfd2 / 3: 04cc3a75 / 4: 8ac61b97 / 5: 64b1de6e /
