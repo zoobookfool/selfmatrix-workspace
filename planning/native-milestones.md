@@ -42,7 +42,7 @@
 - リポジトリ作成 + native-prototype からの卒業 (workspace 側はアーカイブ)
 - cinny 同梱 (hashRouter=true 切替、homeserver 設定の焼き込み)、EC 同梱
 - 画面共有のソース選択 UI (Discord 風サムネイル) + system audio トグル
-- デスクトップ作法: 通知、トレイ、閉じるボタン挙動、自動起動 (**着手前に要決定 — 下記**)
+- デスクトップ作法: 通知、**トレイ常駐 (閉じる = 最小化、終了はトレイメニュー — 確定済み)**、自動起動
 - About 画面 (AGPL: ソース入手先・fork 元・変更概要・ライセンス全文)、アプリ名・アイコン
 - リリース CI: electron-builder + GitHub Actions → Releases、electron-updater
   (allowDowngrade 無効、Artifact Attestation)、SmartScreen 突破手順書
