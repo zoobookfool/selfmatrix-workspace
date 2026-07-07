@@ -10,11 +10,37 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(__dirname, "..", "..");
 const transcriptDir = path.join(__dirname, "transcripts");
 const requireFromCli = createRequire(import.meta.url);
-const nativeMain = requireFromCli(path.join(workspaceRoot, "native-prototype", "src", "main.cjs"));
+// electron 非依存の純関数群は widget-bridge-protocol.cjs から取る。main.cjs はこれを require
+// する薄い委譲になっているので、ここで直接呼ぶことは「main.cjs が使う実装そのもの」を
+// 検証することと同じになる (main.cjs 自体は Electron 依存のため CLI からは require しない)。
+const protocol = requireFromCli(
+  path.join(workspaceRoot, "native-prototype", "src", "widget-bridge-protocol.cjs"),
+);
 const preloadPath = path.join(workspaceRoot, "native-prototype", "src", "widget-bridge-preload.cjs");
 
 const CALL_ORIGIN = "https://app.selfmatrix.test";
 const SHELL_ORIGIN = "https://app.selfmatrix.test";
+
+const WIDGET_URL_PARAMS = {
+  roomId: "!prototype:selfmatrix.test",
+  userId: "@prototype:selfmatrix.test",
+  deviceId: "NATIVEPROTOTYPE",
+  baseUrl: "https://matrix.example.invalid",
+  intent: "join_existing_voice",
+  preload: "true",
+  skipLobby: "true",
+  disableVideo: "true",
+  hideVideoButton: "true",
+  theme: "dark",
+};
+
+function fromWidget(action, data, expect = { outcome: "success" }) {
+  return { api: "fromWidget", action, data, expect };
+}
+
+function toWidget(action, data) {
+  return { api: "toWidget", action, data };
+}
 
 const scenarios = {
   "preload-voice-join": {
@@ -22,10 +48,10 @@ const scenarios = {
     callOrigin: CALL_ORIGIN,
     parentOrigin: SHELL_ORIGIN,
     steps: [
-      fromWidget("supported_api_versions", {}),
-      fromWidget("content_loaded", {}),
+      fromWidget("supported_api_versions", {}, { outcome: "success" }),
+      fromWidget("content_loaded", {}, { outcome: "success" }),
       toWidget("io.element.join", { audioInput: null, videoInput: null }),
-      fromWidget("io.element.device_mute", { audio_enabled: true, video_enabled: false }),
+      fromWidget("io.element.device_mute", { audio_enabled: true, video_enabled: false }, { outcome: "success" }),
     ],
     expectedActions: ["supported_api_versions", "content_loaded", "io.element.join", "io.element.device_mute"],
   },
@@ -33,22 +59,35 @@ const scenarios = {
     description: "Widget reports microphone enabled and camera disabled through actual preload forwarding.",
     callOrigin: CALL_ORIGIN,
     parentOrigin: SHELL_ORIGIN,
-    steps: [fromWidget("io.element.device_mute", { audio_enabled: true, video_enabled: false })],
+    steps: [fromWidget("io.element.device_mute", { audio_enabled: true, video_enabled: false }, { outcome: "success" })],
     expectedActions: ["io.element.device_mute"],
+  },
+  "get-openid-blocked": {
+    description: "get_openid must resolve with state: blocked (native prototype never issues OpenID tokens).",
+    callOrigin: CALL_ORIGIN,
+    parentOrigin: SHELL_ORIGIN,
+    steps: [fromWidget("get_openid", {}, { outcome: "success", match: { state: "blocked" } })],
+    expectedActions: ["get_openid"],
   },
   "unknown-action": {
     description: "Unknown fromWidget action is rejected by the native implementation response policy.",
     callOrigin: CALL_ORIGIN,
     parentOrigin: SHELL_ORIGIN,
-    steps: [fromWidget("com.selfmatrix.unknown", {})],
+    steps: [
+      fromWidget("com.selfmatrix.unknown", {}, {
+        outcome: "error",
+        messageIncludes: "Unknown widget action: com.selfmatrix.unknown",
+      }),
+    ],
     expectedActions: ["com.selfmatrix.unknown"],
-    expectedErrorAction: "com.selfmatrix.unknown",
   },
   "bridge-origin-mismatch": {
-    description: "Fail fast when parentUrl origin does not match the call view origin.",
+    description:
+      "Fail fast when parentUrl origin does not match the call view origin, exercised through buildWidgetUrl() " +
+      "— the exact function main.cjs's ecUrl() delegates to (not a re-implementation).",
     callOrigin: CALL_ORIGIN,
     parentOrigin: "https://shell.selfmatrix.test",
-    steps: [fromWidget("content_loaded", {})],
+    viaBuildWidgetUrl: true,
     expectedFailure: "origin_mismatch",
   },
   "bridge-message-origin-mismatch": {
@@ -67,15 +106,17 @@ const scenarios = {
     steps: [fromWidget("content_loaded", {})],
     expectedFailure: "widget_id_mismatch",
   },
+  "bridge-source-not-self": {
+    description:
+      "Reject Widget API messages whose postMessage source is not the call view's own window — a same-origin " +
+      "iframe or devtools console could otherwise spoof origin/widgetId and pass validation.",
+    callOrigin: CALL_ORIGIN,
+    parentOrigin: SHELL_ORIGIN,
+    spoofSource: true,
+    steps: [fromWidget("content_loaded", {})],
+    expectedFailure: "source_not_self",
+  },
 };
-
-function fromWidget(action, data) {
-  return { api: "fromWidget", action, data };
-}
-
-function toWidget(action, data) {
-  return { api: "toWidget", action, data };
-}
 
 function makeFromWidgetRequest(step, index, widgetId) {
   return {
@@ -125,6 +166,14 @@ function createPreloadHarness(callOrigin) {
   vm.runInNewContext(readFileSync(preloadPath, "utf8"), context, { filename: preloadPath });
 
   return {
+    // source を明示できる版。通常の widget メッセージは自分自身の window から来る
+    // (source === fakeWindow) が、devtools やスプーフィングを模すため任意の source を渡せる。
+    dispatchFromWidgetRaw(request, origin, source) {
+      const before = ipcMessages.length;
+      const handler = windowListeners.get("message");
+      handler({ data: request, origin, source });
+      return ipcMessages.slice(before);
+    },
     dispatchFromWidget(request, origin = callOrigin) {
       const before = ipcMessages.length;
       const handler = windowListeners.get("message");
@@ -139,7 +188,79 @@ function createPreloadHarness(callOrigin) {
       return ipcMessages.slice(before);
     },
     postedMessages,
+    fakeWindow,
   };
+}
+
+function checkResponseExpectation(expect, responsePayload) {
+  const outcome = responsePayload && responsePayload.error ? "error" : "success";
+  if (outcome !== expect.outcome) {
+    return {
+      ok: false,
+      reason: `expected outcome "${expect.outcome}" but got "${outcome}" (response=${JSON.stringify(responsePayload)})`,
+    };
+  }
+  if (expect.outcome === "error" && expect.messageIncludes) {
+    const message = (responsePayload && responsePayload.error && responsePayload.error.message) || "";
+    if (!message.includes(expect.messageIncludes)) {
+      return {
+        ok: false,
+        reason: `expected error message to include "${expect.messageIncludes}" but got "${message}"`,
+      };
+    }
+  }
+  if (expect.match) {
+    for (const [key, value] of Object.entries(expect.match)) {
+      const actual = responsePayload ? responsePayload[key] : undefined;
+      if (actual !== value) {
+        return {
+          ok: false,
+          reason: `expected response.${key} === ${JSON.stringify(value)} but got ${JSON.stringify(actual)}`,
+        };
+      }
+    }
+  }
+  return { ok: true };
+}
+
+function handleForwardedMessage(ipcMessage, expectedRequest, scenario, kind = "request") {
+  if (!ipcMessage) {
+    return {
+      kind,
+      channel: null,
+      request: expectedRequest,
+      validation: { ok: false, reasons: [{ code: "not_forwarded", message: "Preload did not forward the message to IPC." }] },
+    };
+  }
+
+  const validation = protocol.validateWidgetBridgeMessage(ipcMessage.payload, {
+    expectedOrigin: scenario.callOrigin,
+    expectedWidgetId: protocol.WIDGET_ID,
+  });
+  return {
+    kind,
+    channel: ipcMessage.channel,
+    request: expectedRequest,
+    forwarded: ipcMessage.payload,
+    validation,
+  };
+}
+
+function runBuildWidgetUrlScenario(scenario, transcript) {
+  try {
+    const url = protocol.buildWidgetUrl({
+      callOrigin: scenario.callOrigin,
+      parentOrigin: scenario.parentOrigin,
+      widgetId: protocol.WIDGET_ID,
+      ...WIDGET_URL_PARAMS,
+    });
+    transcript.failure = { code: "expected_throw_but_succeeded", url };
+    transcript.pass = false;
+  } catch (error) {
+    transcript.failure = { code: "origin_mismatch", message: String(error && error.message ? error.message : error) };
+    transcript.pass = scenario.expectedFailure === "origin_mismatch";
+  }
+  return transcript;
 }
 
 function runScenario(name) {
@@ -148,9 +269,7 @@ function runScenario(name) {
     throw new Error(`Unknown scenario: ${name}`);
   }
 
-  const callUrl = `${scenario.callOrigin}/ec/index.html`;
-  const parentUrl = `${scenario.parentOrigin}/desktop-shell.html`;
-  const widgetId = scenario.widgetId || nativeMain.WIDGET_ID;
+  const widgetId = scenario.widgetId || protocol.WIDGET_ID;
   const transcript = {
     scenario: name,
     description: scenario.description,
@@ -162,91 +281,73 @@ function runScenario(name) {
     events: [],
   };
 
-  try {
-    nativeMain.assertSameOrigin(callUrl, parentUrl);
-  } catch (error) {
-    transcript.failure = {
-      code: "origin_mismatch",
-      message: String(error && error.message ? error.message : error),
-    };
-    transcript.pass = scenario.expectedFailure === "origin_mismatch";
-    return transcript;
+  if (scenario.viaBuildWidgetUrl) {
+    return runBuildWidgetUrlScenario(scenario, transcript);
   }
 
   const preload = createPreloadHarness(scenario.callOrigin);
+  const stepChecks = [];
+
   for (const [index, step] of scenario.steps.entries()) {
     if (step.api === "fromWidget") {
       const request = makeFromWidgetRequest(step, index, widgetId);
-      const forwarded = preload.dispatchFromWidget(request, scenario.messageOrigin || scenario.callOrigin);
+      const dispatchOrigin = scenario.messageOrigin || scenario.callOrigin;
+      const forwarded = scenario.spoofSource
+        ? preload.dispatchFromWidgetRaw(request, dispatchOrigin, { spoofed: true })
+        : preload.dispatchFromWidget(request, dispatchOrigin);
       const event = handleForwardedMessage(forwarded[0], request, scenario);
       transcript.events.push(event);
       if (!event.validation.ok) {
         transcript.failure = event.validation;
+        stepChecks.push({ action: step.action, ok: false, reason: "rejected_by_validation" });
         break;
       }
-      if (!request.response) {
-        const response = { ...request, response: nativeMain.responseForWidgetRequest(request) };
-        const responseForwarded = preload.emitToPreload("widget-api-response", response);
-        transcript.events.push(handleForwardedMessage(responseForwarded[0], response, scenario, "response-loopback"));
-      }
+
+      const response = { ...request, response: protocol.responseForWidgetRequest(request) };
+      const responseForwarded = preload.emitToPreload("widget-api-response", response);
+      const responseEvent = handleForwardedMessage(responseForwarded[0], response, scenario, "response-loopback");
+      transcript.events.push(responseEvent);
+
+      const responsePayload = responseEvent.forwarded && responseEvent.forwarded.data && responseEvent.forwarded.data.response;
+      const check = checkResponseExpectation(step.expect, responsePayload);
+      stepChecks.push({ action: step.action, ok: check.ok, reason: check.reason, expect: step.expect, actual: responsePayload });
       continue;
     }
 
-    const request = nativeMain.createWidgetRequest(
+    const request = protocol.createWidgetRequest(
       step.action,
       step.data,
       `native-prototype-harness-${String(index + 1).padStart(3, "0")}`,
     );
     const forwarded = preload.emitToPreload("widget-api-to-widget", request);
-    transcript.events.push(handleForwardedMessage(forwarded[0], request, scenario));
+    const event = handleForwardedMessage(forwarded[0], request, scenario);
+    transcript.events.push(event);
+    stepChecks.push({ action: step.action, ok: event.validation.ok, reason: event.validation.ok ? undefined : "not_forwarded" });
   }
 
+  transcript.stepChecks = stepChecks;
+
   if (scenario.expectedFailure) {
-    transcript.pass = transcript.failure?.code === scenario.expectedFailure;
+    const reasons = transcript.failure?.reasons || [];
+    transcript.pass = reasons.some((reason) => reason.code === scenario.expectedFailure);
     return transcript;
   }
 
   const requestEvents = transcript.events.filter((event) => event.kind !== "response-loopback");
   const actions = requestEvents.map((event) => event.request.action);
   const missing = (scenario.expectedActions || []).filter((action) => !actions.includes(action));
-  const errorEvent = transcript.events.find((event) => event.response?.response?.error);
-  const expectedErrorMatched =
-    !scenario.expectedErrorAction || errorEvent?.response?.action === scenario.expectedErrorAction;
+  const allValidationsOk = transcript.events.every((event) => event.validation.ok);
+  const allStepChecksOk = stepChecks.every((check) => check.ok);
 
-  transcript.pass =
-    missing.length === 0 &&
-    expectedErrorMatched &&
-    transcript.events.every((event) => event.validation.ok && event.channel === "widget-api-message");
+  transcript.pass = missing.length === 0 && allValidationsOk && allStepChecksOk;
   if (missing.length > 0) {
     transcript.failure = { code: "missing_actions", missing };
-  } else if (!expectedErrorMatched) {
-    transcript.failure = { code: "missing_expected_error", expectedAction: scenario.expectedErrorAction };
+  } else if (!allStepChecksOk) {
+    transcript.failure = { code: "response_mismatch", stepChecks: stepChecks.filter((check) => !check.ok) };
+  } else if (!allValidationsOk) {
+    transcript.failure = { code: "validation_failed", events: transcript.events.filter((event) => !event.validation.ok) };
   }
   return transcript;
-}
-
-function handleForwardedMessage(ipcMessage, expectedRequest, scenario, kind = "request") {
-  if (!ipcMessage) {
-    return {
-      kind,
-      channel: null,
-      request: expectedRequest,
-      validation: { ok: false, code: "not_forwarded", message: "Preload did not forward the message to IPC." },
-    };
-  }
-
-  const validation = nativeMain.validateWidgetBridgeMessage(ipcMessage.payload, {
-    expectedOrigin: scenario.callOrigin,
-    expectedWidgetId: nativeMain.WIDGET_ID,
-  });
-  return {
-    kind,
-    channel: ipcMessage.channel,
-    request: expectedRequest,
-    forwarded: ipcMessage.payload,
-    validation,
-    response: expectedRequest.response ? expectedRequest : undefined,
-  };
 }
 
 function parseArgs(argv) {

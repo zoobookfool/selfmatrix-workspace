@@ -30,18 +30,33 @@
       },
       "validation": {
         "ok": false,
-        "code": "widget_id_mismatch",
-        "message": "Unexpected widgetId: unexpected-widget",
-        "expectedWidgetId": "selfmatrix-native-prototype-call",
-        "actualWidgetId": "unexpected-widget"
+        "reasons": [
+          {
+            "code": "widget_id_mismatch",
+            "message": "Unexpected widgetId: unexpected-widget",
+            "expectedWidgetId": "selfmatrix-native-prototype-call",
+            "actualWidgetId": "unexpected-widget"
+          }
+        ]
       }
     }
   ],
   "failure": {
     "ok": false,
-    "code": "widget_id_mismatch",
-    "message": "Unexpected widgetId: unexpected-widget",
-    "expectedWidgetId": "selfmatrix-native-prototype-call",
-    "actualWidgetId": "unexpected-widget"
-  }
+    "reasons": [
+      {
+        "code": "widget_id_mismatch",
+        "message": "Unexpected widgetId: unexpected-widget",
+        "expectedWidgetId": "selfmatrix-native-prototype-call",
+        "actualWidgetId": "unexpected-widget"
+      }
+    ]
+  },
+  "stepChecks": [
+    {
+      "action": "content_loaded",
+      "ok": false,
+      "reason": "rejected_by_validation"
+    }
+  ]
 }

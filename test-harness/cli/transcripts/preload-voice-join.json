@@ -29,7 +29,8 @@
         "sourceIsSelf": true
       },
       "validation": {
-        "ok": true
+        "ok": true,
+        "reasons": []
       }
     },
     {
@@ -60,17 +61,8 @@
         "sourceIsSelf": true
       },
       "validation": {
-        "ok": true
-      },
-      "response": {
-        "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-harness-001",
-        "action": "supported_api_versions",
-        "data": {},
-        "response": {
-          "supported_versions": []
-        }
+        "ok": true,
+        "reasons": []
       }
     },
     {
@@ -95,7 +87,8 @@
         "sourceIsSelf": true
       },
       "validation": {
-        "ok": true
+        "ok": true,
+        "reasons": []
       }
     },
     {
@@ -122,15 +115,8 @@
         "sourceIsSelf": true
       },
       "validation": {
-        "ok": true
-      },
-      "response": {
-        "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-harness-002",
-        "action": "content_loaded",
-        "data": {},
-        "response": {}
+        "ok": true,
+        "reasons": []
       }
     },
     {
@@ -161,7 +147,8 @@
         "sourceIsSelf": true
       },
       "validation": {
-        "ok": true
+        "ok": true,
+        "reasons": []
       }
     },
     {
@@ -192,7 +179,8 @@
         "sourceIsSelf": true
       },
       "validation": {
-        "ok": true
+        "ok": true,
+        "reasons": []
       }
     },
     {
@@ -225,19 +213,41 @@
         "sourceIsSelf": true
       },
       "validation": {
-        "ok": true
-      },
-      "response": {
-        "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-harness-004",
-        "action": "io.element.device_mute",
-        "data": {
-          "audio_enabled": true,
-          "video_enabled": false
-        },
-        "response": {}
+        "ok": true,
+        "reasons": []
       }
+    }
+  ],
+  "stepChecks": [
+    {
+      "action": "supported_api_versions",
+      "ok": true,
+      "expect": {
+        "outcome": "success"
+      },
+      "actual": {
+        "supported_versions": []
+      }
+    },
+    {
+      "action": "content_loaded",
+      "ok": true,
+      "expect": {
+        "outcome": "success"
+      },
+      "actual": {}
+    },
+    {
+      "action": "io.element.join",
+      "ok": true
+    },
+    {
+      "action": "io.element.device_mute",
+      "ok": true,
+      "expect": {
+        "outcome": "success"
+      },
+      "actual": {}
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "scenario": "bridge-origin-mismatch",
-  "description": "Fail fast when parentUrl origin does not match the call view origin.",
+  "description": "Fail fast when parentUrl origin does not match the call view origin, exercised through buildWidgetUrl() — the exact function main.cjs's ecUrl() delegates to (not a re-implementation).",
   "widgetId": "selfmatrix-native-prototype-call",
   "callOrigin": "https://app.selfmatrix.test",
   "parentOrigin": "https://shell.selfmatrix.test",

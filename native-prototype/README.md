@@ -34,6 +34,29 @@ memory probe:
 npm run memory
 ```
 
+test (smoke + memory を束ねたもの):
+
+```powershell
+npm test
+```
+
+`npm test` は Electron の実起動 (smoke + memory probe) が必要です。Electron を起動できない
+環境 (headless CI で xvfb 等の準備がない場合など) では失敗します。
+
+## 同一オリジン不変条件
+
+Cinny shell (`desktop-shell.html`) と Element Call widget (`/ec/index.html`) は**同一 origin
+で配信すること**が前提です。Element Call 実物は `parentUrl` の origin を widget message の
+`targetOrigin` に使うため、shell と call view が別 origin だと `postMessage` が届きません
+(検証経緯は [desktop-window-spike.md](../spikes/desktop-window-spike.md) Phase 2b を参照)。
+
+この不変条件は起動時の assert で保証されています。`src/widget-bridge-protocol.cjs` の
+`buildWidgetUrl()` が call URL を組み立てる際に必ず `assertSameOrigin()` を呼び、`ecUrl()`
+(`src/main.cjs`) はこの `buildWidgetUrl()` への薄い委譲です。origin が不一致だと
+`buildWidgetUrl()` が例外を投げてアプリの起動に失敗します — 実際にこの経路を通して
+不一致を検証するテストは `test-harness/cli/widget-protocol.mjs` の `bridge-origin-mismatch`
+シナリオにあります。
+
 ローカル artifact の場所は環境変数で上書きできます。
 
 ```powershell

@@ -1,0 +1,27 @@
+{
+  "note": "npm run test:web (playwright test) の実行結果サマリ。個人パスを含む生の --reporter=json 出力はコミットしない。",
+  "date": "2026-07-07",
+  "command": "npx playwright test",
+  "playwrightVersion": "1.61.1",
+  "browser": "chromium (bundled, npx playwright install 済み)",
+  "testDir": "test-harness/web/tests",
+  "pass": true,
+  "stats": {
+    "expected": 2,
+    "unexpected": 0,
+    "flaky": 0,
+    "skipped": 0
+  },
+  "specs": [
+    {
+      "file": "stream-context.spec.mjs",
+      "title": "stream tile context menu exposes stream volume controls",
+      "status": "passed"
+    },
+    {
+      "file": "stream-context.spec.mjs",
+      "title": "speaker overlay context menu exposes per-user volume controls",
+      "status": "passed"
+    }
+  ]
+}

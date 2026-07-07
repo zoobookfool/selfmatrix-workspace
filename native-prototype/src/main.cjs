@@ -10,11 +10,24 @@ const http = require("node:http");
 const os = require("node:os");
 const path = require("node:path");
 
+// Electron 非依存の Widget API bridge 純関数群は widget-bridge-protocol.cjs に集約されている。
+// main.cjs はこれらを自前で再実装せず、常にこのモジュールへ委譲する
+// (test-harness/cli/widget-protocol.mjs も同じモジュールを直接 require するため、
+// 二重実装によるロジックのズレが起きない)。
+const {
+  WIDGET_ID,
+  assertSameOrigin,
+  buildWidgetUrl,
+  createWidgetRequest,
+  isWidgetApiMessage,
+  responseForWidgetRequest,
+  validateWidgetBridgeMessage,
+} = require("./widget-bridge-protocol.cjs");
+
 const appRoot = path.resolve(__dirname, "..");
 const evidenceDir = path.join(appRoot, "evidence");
 const isSmoke = process.argv.includes("--smoke");
 const isMemoryProbe = process.argv.includes("--memory-probe");
-const WIDGET_ID = "selfmatrix-native-prototype-call";
 
 const state = {
   origin: null,
@@ -125,69 +138,6 @@ function startServer() {
   });
 }
 
-function responseForWidgetRequest(request) {
-  switch (request.action) {
-    case "supported_api_versions":
-      return { supported_versions: [] };
-    case "content_loaded":
-    case "io.element.device_mute":
-    case "im.vector.hangup":
-    case "org.matrix.msc2974.request_capabilities":
-      return {};
-    case "get_openid":
-      return { state: "blocked" };
-    default:
-      return { error: { message: `Unknown widget action: ${request.action}` } };
-  }
-}
-
-function isWidgetApiMessage(data) {
-  return (
-    data &&
-    typeof data === "object" &&
-    (data.api === "fromWidget" || data.api === "toWidget") &&
-    typeof data.requestId === "string" &&
-    typeof data.widgetId === "string" &&
-    typeof data.action === "string"
-  );
-}
-
-function validateWidgetBridgeMessage(message, expected) {
-  if (!message || typeof message !== "object") {
-    return { ok: false, code: "invalid_message", message: "Bridge message must be an object." };
-  }
-  if (!isWidgetApiMessage(message.data)) {
-    return { ok: false, code: "invalid_widget_api_message", message: "Message does not match Widget API shape." };
-  }
-  if (expected.expectedWidgetId && message.data.widgetId !== expected.expectedWidgetId) {
-    return {
-      ok: false,
-      code: "widget_id_mismatch",
-      message: `Unexpected widgetId: ${message.data.widgetId}`,
-      expectedWidgetId: expected.expectedWidgetId,
-      actualWidgetId: message.data.widgetId,
-    };
-  }
-  if (expected.expectedOrigin && message.origin !== expected.expectedOrigin) {
-    return {
-      ok: false,
-      code: "origin_mismatch",
-      message: `Unexpected widget origin: ${message.origin}`,
-      expectedOrigin: expected.expectedOrigin,
-      actualOrigin: message.origin,
-    };
-  }
-  return { ok: true };
-}
-
-function assertSameOrigin(callUrl, parentUrl) {
-  const callOrigin = new URL(callUrl).origin;
-  const parentOrigin = new URL(parentUrl).origin;
-  if (callOrigin !== parentOrigin) {
-    throw new Error(`Widget parentUrl origin must match call view origin: ${parentOrigin} !== ${callOrigin}`);
-  }
-}
-
 function createMainWindow() {
   const win = new BrowserWindow({
     title: "SelfMatrix Native Prototype",
@@ -229,12 +179,11 @@ function createCallWindow() {
 }
 
 function ecUrl() {
-  const parentUrl = `${state.origin}/desktop-shell.html`;
-  const callUrl = `${state.origin}/ec/index.html`;
-  assertSameOrigin(callUrl, parentUrl);
-  const params = new URLSearchParams({
+  // URL 組み立てと assertSameOrigin 呼び出しは buildWidgetUrl() 内にある。ここはその薄い委譲。
+  return buildWidgetUrl({
+    callOrigin: state.origin,
+    parentOrigin: state.origin,
     widgetId: WIDGET_ID,
-    parentUrl,
     roomId: "!prototype:selfmatrix.test",
     userId: "@prototype:selfmatrix.test",
     deviceId: "NATIVEPROTOTYPE",
@@ -246,7 +195,6 @@ function ecUrl() {
     hideVideoButton: "true",
     theme: "dark",
   });
-  return `${callUrl}?${params.toString()}`;
 }
 
 async function ensureCallView() {
@@ -307,16 +255,6 @@ async function attachCallView() {
     state.callViewState = "attached";
     updateCallViewBounds();
   }
-}
-
-function createWidgetRequest(action, data, requestId) {
-  return {
-    api: "toWidget",
-    widgetId: WIDGET_ID,
-    requestId,
-    action,
-    data,
-  };
 }
 
 function widgetRequest(action, data) {
@@ -402,10 +340,17 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// bridge の検証で拒否されたメッセージ (widget-message-rejected) は「action が観測された」判定から
+// 除外する。拒否メッセージにも data.action は残っているため、これを除外しないと
+// widgetId/origin/sourceIsSelf 検証が壊れて全メッセージが拒否されていても pass:true になり得る。
+function acceptedWidgetMessages() {
+  return state.widgetMessages.filter((message) => message.type !== "widget-message-rejected");
+}
+
 async function waitForWidgetAction(action, timeoutMs = 8000) {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
-    if (state.widgetMessages.some((message) => message.data?.action === action)) return true;
+    if (acceptedWidgetMessages().some((message) => message.data?.action === action)) return true;
     await wait(100);
   }
   return false;
@@ -425,15 +370,15 @@ async function runSmoke() {
   await wait(500);
 
   const hardNavigationCount = state.navigationEvents.filter((event) => event.isMainFrame && !event.isInPlace).length;
-  const sawJoinRequest = state.widgetMessages.some(
+  const sawJoinRequest = acceptedWidgetMessages().some(
     (message) => message.data?.api === "toWidget" && message.data?.action === "io.element.join",
   );
   const result = {
     pass:
       Boolean(sawContentLoaded) &&
       state.callViewState === "attached" &&
-      state.widgetMessages.some((message) => message.data?.action === "supported_api_versions") &&
-      state.widgetMessages.some((message) => message.data?.action === "content_loaded") &&
+      acceptedWidgetMessages().some((message) => message.data?.action === "supported_api_versions") &&
+      acceptedWidgetMessages().some((message) => message.data?.action === "content_loaded") &&
       sawJoinRequest &&
       hardNavigationCount === 1,
     electron: process.versions.electron,
@@ -524,14 +469,15 @@ async function runMemoryProbe() {
   snapshots.push(await memorySnapshot("shell-only"));
 
   await ensureCallView();
-  await waitForWidgetAction("content_loaded");
+  const sawContentLoaded = await waitForWidgetAction("content_loaded");
   snapshots.push(await memorySnapshot("call-view-booted"));
 
   const syntheticStreams = await injectSyntheticViewerStreams();
   snapshots.push(await memorySnapshot("call-view-with-2-synthetic-viewer-streams"));
 
   const result = {
-    pass: snapshots.length === 3 && syntheticStreams.length === 2,
+    pass: snapshots.length === 3 && syntheticStreams.length === 2 && Boolean(sawContentLoaded),
+    sawContentLoaded,
     note: "Third snapshot uses two local canvas capture streams in the call renderer. Real LiveKit decode remains an M1 gate.",
     electron: process.versions.electron,
     chrome: process.versions.chrome,
@@ -577,12 +523,3 @@ if (app) {
 } else if (require.main === module) {
   throw new Error("native-prototype requires Electron. Use `electron src/main.cjs`.");
 }
-
-module.exports = {
-  WIDGET_ID,
-  assertSameOrigin,
-  createWidgetRequest,
-  isWidgetApiMessage,
-  responseForWidgetRequest,
-  validateWidgetBridgeMessage,
-};

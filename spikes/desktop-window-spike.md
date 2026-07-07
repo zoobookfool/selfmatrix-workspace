@@ -200,6 +200,14 @@ Electron の `WebContentsView` に EC widget / LiveKit 通話を載せ、同じ 
 - 別窓内から配信開始し、720p/1080p/ソース解像度・15/30/60fps の選択を Electron 側 picker と EC constraints へ接続する実装は可能寄り
 - 未確認: Windows の system audio / loopback、共有中の view 再親子付け、実 LiveKit 送信 track の維持
 
+## Electron 既知バグ #47247 / #44652 の再現有無 (2026-07-07、M0 クローズ)
+
+Electron #47247 (WebContentsView 再親子付けでクラッシュ/無反応) / #44652 (`removeChildView` 後の
+表示残留) は、**この prototype の条件 (Electron 43.0.0 固定) では再現しなかった**。
+
+evidence: [test-harness/electron-smoke/evidence/reparent-result.json](../test-harness/electron-smoke/evidence/reparent-result.json)
+(`loadCount=1`、`unloads=0`、10 回の再親子付け後も view の表示残留なし、`render-process-gone` の記録なし)。
+
 ## 2026-07-07 時点の暫定判断
 
 **ネイティブ版の作成は「小型 prototype へ進めてよい」。**

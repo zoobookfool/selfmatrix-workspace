@@ -1,10 +1,10 @@
 {
-  "scenario": "bridge-message-origin-mismatch",
-  "description": "Reject Widget API messages whose event origin is not the call view origin.",
+  "scenario": "bridge-source-not-self",
+  "description": "Reject Widget API messages whose postMessage source is not the call view's own window — a same-origin iframe or devtools console could otherwise spoof origin/widgetId and pass validation.",
   "widgetId": "selfmatrix-native-prototype-call",
   "callOrigin": "https://app.selfmatrix.test",
   "parentOrigin": "https://app.selfmatrix.test",
-  "messageOrigin": "https://evil.selfmatrix.test",
+  "messageOrigin": "https://app.selfmatrix.test",
   "pass": true,
   "events": [
     {
@@ -25,17 +25,15 @@
           "action": "content_loaded",
           "data": {}
         },
-        "origin": "https://evil.selfmatrix.test",
-        "sourceIsSelf": true
+        "origin": "https://app.selfmatrix.test",
+        "sourceIsSelf": false
       },
       "validation": {
         "ok": false,
         "reasons": [
           {
-            "code": "origin_mismatch",
-            "message": "Unexpected widget origin: https://evil.selfmatrix.test",
-            "expectedOrigin": "https://app.selfmatrix.test",
-            "actualOrigin": "https://evil.selfmatrix.test"
+            "code": "source_not_self",
+            "message": "Bridge message did not originate from the call view's own window (postMessage source mismatch)."
           }
         ]
       }
@@ -45,10 +43,8 @@
     "ok": false,
     "reasons": [
       {
-        "code": "origin_mismatch",
-        "message": "Unexpected widget origin: https://evil.selfmatrix.test",
-        "expectedOrigin": "https://app.selfmatrix.test",
-        "actualOrigin": "https://evil.selfmatrix.test"
+        "code": "source_not_self",
+        "message": "Bridge message did not originate from the call view's own window (postMessage source mismatch)."
       }
     ]
   },

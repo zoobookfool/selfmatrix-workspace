@@ -1,6 +1,6 @@
 {
-  "scenario": "unknown-action",
-  "description": "Unknown fromWidget action is rejected by the native implementation response policy.",
+  "scenario": "get-openid-blocked",
+  "description": "get_openid must resolve with state: blocked (native prototype never issues OpenID tokens).",
   "widgetId": "selfmatrix-native-prototype-call",
   "callOrigin": "https://app.selfmatrix.test",
   "parentOrigin": "https://app.selfmatrix.test",
@@ -14,7 +14,7 @@
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-001",
-        "action": "com.selfmatrix.unknown",
+        "action": "get_openid",
         "data": {}
       },
       "forwarded": {
@@ -22,7 +22,7 @@
           "api": "fromWidget",
           "widgetId": "selfmatrix-native-prototype-call",
           "requestId": "widgetapi-harness-001",
-          "action": "com.selfmatrix.unknown",
+          "action": "get_openid",
           "data": {}
         },
         "origin": "https://app.selfmatrix.test",
@@ -40,12 +40,10 @@
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
         "requestId": "widgetapi-harness-001",
-        "action": "com.selfmatrix.unknown",
+        "action": "get_openid",
         "data": {},
         "response": {
-          "error": {
-            "message": "Unknown widget action: com.selfmatrix.unknown"
-          }
+          "state": "blocked"
         }
       },
       "forwarded": {
@@ -53,12 +51,10 @@
           "api": "fromWidget",
           "widgetId": "selfmatrix-native-prototype-call",
           "requestId": "widgetapi-harness-001",
-          "action": "com.selfmatrix.unknown",
+          "action": "get_openid",
           "data": {},
           "response": {
-            "error": {
-              "message": "Unknown widget action: com.selfmatrix.unknown"
-            }
+            "state": "blocked"
           }
         },
         "origin": "https://app.selfmatrix.test",
@@ -72,16 +68,16 @@
   ],
   "stepChecks": [
     {
-      "action": "com.selfmatrix.unknown",
+      "action": "get_openid",
       "ok": true,
       "expect": {
-        "outcome": "error",
-        "messageIncludes": "Unknown widget action: com.selfmatrix.unknown"
+        "outcome": "success",
+        "match": {
+          "state": "blocked"
+        }
       },
       "actual": {
-        "error": {
-          "message": "Unknown widget action: com.selfmatrix.unknown"
-        }
+        "state": "blocked"
       }
     }
   ]

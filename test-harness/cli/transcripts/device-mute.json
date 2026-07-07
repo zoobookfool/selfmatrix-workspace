@@ -35,7 +35,8 @@
         "sourceIsSelf": true
       },
       "validation": {
-        "ok": true
+        "ok": true,
+        "reasons": []
       }
     },
     {
@@ -68,19 +69,19 @@
         "sourceIsSelf": true
       },
       "validation": {
-        "ok": true
-      },
-      "response": {
-        "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-harness-001",
-        "action": "io.element.device_mute",
-        "data": {
-          "audio_enabled": true,
-          "video_enabled": false
-        },
-        "response": {}
+        "ok": true,
+        "reasons": []
       }
+    }
+  ],
+  "stepChecks": [
+    {
+      "action": "io.element.device_mute",
+      "ok": true,
+      "expect": {
+        "outcome": "success"
+      },
+      "actual": {}
     }
   ]
 }
