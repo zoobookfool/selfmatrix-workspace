@@ -43,6 +43,65 @@
 
 const { ipcRenderer } = require("electron");
 
+// M1 step 3c-2 (localStorage 契約の実機対応、README「cinny の nativeBridge.ts 契約への適合」節
+// 参照): call view (EC) は mainWindow (cinny) とは別の session partition (CALL_VIEW_PARTITION)
+// で動いているため、同一オリジンでも localStorage は共有されない (web 版の埋め込み iframe と違い、
+// Electron の Storage はオリジンではなく session partition 単位で分離される)。web 版で成立していた
+// 「cinny が書く matrix-setting-* を EC が読む」契約 (element-call/src/settings/settings.ts,
+// cinny/src/app/features/call/screenShareSettings.ts) をここで橋渡しする: openCallView() が
+// state.pendingLocalStorageSnapshot に置いたスナップショットを、EC のバンドルが評価される
+// (Setting のコンストラクタが localStorage.getItem() を読む) より確実に前のタイミング — つまり
+// この preload 自身のトップレベル評価時点 — で同期的に取得して書き込む。
+// ipcRenderer.sendSync は preload の実行をブロックするが、この一度きりの読み出しは軽量であり、
+// EC 本体のスクリプト実行がこの preload より後に走ることを保証する Electron の preload 実行順序
+// (webPreferences.preload・registerPreloadScript はいずれもページの <script> より必ず先に走る)
+// を利用している。
+// 診断/evidence 用の ack 込みで、渡されたスナップショットを実際に localStorage へ書き込む
+// 共有ヘルパー。H3 (受け入れレビュー修正) で pending スナップショット (preload 実行時の
+// 一度きりの sendSync) と live 更新 (共有開始のたびに main が push する
+// native:prime-localstorage) の 2 経路がこの書き込みロジックを共有するために抽出した。
+function writeLocalStorageSnapshot(snapshot, source) {
+  if (!snapshot || typeof snapshot !== "object") return;
+  const primedKeys = [];
+  for (const [key, value] of Object.entries(snapshot)) {
+    if (typeof value !== "string") continue;
+    try {
+      localStorage.setItem(key, value);
+      primedKeys.push(key);
+    } catch (error) {
+      // localStorage 自体が使えない (プライベートモード相当) 場合でも EC の動作は継続させる —
+      // 契約が使えないだけで致命的ではない。
+    }
+  }
+  // 診断/evidence 用の ack。中身 (値) は送り返さず、キー名だけを報告する (README の
+  // 「dev パスワードを証跡に書かない」原則と同様、必要以上の情報を main 側の evidence に
+  // 残さないための最小化)。source でどちらの経路由来かを区別できるようにしてある。
+  try {
+    ipcRenderer.send("native:localstorage-primed", { keys: primedKeys, source });
+  } catch (error) {
+    // ignore
+  }
+}
+
+(function primeLocalStorageFromShell() {
+  let snapshot;
+  try {
+    snapshot = ipcRenderer.sendSync("native:get-pending-localstorage-snapshot");
+  } catch (error) {
+    return;
+  }
+  writeLocalStorageSnapshot(snapshot, "pending-snapshot");
+})();
+
+// H3 (受け入れレビュー修正、major): 「共有開始時に再同期」する live 更新経路。main.cjs の
+// updateCallLocalStorage() (cinny の NativeCallControl.toggleScreenshare() がクリック前に
+// 呼ぶ transport.updateCallLocalStorage() の main 側実体) がこの call view へ直接 send する。
+// 上の primeLocalStorageFromShell() (1 ロード 1 回きりの pending スナップショット、main.cjs の
+// H6 コメント参照) とは完全に独立した経路 — state.pendingLocalStorageSnapshot は経由しない。
+ipcRenderer.on("native:prime-localstorage", (_event, snapshot) => {
+  writeLocalStorageSnapshot(snapshot, "live-update");
+});
+
 const TARGET_SELECTOR = '[role="button"][data-kind="primary"]';
 
 // CallControl.ts (src/app/plugins/call/CallControl.ts) と同一のセレクタ文字列。
@@ -115,9 +174,24 @@ function leaveButton() {
   return document.querySelector(LEAVE_SELECTOR);
 }
 
+// M1 step 3c-3 (受け入れレビューで発覚、修正): web 版 CallControl.ts と同じ
+// `leaveButton().previousElementSibling` ヒューリスティックを移植したが、この EC ビルド
+// (element-call/src/components/CallFooter.tsx — SelfMatrix fork でリファクタ済み) の実 DOM を
+// 実機確認したところ、end-call ボタンの直前の要素は「reactions ボタン」ではなく screenshare
+// ボタンをラップする無関係な `<div>` だった (このビルドにはそもそも reactions 送信ボタン自体が
+// 描画されていない — `FooterState.reactionData`/`reactionIdentifier` は型/state 層にしか存在せず
+// CallFooter.tsx の JSX では一切参照されない、未配線と見られる)。無条件に previousElementSibling
+// を採用すると、この無関係な `<div>` に `.click()` しても何も起きないのに `{ok:true}` を返して
+// しまう (偽陽性)。実際にクリック可能なコントロール (BUTTON 要素、または role=button/switch) で
+// あることを確認できた場合のみ対象として採用し、そうでなければ target_not_found として正直に
+// 報告する。
 function reactionsButton() {
   const leave = leaveButton();
-  return leave ? leave.previousElementSibling : null;
+  const sibling = leave ? leave.previousElementSibling : null;
+  if (!sibling) return null;
+  const role = sibling.getAttribute && sibling.getAttribute("role");
+  const isClickable = sibling.tagName === "BUTTON" || role === "button" || role === "switch";
+  return isClickable ? sibling : null;
 }
 
 function spotlightButton() {

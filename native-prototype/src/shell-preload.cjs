@@ -81,7 +81,13 @@ function claimWidgetTransport() {
     // base (`/ec/` または `/public/element-call/`) prefix を検証してから初めて loadURL する
     // (nativeBridge.ts の openCallView() 契約コメント、design の URL 検証要件参照)。不合格なら
     // ここで reject する (call view は絶対にロードされない)。
-    openCallView: (completeWidgetUrl) => ipcRenderer.invoke("native:open-call-view", completeWidgetUrl),
+    // M1 step 3c-2: 第 2 引数 (localStorageSnapshot、任意) は cinny の NativeCallEmbed が
+    // collectNativeCallLocalStorageSnapshot() で集めた matrix-setting-* のスナップショット。
+    // ここでは中身を解釈せずそのまま main へ渡すだけ (design の「中継するだけ」方針をここでも
+    // 踏襲する) — main.cjs の openCallView()/state.pendingLocalStorageSnapshot と
+    // call-control-preload.cjs の primeLocalStorageFromShell() 参照。
+    openCallView: (completeWidgetUrl, localStorageSnapshot) =>
+      ipcRenderer.invoke("native:open-call-view", completeWidgetUrl, localStorageSnapshot),
     // M1 step 3b: 通話 View を閉じる (NativeCallEmbed の dispose/hangup 時に呼ばれる想定)。
     closeCallView: () => ipcRenderer.invoke("native:close-call-view"),
     // M1 step 2 (B 単体実証): NativeCallControl 相当の RPC 入口。ipcMain.handle 側 (main.cjs) が
@@ -98,6 +104,12 @@ function claimWidgetTransport() {
     // 安全なラッパー (callControlToggle()) を公開する。到達境界の再設計は design の「残存リスク」節と
     // 合わせて M2 セキュリティ監査で見直すこと。
     callControlInvoke: (action) => ipcRenderer.invoke("native:call-control:invoke", action),
+    // H3 (受け入れレビュー修正、major): 「共有開始時に再同期」する live localStorage 契約の
+    // host 側入口。main.cjs の updateCallLocalStorage() (native:update-call-localstorage) を
+    // 薄く呼ぶだけ — cinny 側 NativeCallControl.toggleScreenshare() がこれを await してから
+    // callControlInvoke() の RPC を実行する契約 (nativeBridge.ts の updateCallLocalStorage()
+    // 契約コメント参照)。
+    updateCallLocalStorage: (snapshot) => ipcRenderer.invoke("native:update-call-localstorage", snapshot),
     // M1 step 3b 新設 (design §3 step 3b 実装要件 4): call view preload からの state push
     // (native:call-control:state) を購読する。listener はこのファイル冒頭の
     // callControlStateListeners に登録され、ipcRenderer.on ハンドラ (モジュールスコープで 1 度だけ

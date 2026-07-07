@@ -135,6 +135,13 @@ const E2E_RTC_WRAPPER_SCRIPT = `(() => {
         iceConnectionState: pc.iceConnectionState,
         reachedConnected: false,
         createdAt: Date.now(),
+        // M1 step 3c-2 (窓移動無再接続の検証用): 生の RTCPeerConnection への参照を保持しておく。
+        // getStats() を呼んで outbound-rtp (screenshare video) の bytesSent / inbound-rtp
+        // (audio) の bytesReceived を往復前後で比較するために必要。structured-clone できない
+        // フィールドなので、既存の window.__selfmatrixPcs.map((r) => ({...})) の明示的な
+        // フィールド列挙 (native-join.e2e.mjs 側) には一切影響しない — 呼び出し側が拾わなければ
+        // このフィールドは戻り値に含まれない。
+        _pc: pc,
       };
       window.__selfmatrixPcs.push(record);
       const update = () => {
@@ -178,6 +185,17 @@ const state = {
   // 診断用 (call view 側 preload の読み込み時例外を記録。createCallViewIfNeeded() 参照)。
   preloadErrors: [],
   navigationEvents: [],
+  // M1 step 3c-2/3c-3: openCallView() 呼び出し元 (cinny の NativeCallEmbed) が任意で渡す
+  // localStorage スナップショット (matrix-setting-* 等)。call view の session partition は
+  // mainWindow (cinny) と別物 (CALL_VIEW_PARTITION) なので localStorage は共有されず、web 版で
+  // 成立していた「cinny が書く matrix-setting-* を EC が読む」契約がそのままでは native では
+  // 壊れる (同一オリジンでも session partition が異なれば Storage は分離される)。openCallView()
+  // がここへ格納し、call-control-preload.cjs が dom-ready 前 (preload 実行時) に
+  // native:get-pending-localstorage-snapshot (sendSync) で読み出して EC のバンドルが評価される
+  // より前に localStorage へ書き込む。
+  pendingLocalStorageSnapshot: {},
+  // 診断用: 上記スナップショットが実際に call view 側へ配達された記録 (evidence 用)。
+  localStorageBridgeEvents: [],
 };
 
 if (app) {
@@ -561,7 +579,11 @@ function createCallViewIfNeeded() {
 // pathname であることを検証する。不合格な場合は例外を投げて claim 済みトランスポート越しの
 // Promise を reject させ、`{type:"call-view-url-rejected", url}` を widgetMessages に記録する
 // (call view は絶対にロードしない)。
-async function openCallView(url) {
+// M1 step 3c-2 (localStorage 契約の実機対応): `localStorageSnapshot` は任意の追加引数
+// (呼び出し元 cinny の NativeCallEmbed が渡す `matrix-setting-*` 等のスナップショット、
+// nativeBridge.ts の openCallView() 契約拡張)。従来どおり 1 引数 (url のみ) で呼んでも壊れない
+// (省略時は空スナップショット扱い — 既存の smoke/cinny-shell-smoke/harness の呼び出し元は無改造)。
+async function openCallView(url, localStorageSnapshot) {
   const validation = validateCallViewUrl(url, { expectedOrigin: state.origin });
   if (!validation.ok) {
     // 他の widgetMessages エントリ (from-view/to-view の origin フィールド等) と同じ方針で、
@@ -586,8 +608,55 @@ async function openCallView(url) {
   // フォールバックする。
   state.activeWidgetId = new URL(url).searchParams.get("widgetId") || WIDGET_ID;
 
+  // M1 step 3c-2: このロード (これから始まる loadURL) 用の localStorage スナップショットを
+  // 置いておく。call-control-preload.cjs が dom-ready 前 (preload 実行時、EC バンドルの評価より
+  // 必ず先) に native:get-pending-localstorage-snapshot (sendSync) で同期的に読み出す。
+  // plain object 以外 (undefined 等、旧来の 1 引数呼び出し) は空スナップショット扱いにする。
+  // 多重防御 (3c-2 受け入れレビュー): cinny 側 collectNativeCallLocalStorageSnapshot() も
+  // matrix-setting-* に絞っているが、cinny レンダラは相対的に低信頼なので main の中継点でも
+  // 同じ prefix allow-list を強制する — 契約外のキー (トークン等) が call view の localStorage に
+  // 流れ込む経路をシェル単独でも塞ぐ。値は string のみ許可。
+  state.pendingLocalStorageSnapshot = {};
+  if (localStorageSnapshot && typeof localStorageSnapshot === "object") {
+    for (const [key, value] of Object.entries(localStorageSnapshot)) {
+      if (typeof key === "string" && key.startsWith("matrix-setting-") && typeof value === "string") {
+        state.pendingLocalStorageSnapshot[key] = value;
+      }
+    }
+  }
+
   createCallViewIfNeeded();
   await state.callView.webContents.loadURL(url);
+}
+
+// H3 (受け入れレビュー修正、major): 「共有開始時に再同期」する live localStorage 契約。
+// 背景: web 版の実契約 (element-call の LocalMember.ts) は EC が **共有開始のたびに**
+// Setting.getStoredValue() で localStorage を再読込する。openCallView() の第 2 引数
+// (pendingLocalStorageSnapshot 経由、H6 で 1 ロード 1 回きりに強化) は「join 時点」の
+// スナップショットを 1 回渡すだけなので、通話中の画質/FPS 設定変更 (screenShareSettings.ts)
+// は反映されないままだった。この関数は cinny の NativeCallControl.toggleScreenshare() が
+// クリック直前 (transport.callControlInvoke() より前) に呼ぶ transport.updateCallLocalStorage()
+// の main 側実体で、現在アクティブな call view へ直接スナップショットを送り届ける —
+// pendingLocalStorageSnapshot / state.pendingLocalStorageSnapshot には一切触れない独立経路
+// (H6 のコメント参照。pending 経路は「preload 実行時に一度だけ sendSync で取りに行く」プル型、
+// この live 経路は「main が能動的に push する」プッシュ型で、混同しないよう完全に分離してある)。
+// 多重防御 (openCallView() と同じ方針): cinny 側 collectNativeCallLocalStorageSnapshot() も
+// matrix-setting-* に絞っているが、cinny レンダラは相対的に低信頼なので main の中継点でも
+// 同じ prefix allow-list を強制する。
+function updateCallLocalStorage(snapshot) {
+  if (!state.callView || state.callView.webContents.isDestroyed()) {
+    return { ok: false, reason: "no_call_view" };
+  }
+  const filtered = {};
+  if (snapshot && typeof snapshot === "object") {
+    for (const [key, value] of Object.entries(snapshot)) {
+      if (typeof key === "string" && key.startsWith("matrix-setting-") && typeof value === "string") {
+        filtered[key] = value;
+      }
+    }
+  }
+  state.callView.webContents.send("native:prime-localstorage", filtered);
+  return { ok: true, keys: Object.keys(filtered) };
 }
 
 // M1 step 3b 新設: 通話 View を閉じる (NativeCallEmbed の dispose/hangup 時に呼ばれる想定、
@@ -643,6 +712,34 @@ async function attachCallView() {
     state.callViewState = "attached";
     updateCallViewBounds();
   }
+}
+
+// H1 (受け入れレビュー修正、major): detachCallView()/attachCallView() が「実際に窓を移動させた」
+// ことの積極的証拠。state.callViewState は本関数がここまでで書き換えるただの文字列であり、万一
+// removeChildView()/addChildView() の呼び出し自体を no-op 化する回帰 (state だけ書き換えて実体は
+// 動かさない類) が入っても、state.callViewState を読むだけの判定では検知できない。この関数は
+// state を一切見ず、実際の contentView 階層 (mainWindow.contentView.children /
+// callWindow.contentView.children に state.callView が実際に含まれているか) から逆算して
+// "main" | "window" | "none" を返す。E2E (native-callflow.e2e.mjs の runWindowMoveReparenting())
+// はこれを detach 後に "window"、attach 後に "main" になることの実測に使う。
+function computeCallViewAttachedTo() {
+  if (!state.callView) return "none";
+  const inMain = Boolean(
+    state.mainWindow &&
+      !state.mainWindow.isDestroyed() &&
+      state.mainWindow.contentView.children.includes(state.callView),
+  );
+  const inWindow = Boolean(
+    state.callWindow &&
+      !state.callWindow.isDestroyed() &&
+      state.callWindow.contentView.children.includes(state.callView),
+  );
+  // 正常な detachCallView()/attachCallView() では常にどちらか片方だけが true になるはず。
+  // 両方 true (二重添付) / 両方 false (どこにも無い) はどちらも異常な中間状態なので "none" に
+  // 丸める -- E2E 側の "window"/"main" 期待値とは一致せず、確実に不合格として検知される。
+  if (inMain && !inWindow) return "main";
+  if (inWindow && !inMain) return "window";
+  return "none";
 }
 
 // M1 step 3b: shell/harness/smoke が「call view が (createCallViewIfNeeded()/openCallView() を
@@ -775,6 +872,34 @@ function analyzeCallControl(invokeResult, invokeError, invokeStartedAt) {
   };
 }
 
+// M1 step 2 (B 単体実証) → M1 step 3c-3 (E2E からの直接駆動用に抽出): shell (host) → callView
+// preload への RPC 本体。ipcMain.handle("native:call-control:invoke") はこれを薄く呼ぶだけに
+// なった。correlationId を発行して pendingCallControlInvokes で相関を取り、call view preload
+// からの native:call-control:invoke-result で resolve する — main は action の中身を一切
+// 解釈しない (design §2.2)。
+// M1 step 3c-3: native-callflow.e2e.mjs が `global.__selfmatrixE2E.invokeCallControl(action)`
+// 経由でこの同じ関数を直接呼ぶ (setupE2EIntrospection() 参照)。cinny の実 NativeCallEmbed が
+// 既に claim 済みの transport をもう一度 claim することはできない (claim-once) ため、E2E は
+// 「cinny が window.selfmatrixWidgetHost 相当を経由して呼ぶのと同じ main 側の実体」をここから
+// 直接叩く — call view 側で実行される内容 (call-control-preload.cjs の invoke()) は完全に同一。
+function invokeCallControl(action) {
+  return new Promise((resolve, reject) => {
+    if (!state.callView) {
+      reject(new Error("native:call-control:invoke: call view is not attached"));
+      return;
+    }
+    callControlInvokeSeq += 1;
+    const correlationId = `call-control-${callControlInvokeSeq}-${Date.now()}`;
+    const timer = setTimeout(() => {
+      pendingCallControlInvokes.delete(correlationId);
+      reject(new Error(`native:call-control:invoke timed out waiting for correlationId ${correlationId}`));
+    }, 5000);
+    pendingCallControlInvokes.set(correlationId, { resolve, reject, timer });
+    state.callControlMessages.push({ t: Date.now(), direction: "to-view", correlationId, action });
+    state.callView.webContents.send("native:call-control:invoke", { correlationId, action });
+  });
+}
+
 function setupIpc() {
   ipcMain.handle("native:get-status", () => ({
     origin: state.origin,
@@ -792,8 +917,50 @@ function setupIpc() {
 
   // M1 step 3b (design §3 step 3b 実装要件 1/2): claimWidgetTransport() が返す
   // openCallView(completeWidgetUrl)/closeCallView() の main 側実体。
-  ipcMain.handle("native:open-call-view", (_event, url) => openCallView(url));
+  // M1 step 3c-2: 第 2 引数 (localStorageSnapshot) は任意 — 省略した既存呼び出し元
+  // (harness/smoke) は undefined のまま openCallView() に渡り、空スナップショット扱いになる。
+  ipcMain.handle("native:open-call-view", (_event, url, localStorageSnapshot) =>
+    openCallView(url, localStorageSnapshot),
+  );
   ipcMain.handle("native:close-call-view", () => closeCallView());
+
+  // M1 step 3c-2 (localStorage 契約の実機対応、README「cinny の nativeBridge.ts 契約への適合」
+  // 節参照): call-control-preload.cjs が dom-ready より前 (preload 実行時) に同期的に読み出す
+  // ための sendSync 専用ハンドラ。openCallView() が state.pendingLocalStorageSnapshot に置いた
+  // 値をそのまま返す (main は中身を解釈しない中継役、design の方針を踏襲)。
+  // H6 (受け入れレビュー修正、minor): 返却後に state.pendingLocalStorageSnapshot をクリアする —
+  // この sendSync は「preload 実行時に一度だけ読み出される」契約 (1 ロード 1 回きり) であり、
+  // 返した値をいつまでも state に保持し続ける必要は無い (読み出し面の最小化)。H3 の live 更新経路
+  // (updateCallLocalStorage()) はこの pending スナップショットを一切経由しない完全に独立した
+  // 経路 (call view へ直接 send するだけ) なので、ここでクリアしても live 経路には影響しない。
+  ipcMain.on("native:get-pending-localstorage-snapshot", (event) => {
+    event.returnValue = state.pendingLocalStorageSnapshot || {};
+    // H6 (受け入れレビュー修正、minor): 素朴に「読んだら常にクリア」すると回帰する ——
+    // 実測したところ、call view の WebContentsView は生成直後に内部的な空ドキュメント
+    // (about:blank 相当、event.sender.getURL() === "") を一瞬経由してから実際の
+    // loadURL(url) 先へ遷移する。"frame" 型の registerPreloadScript はこの空ドキュメントと
+    // 後続の実ナビゲーション先の両方でこの sendSync ハンドラを叩く (同一 frameId で 2 回連続、
+    // 数 ms 差で発生することを実機で確認済み)。空ドキュメント側の読み出し (1 回目、
+    // getURL() === "") でクリアしてしまうと、EC バンドルが実際に評価される本番の
+    // ナビゲーション側 (2 回目、getURL() が実 URL) が空スナップショットしか受け取れなくなり、
+    // join 時の localStorage 契約が常に空になる回帰が実際に起きた。getURL() が非空になった
+    // (=実ナビゲーション先が確定した) 読み出しでのみクリアすることで、「1 回きり」の対象を
+    // 空ドキュメントの空振り読み出しではなく「実ロード 1 回」に正しく限定する。
+    if (event.sender.getURL()) {
+      state.pendingLocalStorageSnapshot = {};
+    }
+  });
+  // H3 (受け入れレビュー修正、major): cinny の NativeCallControl.toggleScreenshare() が RPC 実行
+  // 前に呼ぶ transport.updateCallLocalStorage() の main 側ハンドラ。updateCallLocalStorage()
+  // コメント参照 — pending スナップショット (上のハンドラ) とは独立した「共有開始のたびに再同期」
+  // する live 経路。
+  ipcMain.handle("native:update-call-localstorage", (_event, snapshot) => updateCallLocalStorage(snapshot));
+  // call-control-preload.cjs が実際に localStorage へ書き込んだ後の確認 ack (診断/evidence 用)。
+  // main は書き込みの成否を検証しない (preload 側の try/catch がそれぞれの setItem を守る) —
+  // ここではどのキーが対象になったかを記録するだけ。
+  ipcMain.on("native:localstorage-primed", (_event, payload) => {
+    state.localStorageBridgeEvents.push({ t: Date.now(), ...payload });
+  });
 
   // callView → shell 方向。call view の未信頼な (EC/widget) コンテキストから来るメッセージなので
   // M0 で確立した origin / widgetId / sourceIsSelf===true の検証を継続適用する。拒否された
@@ -858,23 +1025,7 @@ function setupIpc() {
   // 無いため、correlationId を発行して pendingCallControlInvokes で相関を取り、call view preload
   // からの native:call-control:invoke-result で resolve する。call view が無い/応答が無ければ
   // reject/timeout する — main は action の中身を一切解釈しない (design §2.2)。
-  ipcMain.handle("native:call-control:invoke", (_event, action) => {
-    return new Promise((resolve, reject) => {
-      if (!state.callView) {
-        reject(new Error("native:call-control:invoke: call view is not attached"));
-        return;
-      }
-      callControlInvokeSeq += 1;
-      const correlationId = `call-control-${callControlInvokeSeq}-${Date.now()}`;
-      const timer = setTimeout(() => {
-        pendingCallControlInvokes.delete(correlationId);
-        reject(new Error(`native:call-control:invoke timed out waiting for correlationId ${correlationId}`));
-      }, 5000);
-      pendingCallControlInvokes.set(correlationId, { resolve, reject, timer });
-      state.callControlMessages.push({ t: Date.now(), direction: "to-view", correlationId, action });
-      state.callView.webContents.send("native:call-control:invoke", { correlationId, action });
-    });
-  });
+  ipcMain.handle("native:call-control:invoke", (_event, action) => invokeCallControl(action));
 
   // callView preload (call-control-preload.cjs) からの応答。correlationId が pending map に
   // 無ければ (未知/期限切れ) 記録するだけで何もしない — ここでも中身の解釈はしない。
@@ -897,12 +1048,51 @@ function setupIpc() {
   });
 }
 
-function setupDisplayMediaHandler() {
-  session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
+// M1 step 3c-3 (受け入れレビューで発覚、修正): `setDisplayMediaRequestHandler` は Session
+// インスタンスごとに独立している。以前はここで `session.defaultSession` にしか登録しておらず、
+// これは mainWindow (cinny, パーティション未指定=デフォルトセッション) の getDisplayMedia() しか
+// カバーしない。call view (EC) は `CALL_VIEW_PARTITION` という**別の** session パーティションで
+// 動いている (createCallViewIfNeeded() 参照) ため、EC 側で実際に screenshare を開始した際の
+// getDisplayMedia() 要求は call view 自身のセッションのハンドラを探しに行き、登録が無ければ選択
+// ダイアログを試みて失敗する (E2E は `--use-fake-ui-for-media-stream` でメディア権限プロンプトは
+// 自動承認されるが、デスクトップキャプチャのソース選択はこの専用ハンドラでしか解決できない)。
+// 今までの smoke/cinny-shell-smoke はバックエンド無しで実 in-call UI に到達しないため、この
+// パーティション不一致は一度も顕在化していなかった。両方の session に同じロジックを登録する。
+function registerDisplayMediaHandler(targetSession) {
+  targetSession.setDisplayMediaRequestHandler((request, callback) => {
     desktopCapturer
       .getSources({ types: ["screen", "window"], thumbnailSize: { width: 320, height: 180 } })
       .then((sources) => {
-        const source = sources.find((item) => item.id.startsWith("screen:")) || sources[0];
+        // M1 step 3c-2 (native-callflow.e2e.mjs の実測で発覚): E2E 環境 (自動操作中で実マウス/
+        // 実画面の動きが乏しい dev マシン) では、素の実画面 ("screen:..." ソース) を掴むと
+        // screenshare 用の content-adaptive エンコーダが「変化なし」を検知してほぼ即座に
+        // フレーム送出を止める (実測: bytesSent が初回キーフレーム分だけ増えて完全に頭打ちに
+        // なった)。これはエンコーダの正しい挙動であり EC/native-prototype 側のバグではないが、
+        // 「配信中に media が流れ続けること」を E2E で実測する上では信号が消えてしまう。cinny 自身
+        // の window (タイトルに "SelfMatrix" を含む — cinny dist の <title> は "SelfMatrix",
+        // main.cjs 起動時の初期タイトルもこれと一致させてある) が候補にあれば、実画面より優先して
+        // それを掴む。native-callflow.e2e.mjs はこの window 上に絶えず変化する keep-alive
+        // オーバーレイを描画し、エンコーダに継続的な差分を与える。
+        //
+        // H2 (受け入れレビュー修正、major): この「自分自身の window を優先する」ヒューリスティックは
+        // 上記のとおり E2E 環境固有の対策であり、通常起動時にまで適用するとユーザーが選んだつもりの
+        // ない自分自身のウィンドウを無言で共有し始めてしまう (ユーザーの意図しない情報漏洩になり得る)。
+        // isE2ERealJoin (--e2e-real-join、dev/E2E 専用フラグ) の場合のみ有効にし、通常モードでは
+        // 「最初の screen: ソース、無ければ sources[0]」のフォールバックのみを使う (M2 でソース選択
+        // UI を実装するまでの暫定挙動)。
+        const ownWindow = isE2ERealJoin
+          ? sources.find((item) => item.name && item.name.includes("SelfMatrix"))
+          : null;
+        const source = ownWindow || sources.find((item) => item.id.startsWith("screen:")) || sources[0];
+        // 診断/evidence 用: どのソースが実際に選ばれたかを記録する (サムネイル画像などは積まない)。
+        state.widgetMessages.push({
+          t: Date.now(),
+          type: "display-media-source-selected",
+          sourceId: source?.id ?? null,
+          sourceName: source?.name ?? null,
+          wasOwnWindow: Boolean(ownWindow),
+          availableSourceCount: sources.length,
+        });
         callback({
           video: source,
           audio: request.audioRequested && process.platform === "win32" ? "loopback" : false,
@@ -910,6 +1100,11 @@ function setupDisplayMediaHandler() {
       })
       .catch(() => callback({}));
   });
+}
+
+function setupDisplayMediaHandler() {
+  registerDisplayMediaHandler(session.defaultSession);
+  registerDisplayMediaHandler(session.fromPartition(CALL_VIEW_PARTITION));
 }
 
 function sanitizeEvidenceString(value) {
@@ -1665,10 +1860,19 @@ function setupE2EIntrospection() {
     getSnapshot: () => ({
       origin: state.origin,
       callViewState: state.callViewState,
+      // H1 (受け入れレビュー修正): state.callViewState (文字列) とは独立に、実際の contentView
+      // 階層から逆算した "main" | "window" | "none"。computeCallViewAttachedTo() コメント参照。
+      callViewAttachedTo: computeCallViewAttachedTo(),
       activeWidgetId: state.activeWidgetId,
       widgetMessages: state.widgetMessages,
       navigationEvents: state.navigationEvents,
       preloadErrors: state.preloadErrors,
+      // M1 step 3c-3: native-callflow.e2e.mjs が call-control RPC 往復と state push 中継を
+      // main プロセス内部から直接検証するために追加。
+      callControlMessages: state.callControlMessages,
+      // M1 step 3c-2: localStorage 契約ブリッジの実測記録 (call-control-preload.cjs が実際に
+      // どのキーを primed したかの ack)。
+      localStorageBridgeEvents: state.localStorageBridgeEvents,
     }),
     // call view (EC) の main world で任意の式を評価する。call view が無ければ ok:false を
     // 返すだけで例外にはしない (e2e スクリプト側のポーリングループが単純になる)。
@@ -1696,6 +1900,31 @@ function setupE2EIntrospection() {
       } catch (error) {
         return { ok: false, reason: String(error && error.message ? error.message : error) };
       }
+    },
+    // M1 step 3c-3: native-callflow.e2e.mjs が実 in-call コントロール 7 語彙を invoke する窓口。
+    // cinny の実 NativeCallEmbed が既に claim 済みの transport をもう一度 claim することはできない
+    // (claim-once) ため、E2E は main 側の invokeCallControl() 実体をここから直接呼ぶ (call view 側
+    // で実行される内容は cinny 経由の呼び出しと完全に同一 — invokeCallControl() コメント参照)。
+    invokeCallControl: async (action) => {
+      try {
+        const result = await invokeCallControl(action);
+        return { ok: true, result };
+      } catch (error) {
+        return { ok: false, reason: String(error && error.message ? error.message : error) };
+      }
+    },
+    // M1 step 3c-2 (窓移動無再接続の検証): main window ⇔ call window 間の再親子付けを直接駆動する。
+    // 既存の window.selfmatrixNative.detachCallView()/attachCallView() (shell-preload.cjs 経由の
+    // IPC) と全く同じ main 側の実体 (detachCallView()/attachCallView()) をそのまま呼ぶだけ —
+    // WebContentsView 自体を作り直さない (createCallViewIfNeeded() の早期 return) ため、
+    // 再親子付けはナビゲーション/再読み込みを一切伴わない。
+    detachCallView: async () => {
+      await detachCallView();
+      return { ok: true, callViewState: state.callViewState };
+    },
+    attachCallView: async () => {
+      await attachCallView();
+      return { ok: true, callViewState: state.callViewState };
     },
   };
 }

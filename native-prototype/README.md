@@ -380,6 +380,128 @@ cinny 側のソースは一切変更していない):
    照合するようにした (`state.activeWidgetId`)。既存の smoke/cinny-shell-smoke は元から
    固定 `WIDGET_ID` の URL しか使わないため挙動は変わらない。
 
+## E2E: 2 ユーザー通話 + 配信 + 窓移動無再接続 + 7 語彙実 DOM 検証 (M1 step 3c-2/3c-3)
+
+`native-prototype/e2e/native-callflow.e2e.mjs` は M1 step 3c-1 (`native-join.e2e.mjs`、alice 1 人の
+実ログイン→実 LiveKit join) の先を検証する、M1 受け入れ (案 B 正式 GO/NO-GO) の判定材料。
+本物のローカル dev Matrix/LiveKit スタックが起動していることを前提に、playwright-core の
+`_electron` API で prototype の Electron を **2 プロセス** (alice/bob それぞれ独立した
+Electron インスタンス — HTTP サーバは各プロセスがポート 0 バインドするため衝突しない) 実起動する。
+alice・bob 共通のログイン/モーダル片付け/ルーム参加/main プロセス内部状態読み取りロジックは
+`e2e/lib/nativeE2ELib.mjs` に集約されている (`native-join.e2e.mjs` もこれを使うようリファクタ済み
+— 単体動作・pass 条件・evidence 形状は不変)。**`npm test` には含まれない** —
+`npm run e2e:callflow` として独立して実行する。
+
+### 実行手順
+
+`npm run e2e:join` (M1 step 3c-1) と同じ前提に加えて、dev ユーザー bob のパスワードも
+環境変数で渡す。
+
+```powershell
+$env:SELFMATRIX_E2E_PASSWORD_ALICE = "..."
+$env:SELFMATRIX_E2E_PASSWORD_BOB = "..."
+npm run e2e:callflow
+```
+
+bob は Voice Lounge に (このワークスペースの dev バックエンドでは) 既に参加済みのため、
+alice と同じ `openVoiceLoungeAndJoin()` ヘルパーで既存ルームを開くだけで参加できる。
+
+終了コード 0/1 で pass/fail が分かる。証跡は `evidence/native-callflow-result.json`
+(サニタイズ済み) と、スクリーンショット 3 枚 (`native-callflow-alice-2user-screenshare.png` —
+2 ユーザータイル + 配信中、`native-callflow-bob-callview.png` — bob 視点 (配信を視聴 opt-in 後)、
+`native-callflow-alice-detached.png` — 別窓移動中)。
+
+### pass 条件 (全て AND)
+
+- **alice/bob の実 join**: それぞれ `bridgeDetected`/`realJoinObserved`/`inCallUi`/
+  `livekitConnected` (M1 step 3c-1 と同一の 4 条件)。
+- **twoUserCallEstablished**: alice 側 EC の参加者タイル数 (`[data-testid="tile_pin"]`
+  — 実機確認して判明: `MediaView.tsx` 自身の `data-testid="videoTile"` は `PinnableTile.tsx`
+  経由でスプレッド展開により `tile_pin` に上書きされる) が 2 になること、かつ alice の
+  inbound-rtp (audio) bytesReceived が増加すること。
+- **localStorageContract**: cinny (mainWindow) と call view (別 session partition) 間の
+  `matrix-setting-*` localStorage 契約の実機確認 (下記節参照)。
+- **callControlVocabulary**: 7 語彙 (`toggleScreenshare`/`toggleSpotlight`/`toggleEmphasis`/
+  `toggleReactions`/`toggleSettings`/`setSoundOff`/`setSoundOn`) を alice 側の claim 済み
+  transport から `__selfmatrixE2E.invokeCallControl()` 経由で実行し、`{ok:true}` (`toggleReactions`
+  のみ既知の環境ギャップ — 下記節参照) と、screenshare/spotlight/emphasis/sound については
+  `onCallControlState` push が main 経由で shell 側購読者に届き、cinny 自身の DOM
+  (`call_control_screenshare`/`call_layout_toggle`/`call_emphasis_toggle` の `aria-pressed`)
+  にも反映されることを確認する。
+- **bobWatchOptIn**: SelfMatrix の「視聴オプトイン」仕様 (`WatchableStreamsBar.tsx`) により
+  bob が `[data-testid="watch_stream"]` を押して alice の配信を視聴 opt-in すること (下記節参照)。
+- **windowMoveReparenting**: 配信中に通話 view を main window ⇔ 別ウィンドウ間で 3 往復
+  再親子付けし、`noReload` (新規 RTCPeerConnection の生成ゼロ)・`pcStable` (往復前に connected
+  だった PC が往復後も connected を維持)・`mediaContinues` (screenshare の outbound-rtp
+  bytesSent と audio の inbound-rtp bytesReceived が往復前より増加)・`bobUnaffected`
+  (bob 側の接続・in-call UI が維持) の全てが真であること。
+
+### localStorage 契約の実機確認と修正 (M1 チェックリスト項目)
+
+cinny (mainWindow) と call view (Element Call) は Electron の session partition が異なる
+(`CALL_VIEW_PARTITION`)。**これは web 版で成立していた「cinny が書く `matrix-setting-*`
+localStorage を EC が読む」契約 (`screenShareSettings.ts`/`miniTileStripSettings.ts` と
+element-call `settings/settings.ts` の対応関係) が native では分離後も自動的には生きない**
+ことを意味する (同一オリジンの iframe と違い、Electron の Storage はオリジンではなく
+session partition 単位で分離されるため) — 実際に壊れていることを実測で確認した上で、
+最小のブリッジを実装した:
+
+1. cinny 側 (`nativeBridge.ts` の `collectNativeCallLocalStorageSnapshot()`) が
+   `NativeCallEmbed` のコンストラクタで `matrix-setting-*` キーのスナップショットを集める。
+2. `transport.openCallView(completeUrl, localStorageSnapshot)` (第 2 引数を新設) でシェルへ渡す。
+3. シェル (`main.cjs` の `openCallView()`) は `state.pendingLocalStorageSnapshot` に置くだけで
+   中身を解釈しない。
+4. call view 側 preload (`call-control-preload.cjs` の `primeLocalStorageFromShell()`) が、
+   EC のバンドル (`Setting` クラスのコンストラクタが localStorage を読むタイミング) より確実に
+   前 — preload 自身のトップレベル評価時点 — に `native:get-pending-localstorage-snapshot`
+   (sendSync) で同期的に取得し、`localStorage.setItem()` で書き込む。
+
+**タイミングの注意 (実装時に踏んだ罠)**: スナップショットは `NativeCallEmbed` のコンストラクタ
+(= cinny の「参加」ボタンを押した瞬間) で一度だけ取られる。テスト対象の値は **join する前**に
+localStorage へ書き込んでおく必要がある — join 後に書き込んでも既に送信済みのスナップショットには
+反映されない (`native-callflow.e2e.mjs` の `primeLocalStorageBeforeJoin()`/
+`verifyLocalStorageContract()` 冒頭コメント参照)。
+
+### 既知の環境ギャップ: `toggleReactions` (native 固有ではない)
+
+この EC ビルド (`element-call/src/components/CallFooter.tsx`、SelfMatrix fork でリファクタ済み)
+の footer には reactions 送信ボタン自体が描画されていない —
+`FooterState.reactionData`/`reactionIdentifier` は型/state 層にしか存在せず、`CallFooter.tsx`
+の JSX では一切参照されない (dead props と見られる)。web 版 `CallControl.ts` から移植した
+`call-control-preload.cjs` の `reactionsButton()` (`leaveButton().previousElementSibling`)
+は、実機確認したところ無関係な screenshare ラッパー `<div>` にヒットしていた — このコミットで
+「クリック可能な要素 (BUTTON または role=button/switch) であることを確認できた場合のみ対象に
+採用する」よう修正し、対象が無ければ正直に `target_not_found` を返すようにした。実クリック対象が
+無い以上 `{ok:true}` にはなり得ないため、`toggleReactions` のみ「action 文字列が語彙として
+認識されている (`unknown_action` ではない)」ことだけを pass 条件にしている。**この EC コンポーネント
+は web 版とも共有されているため、native fork 固有の問題ではない。**
+
+### 既知の環境ギャップ: `toggleSettings` の 2 回目クリックでは閉じない (native 固有ではない)
+
+`element-call/src/settings/SettingsModal.tsx` の設定画面は Compound の `Dialog`
+(`open`/`onDismiss` で制御) であり、web 版 `CallControl.ts`/cinny の `CallControls.tsx`
+が前提にする「同じボタンを押すたびに開閉が反転する」トグル動作にはなっていない — 実機確認したところ
+2 回目の `toggleSettings` invoke 後も `[role="dialog"]` が残っていた。`native-callflow.e2e.mjs`
+は 7 語彙の契約どおり 2 回 invoke すること自体は行うが、テストの後始末は Dialog の標準的な閉じ方
+(Escape キー) で行っている。
+
+### 配信中の media 継続性の実測を安定させる対策 (`registerDisplayMediaHandler`)
+
+実機確認で 2 つの罠が見つかり、あわせて対応した (どちらも `main.cjs` 自身のバグで、cinny 側の
+ソースは変更していない):
+
+- **`setDisplayMediaRequestHandler` の session partition 不一致**: 以前は
+  `session.defaultSession` にしか登録しておらず、call view 自身の session
+  (`CALL_VIEW_PARTITION`、mainWindow とは別物) で発生する実際の `getDisplayMedia()` 要求を
+  カバーしていなかった。両方の session に登録するよう修正した。
+- **静的な実画面キャプチャは E2E 環境ではほぼ即座にフレーム送出が止まる**: 自動操作中で実マウス/
+  実画面の動きが乏しい dev マシンでは、素の実画面 (`screen:...` ソース) を掴むと screenshare 用
+  content-adaptive エンコーダが「変化なし」を検知し、初回キーフレーム分だけで bytesSent が頭打ちに
+  なる (SFU の需要ベース帯域制御としては正しい挙動だが、「media が流れ続けること」の E2E 実測には
+  信号が消えてしまう)。cinny 自身の window (タイトルに `"SelfMatrix"` を含む) を実画面より優先して
+  掴むようにし、`native-callflow.e2e.mjs` がその window 上に絶えず変化する keep-alive
+  オーバーレイを描画することで、この問題を回避している。
+
 ## まだやっていないこと
 
 - Cinny 本体の widget host と深く統合すること

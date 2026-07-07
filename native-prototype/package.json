@@ -11,7 +11,8 @@
     "cinny-shell": "electron src/main.cjs --cinny-shell",
     "cinny-shell-smoke": "electron src/main.cjs --cinny-shell-smoke",
     "test": "npm run smoke && npm run memory && npm run cinny-shell-smoke",
-    "e2e:join": "node e2e/native-join.e2e.mjs"
+    "e2e:join": "node e2e/native-join.e2e.mjs",
+    "e2e:callflow": "node e2e/native-callflow.e2e.mjs"
   },
   "devDependencies": {
     "electron": "43.0.0"

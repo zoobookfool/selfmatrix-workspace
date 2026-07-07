@@ -1,0 +1,414 @@
+{
+  "startedAt": "2026-07-07T17:53:35.779Z",
+  "pass": true,
+  "room": "Voice Lounge",
+  "steps": {
+    "aliceJoin": {
+      "created": false,
+      "clickedJoin": true,
+      "reason": null
+    },
+    "bobJoin": {
+      "created": false,
+      "clickedJoin": true,
+      "reason": null
+    }
+  },
+  "passConditions": {
+    "alice": {
+      "bridgeDetected": true,
+      "realJoinObserved": true,
+      "inCallUi": true,
+      "livekitConnected": true,
+      "pass": true
+    },
+    "bob": {
+      "bridgeDetected": true,
+      "realJoinObserved": true,
+      "inCallUi": true,
+      "livekitConnected": true,
+      "pass": true
+    },
+    "twoUserCallEstablished": {
+      "participantTileCount": 2,
+      "participantTileCountPass": true,
+      "statsT0": {
+        "audioBytesReceived": 2904,
+        "videoBytesReceived": 0,
+        "videoBytesSent": 0,
+        "audioBytesSent": 299557,
+        "pcCount": 2
+      },
+      "statsT1": {
+        "audioBytesReceived": 128761,
+        "videoBytesReceived": 0,
+        "videoBytesSent": 0,
+        "audioBytesSent": 379433,
+        "pcCount": 2
+      },
+      "audioIncreasing": true,
+      "pass": true
+    },
+    "localStorageContract": {
+      "writtenInCinny": {
+        "quality": "720",
+        "fps": 30
+      },
+      "readBackFromCallView": {
+        "ok": true,
+        "value": {
+          "quality": "\"720\"",
+          "fps": "30"
+        }
+      },
+      "bridgeEvents": [
+        {
+          "t": 1783446824905,
+          "keys": [],
+          "source": "pending-snapshot"
+        },
+        {
+          "t": 1783446824909,
+          "keys": [
+            "matrix-setting-screen-share-quality",
+            "matrix-setting-screen-share-fps"
+          ],
+          "source": "pending-snapshot"
+        }
+      ],
+      "primedKeys": [
+        "matrix-setting-screen-share-quality",
+        "matrix-setting-screen-share-fps"
+      ],
+      "note": "Electron session partitions isolate localStorage even for the same origin -- cinny (mainWindow, default session) and the call view (CALL_VIEW_PARTITION) do NOT share localStorage automatically, unlike same-origin iframes in the web build. This was confirmed broken by architecture (verified via isolated probe before the fix existed) and is now bridged via NativeCallEmbed.ts's collectNativeCallLocalStorageSnapshot() -> openCallView()'s 2nd arg -> main.cjs's pendingLocalStorageSnapshot -> call-control-preload.cjs's primeLocalStorageFromShell() (writes before the EC bundle's Setting classes read localStorage at module-evaluation time).",
+      "pass": true
+    },
+    "callControlVocabulary": {
+      "vocabulary": {
+        "toggleScreenshare": {
+          "invoke": {
+            "ok": true,
+            "result": {
+              "ok": true,
+              "action": "toggleScreenshare"
+            }
+          },
+          "before": "false",
+          "after": "true",
+          "statePush": {
+            "t": 1783446840633,
+            "direction": "state-push",
+            "reason": "mutation-observed",
+            "kind": "call-control",
+            "screenshare": true,
+            "spotlight": false,
+            "emphasis": false,
+            "sound": true
+          },
+          "pass": true
+        },
+        "toggleEmphasis": {
+          "invoke": {
+            "ok": true,
+            "result": {
+              "ok": true,
+              "action": "toggleEmphasis"
+            }
+          },
+          "before": "false",
+          "after": "true",
+          "statePush": {
+            "t": 1783446841097,
+            "direction": "state-push",
+            "reason": "mutation-observed",
+            "kind": "call-control",
+            "screenshare": true,
+            "spotlight": false,
+            "emphasis": true,
+            "sound": true
+          },
+          "pass": true
+        },
+        "toggleSpotlight": {
+          "invokeOn": {
+            "ok": true,
+            "result": {
+              "ok": true,
+              "action": "toggleSpotlight"
+            }
+          },
+          "invokeBack": {
+            "ok": true,
+            "result": {
+              "ok": true,
+              "action": "toggleSpotlight"
+            }
+          },
+          "afterOn": "true",
+          "afterBack": "false",
+          "statePushOn": {
+            "t": 1783446842183,
+            "direction": "state-push",
+            "reason": "mutation-observed",
+            "kind": "call-control",
+            "screenshare": true,
+            "spotlight": true,
+            "emphasis": false,
+            "sound": true
+          },
+          "statePushBack": {
+            "t": 1783446843272,
+            "direction": "state-push",
+            "reason": "mutation-observed",
+            "kind": "call-control",
+            "screenshare": true,
+            "spotlight": false,
+            "emphasis": false,
+            "sound": true
+          },
+          "pass": true
+        },
+        "toggleReactions": {
+          "invoke": {
+            "ok": true,
+            "result": {
+              "ok": false,
+              "reason": "target_not_found",
+              "action": "toggleReactions"
+            }
+          },
+          "knownGap": true,
+          "knownGapNote": "This EC build does not render a reactions button in the footer (FooterState.reactionData/reactionIdentifier are unused in CallFooter.tsx's JSX) -- confirmed via source inspection, not native-shell specific. call-control-preload.cjs correctly reports target_not_found instead of misclicking the neighbouring screenshare wrapper div.",
+          "pass": true
+        },
+        "toggleSettings": {
+          "invokeOpen": {
+            "ok": true,
+            "result": {
+              "ok": true,
+              "action": "toggleSettings"
+            }
+          },
+          "invokeClose": {
+            "ok": true,
+            "result": {
+              "ok": true,
+              "action": "toggleSettings"
+            }
+          },
+          "knownGap": true,
+          "knownGapNote": "A second toggleSettings() invoke does not close the Compound Dialog-based settings modal (confirmed: dialog was still present via [role=dialog] right after the 2nd invoke) -- closed via Escape (Dialog's standard dismissal) for test cleanup instead. Same underlying EC component is shared with the web build, so this is not native-shell specific.",
+          "pass": true
+        },
+        "setSoundOff": {
+          "invoke": {
+            "ok": true,
+            "result": {
+              "ok": true,
+              "action": "setSoundOff",
+              "audioCount": 1
+            }
+          },
+          "statePush": {
+            "t": 1783446845888,
+            "direction": "state-push",
+            "reason": "action-setSoundOff",
+            "kind": "call-control",
+            "screenshare": true,
+            "spotlight": false,
+            "emphasis": false,
+            "sound": false
+          },
+          "pass": true
+        },
+        "setSoundOn": {
+          "invoke": {
+            "ok": true,
+            "result": {
+              "ok": true,
+              "action": "setSoundOn",
+              "audioCount": 1
+            }
+          },
+          "statePush": {
+            "t": 1783446846964,
+            "direction": "state-push",
+            "reason": "action-setSoundOn",
+            "kind": "call-control",
+            "screenshare": true,
+            "spotlight": false,
+            "emphasis": false,
+            "sound": true
+          },
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "midCallSettingsSync": {
+      "writtenInCinny": {
+        "quality": "1080",
+        "fps": 15
+      },
+      "afterOff": "false",
+      "afterOn": "true",
+      "readBackFromCallView": {
+        "ok": true,
+        "value": {
+          "quality": "\"1080\"",
+          "fps": "15"
+        }
+      },
+      "note": "Drives cinny's own ScreenShareButton + quality/fps picker (Controls.tsx) via real clicks on alicePage, so this actually exercises NativeCallControl.toggleScreenshare()'s live resync (collectNativeCallLocalStorageSnapshot() -> transport.updateCallLocalStorage(), awaited before the callControlInvoke() RPC click) -- unlike runCallControlVocabulary()'s toggleScreenshare check, which bypasses cinny's TS layer entirely via global.__selfmatrixE2E.invokeCallControl().",
+      "pass": true
+    },
+    "bobWatchOptIn": {
+      "ok": true,
+      "clickResult": {
+        "ok": true,
+        "value": {
+          "ok": true
+        }
+      }
+    },
+    "windowMoveReparenting": {
+      "roundTrips": [
+        {
+          "i": 1,
+          "detach": {
+            "ok": true,
+            "callViewState": "detached"
+          },
+          "attach": {
+            "ok": true,
+            "callViewState": "attached"
+          },
+          "attachedToAfterDetach": "window",
+          "attachedToAfterAttach": "main",
+          "detachActuallyMoved": true,
+          "attachActuallyMoved": true,
+          "pass": true
+        },
+        {
+          "i": 2,
+          "detach": {
+            "ok": true,
+            "callViewState": "detached"
+          },
+          "attach": {
+            "ok": true,
+            "callViewState": "attached"
+          },
+          "attachedToAfterDetach": "window",
+          "attachedToAfterAttach": "main",
+          "detachActuallyMoved": true,
+          "attachActuallyMoved": true,
+          "pass": true
+        },
+        {
+          "i": 3,
+          "detach": {
+            "ok": true,
+            "callViewState": "detached"
+          },
+          "attach": {
+            "ok": true,
+            "callViewState": "attached"
+          },
+          "attachedToAfterDetach": "window",
+          "attachedToAfterAttach": "main",
+          "detachActuallyMoved": true,
+          "attachActuallyMoved": true,
+          "pass": true
+        }
+      ],
+      "measurements": {
+        "hardNavBefore": 1,
+        "hardNavAfter": 1,
+        "pcsBefore": [
+          {
+            "id": 1,
+            "connectionState": "new",
+            "iceConnectionState": "new",
+            "reachedConnected": false
+          },
+          {
+            "id": 2,
+            "connectionState": "connected",
+            "iceConnectionState": "connected",
+            "reachedConnected": true
+          }
+        ],
+        "pcsAfter": [
+          {
+            "id": 1,
+            "connectionState": "new",
+            "iceConnectionState": "new",
+            "reachedConnected": false
+          },
+          {
+            "id": 2,
+            "connectionState": "connected",
+            "iceConnectionState": "connected",
+            "reachedConnected": true
+          }
+        ],
+        "statsBefore": {
+          "audioBytesReceived": 456813,
+          "videoBytesReceived": 0,
+          "videoBytesSent": 47638,
+          "audioBytesSent": 1148368,
+          "pcCount": 2
+        },
+        "statsAfter": {
+          "audioBytesReceived": 649312,
+          "videoBytesReceived": 0,
+          "videoBytesSent": 299102,
+          "audioBytesSent": 1551600,
+          "pcCount": 2
+        },
+        "bobPcsBefore": [
+          {
+            "id": 1,
+            "connectionState": "new",
+            "iceConnectionState": "new",
+            "reachedConnected": false
+          },
+          {
+            "id": 2,
+            "connectionState": "connected",
+            "iceConnectionState": "connected",
+            "reachedConnected": true
+          }
+        ],
+        "bobPcsAfter": [
+          {
+            "id": 1,
+            "connectionState": "new",
+            "iceConnectionState": "new",
+            "reachedConnected": false
+          },
+          {
+            "id": 2,
+            "connectionState": "connected",
+            "iceConnectionState": "connected",
+            "reachedConnected": true
+          }
+        ]
+      },
+      "noReload": true,
+      "pcStable": true,
+      "mediaContinues": true,
+      "bobUnaffected": true,
+      "allRoundTripsActuallyMoved": true,
+      "pass": true
+    }
+  },
+  "error": null,
+  "screenshots": {
+    "aliceTwoUserScreenshare": true,
+    "bobCallView": true,
+    "aliceDetachedMidMove": true
+  },
+  "finishedAt": "2026-07-07T17:54:21.359Z"
+}
