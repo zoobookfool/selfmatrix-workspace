@@ -37,10 +37,11 @@ npm run smoke:electron:display-media
 
 - `cli/`: Matrix Widget API / bridge の action transcript を固定する
 - `web/`: 配信タイル右クリックメニューと話者 overlay 右クリックメニューの UI harness
-- `electron-smoke/`: `WebContentsView` 再親子付けと `displayMedia` の最小 Electron probe
+- `electron-smoke/`: `WebContentsView` 再親子付け、`displayMedia` constraints、Windows loopback audio の最小 Electron probe
 
 ## 注意
 
 - 実 homeserver URL、アクセストークン、実アカウントは入れない
 - `electron-smoke/evidence/*.json` と `artifacts/` は生成物として ignore する
 - transcript は deterministic に生成し、契約の baseline として commit する
+- Windows では `display-media` smoke が `audio: "loopback"` の audio track 取得まで確認する

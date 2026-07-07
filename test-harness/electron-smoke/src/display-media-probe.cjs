@@ -28,8 +28,12 @@ async function main() {
           sourceCount: sources.length,
           selectedId: source && source.id,
           selectedName: source && source.name,
+          audio: request.audioRequested && process.platform === "win32" ? "loopback" : false,
         });
-        callback({ video: source, audio: false });
+        callback({
+          video: source,
+          audio: request.audioRequested && process.platform === "win32" ? "loopback" : false,
+        });
       })
       .catch((error) => {
         record("display-media-source-error", { error: String(error && error.stack ? error.stack : error) });
@@ -51,15 +55,27 @@ async function main() {
 
   await win.loadFile(path.join(__dirname, "display-media.html"));
   const runResult = await win.webContents.executeJavaScript("window.__runDisplayMediaProbe()", true);
+  const shouldExpectLoopbackAudio = process.platform === "win32";
+  const audioRunResult = shouldExpectLoopbackAudio
+    ? await win.webContents.executeJavaScript("window.__runDisplayMediaAudioProbe()", true)
+    : { ok: true, skipped: true, reason: "loopback audio is Windows-only" };
   const finalState = await win.webContents.executeJavaScript(
     "JSON.parse(JSON.stringify(window.__displayMediaState))",
     true,
   );
   const result = {
-    pass: Boolean(runResult.ok && runResult.beforeConstraints && runResult.afterConstraints),
+    pass: Boolean(
+      runResult.ok &&
+        runResult.beforeConstraints &&
+        runResult.afterConstraints &&
+        audioRunResult.ok &&
+        (!shouldExpectLoopbackAudio || audioRunResult.audioTrackCount >= 1),
+    ),
     electron: process.versions.electron,
     chrome: process.versions.chrome,
+    shouldExpectLoopbackAudio,
     runResult,
+    audioRunResult,
     finalState,
     events,
   };

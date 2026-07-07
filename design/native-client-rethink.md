@@ -1,8 +1,8 @@
 # クライアントのネイティブアプリ化 — 要件の再定義 (検討、2026-07-07)
 
-**ステータス: 検討ドラフト v0.2** — 運用者の方針転換提案を受けた要件の練り直し。
+**ステータス: 検討ドラフト v0.3 / 条件付き GO** — 運用者の方針転換提案を受けた要件の練り直し。
 複数の AI (Claude / GPT 等) と運用者で議論するための土台。合意後に requirements.md と roadmap.md を改訂する。
-次の判断ゲートは [desktop-window-spike.md](../spikes/desktop-window-spike.md)。
+合否判断は [native-client-decision.md](native-client-decision.md) を正とする。
 この文書は**単体で読める** — リポジトリや過去の経緯を参照できない読者でも、ここから検討に参加できることを意図している。
 
 ## 1. 前提知識 (このプロジェクトを知らない読者向け)
@@ -125,9 +125,17 @@ B で「無再接続の窓移動」というネイティブ最大の果実を取
 - EC view を main window と call window の間で再親子付けする
 - shell から `io.element.join` を `toWidget` action として送る
 - `session.setDisplayMediaRequestHandler` を登録する
+- Windows の `getDisplayMedia({ audio: true })` に `audio: "loopback"` を返す
 
 2026-07-07 の smoke では、実 Cinny/EC の local dist を使い、EC boot、Widget API bridge、別窓移動/戻し、`io.element.join` 送信まで PASS。
-未確認は Cinny 本体の widget host との直接接続、実 MatrixRTC join、共有中移動、system audio。
+Electron displayMedia probe では、720p/30fps -> 1080p/60fps の constraints と Windows loopback audio track 取得も PASS。
+未確認は Cinny 本体の widget host との直接接続、実 MatrixRTC join、共有中移動、実 UI からの system audio。
+
+### 合否判断
+
+[native-client-decision.md](native-client-decision.md) で **条件付き GO** と判断した。
+意味は「`selfmatrix-desktop` の実装へ進んでよい」であり、production release GO ではない。
+主な残タスクは、Cinny の iframe 前提 `ClientWidgetApi` を NativeWidgetTransport / NativeCallHost adapter へ置き換えることと、実 MatrixRTC join 後の共有中移動確認。
 
 ### 実装済み設計との関係
 

@@ -49,6 +49,35 @@
           return { ok: false, error: String(error && error.stack ? error.stack : error), state: window.__displayMediaState };
         }
       };
+
+      window.__runDisplayMediaAudioProbe = async function () {
+        try {
+          const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              frameRate: { ideal: 30, max: 30 },
+            },
+            audio: true,
+          });
+          const videoTracks = stream.getVideoTracks();
+          const audioTracks = stream.getAudioTracks();
+          const result = {
+            ok: videoTracks.length >= 1 && audioTracks.length >= 1,
+            videoTrackCount: videoTracks.length,
+            audioTrackCount: audioTracks.length,
+            videoSettings: videoTracks[0]?.getSettings() ?? null,
+            audioSettings: audioTracks[0]?.getSettings() ?? null,
+          };
+          record("audio-track-created", result);
+          stream.getTracks().forEach((track) => track.stop());
+          record("audio-tracks-stopped", {});
+          return { ...result, state: window.__displayMediaState };
+        } catch (error) {
+          window.__displayMediaState.errors.push(String(error && error.stack ? error.stack : error));
+          return { ok: false, error: String(error && error.stack ? error.stack : error), state: window.__displayMediaState };
+        }
+      };
     </script>
   </body>
 </html>

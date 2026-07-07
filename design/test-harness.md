@@ -123,7 +123,8 @@ production app 全体を起動する前に、OS や Electron API の揺れをこ
 - WebRTC loopback / 実 LiveKit track が切れない
 - `session.setDisplayMediaRequestHandler` で screen / window source を返せる
 - 720p/1080p/source と 15/30/60fps constraints が反映される
-- Windows system audio / loopback が実用できるか
+- Windows system audio / loopback の audio track を取得できる
+- 実 LiveKit publish で system audio track が安定するか
 - `alwaysOnTop`、閉じる挙動、複数 monitor、DPI scaling が破綻しない
 - custom protocol / local HTTP の同一 app origin 設計で Widget API が通る
 

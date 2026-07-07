@@ -300,7 +300,10 @@ function setupDisplayMediaHandler() {
       .getSources({ types: ["screen", "window"], thumbnailSize: { width: 320, height: 180 } })
       .then((sources) => {
         const source = sources.find((item) => item.id.startsWith("screen:")) || sources[0];
-        callback({ video: source, audio: false });
+        callback({
+          video: source,
+          audio: request.audioRequested && process.platform === "win32" ? "loopback" : false,
+        });
       })
       .catch(() => callback({}));
   });
