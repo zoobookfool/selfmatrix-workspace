@@ -5,7 +5,8 @@
 ## 現在の到達点
 
 - SelfMatrix は Synapse + PostgreSQL + Cinny fork + Element Call fork + LiveKit SFU の構成で稼働済み。
-- UI 合意の正本は [ui-design-notes.md](../design/ui-design-notes.md) v1.5 と [mocks/ui-mock.html](../design/mocks/ui-mock.html) v2.2。
+- UI 仕様の正本は [ui-design-notes.md](../design/ui-design-notes.md) v1.5。見た目合わせの視覚基準は [mocks/ui-mock.html](../design/mocks/ui-mock.html) v2.2。
+  モック v2.2 は v1.4 時点の内容を含むため、v1.5 の追加仕様と衝突する場合は ui-design-notes を優先する。
 - 通話 UI は画面共有特化、視聴オプトイン、画質/FPS ピッカー、話者オーバーレイ、ユーザー/配信音量調整、RNNoise ノイズ抑制まで実装済み。
 - 別ウィンドウ通話開始モードは [call-window-mode.md](../design/call-window-mode.md) v1.4 で UI 合意済みだが、実装はネイティブ化検討の結論待ち。
 - クライアントのネイティブ化は [native-client-rethink.md](../design/native-client-rethink.md) v0.1 のドラフト段階。次の判断ゲートは [desktop-window-spike.md](../spikes/desktop-window-spike.md)。

@@ -27,6 +27,7 @@
 | 状態 | 意味 |
 | --- | --- |
 | 正本 | 現時点の合意。実装・レビュー・他 AI への依頼はこの内容を優先する |
+| 視覚基準 | 見た目・配置・操作感の基準。仕様と衝突した場合は正本を優先する |
 | ドラフト | 検討中。結論が出るまで requirements / roadmap へは反映しない |
 | 実装保留 | UI 合意または設計は確定済みだが、別の判断ゲート待ちで実装しない |
 | 履歴 | 当時の判断・証跡。最新方針は正本または current-status/backlog を見る |
@@ -48,7 +49,7 @@
 | 文書 | 状態 | 次アクション / 読み方 |
 | --- | --- | --- |
 | [ui-design-notes.md](design/ui-design-notes.md) | 正本 | UI 合意 v1.5。通話・配信・シェルの現行方針 |
-| [mocks/ui-mock.html](design/mocks/ui-mock.html) | 正本 | 操作できる UI モック v2.2。見た目合わせの基準 |
+| [mocks/ui-mock.html](design/mocks/ui-mock.html) | 視覚基準 | 操作できる UI モック v2.2。v1.5 の追加仕様と衝突する場合は ui-design-notes を優先 |
 | [call-window-mode.md](design/call-window-mode.md) | 実装保留 | 別ウィンドウ通話開始モード v1.4。ネイティブ化検討の結論待ち |
 | [native-client-rethink.md](design/native-client-rethink.md) | ドラフト | クライアントのネイティブアプリ化。desktop window spike で検証する |
 | [ec-tile-ui-plan.md](design/ec-tile-ui-plan.md) | 履歴 | EC タイル UI の実装計画と進捗 |
