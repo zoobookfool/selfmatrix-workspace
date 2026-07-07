@@ -4,8 +4,8 @@
 
 | 優先 | 項目 | 状態 | 参照 | 完了条件 |
 | --- | --- | --- | --- | --- |
-| P0 | Electron WebContentsView による通話 view 再親子付け検証 | 一部実測中 | [desktop-window-spike.md](../spikes/desktop-window-spike.md), [native-client-rethink.md](../design/native-client-rethink.md) | WebRTC / LiveKit 接続を維持したまま通話 view を別窓へ移せるか結論が出る |
-| P0 | ネイティブ化するか web 版別窓開始モードを実装するかの判断 | P0 のスパイク待ち | [call-window-mode.md](../design/call-window-mode.md), [native-client-rethink.md](../design/native-client-rethink.md) | 案 A/B の採否、または web 版実装再開が決まる |
+| P0 | Electron WebContentsView による通話 view 再親子付け検証 | 小型 prototype 着手可、最終 LiveKit join 待ち | [desktop-window-spike.md](../spikes/desktop-window-spike.md), [native-client-rethink.md](../design/native-client-rethink.md) | 実 EC + dev MatrixRTC で join / 共有中 view 移動 / system audio まで確認し、production 実装可否が決まる |
+| P0 | ネイティブ化するか web 版別窓開始モードを実装するかの判断 | ネイティブ小型 prototype 優先 | [call-window-mode.md](../design/call-window-mode.md), [native-client-rethink.md](../design/native-client-rethink.md) | prototype 結果で native 案 B 継続、または web 版実装再開が決まる |
 | P1 | 話者オーバーレイ右クリックからのユーザー単位音量調整 | 未実装 | [ui-design-notes.md](../design/ui-design-notes.md) | 配信上の話者ピル/オーバーレイから対象ユーザーのミュート・音量調整へ到達できる |
 | P1 | グリッド配信タイルのストリーム単体ポップアウト `🗗` | 保留 | [ui-design-notes.md](../design/ui-design-notes.md), [call-window-mode.md](../design/call-window-mode.md) | 視聴中配信タイルから再接続なしの単体ポップアウトを開ける |
 | P1 | SFU 切断時の自動再参加 | 未実施 | [roadmap.md](roadmap.md) Phase 8 | LiveKit ルーム消失後、手動再参加なしで通話へ戻れる、または明確な再参加導線が出る |

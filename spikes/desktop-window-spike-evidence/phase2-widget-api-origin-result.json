@@ -1,0 +1,222 @@
+{
+  "pass": true,
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46",
+  "matrixWidgetApi": "1.16.1",
+  "scenarios": [
+    {
+      "clientOrigin": "*",
+      "messageCount": 4,
+      "contentLoadedSeen": true,
+      "resolved": true,
+      "runResult": {
+        "ok": true,
+        "state": {
+          "parentIsSelf": true,
+          "loaded": true,
+          "events": [
+            {
+              "type": "started",
+              "details": {
+                "ready": true
+              },
+              "t": 1783404897437
+            },
+            {
+              "type": "content-loaded-resolved",
+              "details": {},
+              "t": 1783404897439
+            }
+          ],
+          "errors": [],
+          "hasTransport": true,
+          "clientOrigin": "*"
+        }
+      },
+      "finalState": {
+        "parentIsSelf": true,
+        "loaded": true,
+        "events": [
+          {
+            "type": "started",
+            "details": {
+              "ready": true
+            },
+            "t": 1783404897437
+          },
+          {
+            "type": "content-loaded-resolved",
+            "details": {},
+            "t": 1783404897439
+          }
+        ],
+        "errors": [],
+        "hasTransport": true,
+        "clientOrigin": "*"
+      },
+      "messages": [
+        {
+          "data": {
+            "api": "fromWidget",
+            "widgetId": "probe-widget",
+            "requestId": "widgetapi-1783404897436",
+            "action": "supported_api_versions",
+            "data": {}
+          },
+          "origin": "null",
+          "sourceIsSelf": true
+        },
+        {
+          "data": {
+            "api": "fromWidget",
+            "widgetId": "probe-widget",
+            "requestId": "widgetapi-1783404897437",
+            "action": "content_loaded",
+            "data": {}
+          },
+          "origin": "null",
+          "sourceIsSelf": true
+        },
+        {
+          "data": {
+            "api": "fromWidget",
+            "widgetId": "probe-widget",
+            "requestId": "widgetapi-1783404897436",
+            "action": "supported_api_versions",
+            "data": {},
+            "response": {}
+          },
+          "origin": "null",
+          "sourceIsSelf": true
+        },
+        {
+          "data": {
+            "api": "fromWidget",
+            "widgetId": "probe-widget",
+            "requestId": "widgetapi-1783404897437",
+            "action": "content_loaded",
+            "data": {},
+            "response": {}
+          },
+          "origin": "null",
+          "sourceIsSelf": true
+        }
+      ]
+    },
+    {
+      "clientOrigin": "https://shell.example",
+      "messageCount": 0,
+      "contentLoadedSeen": false,
+      "resolved": false,
+      "runResult": {
+        "ok": false,
+        "error": "Error: Request timed out\n    at file:///<local-spike-dir>/node_modules/matrix-widget-api/dist/api.js:4911:25",
+        "state": {
+          "parentIsSelf": true,
+          "loaded": true,
+          "events": [
+            {
+              "type": "started",
+              "details": {
+                "ready": true
+              },
+              "t": 1783404897618
+            }
+          ],
+          "errors": [
+            "Error: Request timed out\n    at file:///<local-spike-dir>/node_modules/matrix-widget-api/dist/api.js:4911:25"
+          ],
+          "hasTransport": true,
+          "clientOrigin": "https://shell.example"
+        }
+      },
+      "finalState": {
+        "parentIsSelf": true,
+        "loaded": true,
+        "events": [
+          {
+            "type": "started",
+            "details": {
+              "ready": true
+            },
+            "t": 1783404897618
+          }
+        ],
+        "errors": [
+          "Error: Request timed out\n    at file:///<local-spike-dir>/node_modules/matrix-widget-api/dist/api.js:4911:25"
+        ],
+        "hasTransport": true,
+        "clientOrigin": "https://shell.example"
+      },
+      "messages": []
+    }
+  ],
+  "events": [
+    {
+      "t": 1783404897437,
+      "type": "widget-api-origin-message",
+      "clientOrigin": "*",
+      "message": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "probe-widget",
+          "requestId": "widgetapi-1783404897436",
+          "action": "supported_api_versions",
+          "data": {}
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      }
+    },
+    {
+      "t": 1783404897439,
+      "type": "widget-api-origin-message",
+      "clientOrigin": "*",
+      "message": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "probe-widget",
+          "requestId": "widgetapi-1783404897437",
+          "action": "content_loaded",
+          "data": {}
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      }
+    },
+    {
+      "t": 1783404897439,
+      "type": "widget-api-origin-message",
+      "clientOrigin": "*",
+      "message": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "probe-widget",
+          "requestId": "widgetapi-1783404897436",
+          "action": "supported_api_versions",
+          "data": {},
+          "response": {}
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      }
+    },
+    {
+      "t": 1783404897439,
+      "type": "widget-api-origin-message",
+      "clientOrigin": "*",
+      "message": {
+        "data": {
+          "api": "fromWidget",
+          "widgetId": "probe-widget",
+          "requestId": "widgetapi-1783404897437",
+          "action": "content_loaded",
+          "data": {},
+          "response": {}
+        },
+        "origin": "null",
+        "sourceIsSelf": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "pass": true,
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46",
+  "runResult": {
+    "ok": true,
+    "beforeConstraints": {
+      "aspectRatio": 1.7777777777777777,
+      "cursor": "always",
+      "deviceId": "screen:0:0",
+      "displaySurface": "monitor",
+      "frameRate": 30,
+      "height": 720,
+      "logicalSurface": true,
+      "resizeMode": "crop-and-scale",
+      "width": 1280
+    },
+    "afterConstraints": {
+      "aspectRatio": 1.7777777777777777,
+      "cursor": "always",
+      "deviceId": "screen:0:0",
+      "displaySurface": "monitor",
+      "frameRate": 60,
+      "height": 1080,
+      "logicalSurface": true,
+      "resizeMode": "none",
+      "width": 1920
+    },
+    "state": {
+      "secureContext": true,
+      "hasGetDisplayMedia": true,
+      "events": [
+        {
+          "type": "track-created",
+          "details": {
+            "aspectRatio": 1.7777777777777777,
+            "cursor": "always",
+            "deviceId": "screen:0:0",
+            "displaySurface": "monitor",
+            "frameRate": 30,
+            "height": 720,
+            "logicalSurface": true,
+            "resizeMode": "crop-and-scale",
+            "width": 1280
+          },
+          "t": 1783404759557
+        },
+        {
+          "type": "constraints-applied",
+          "details": {
+            "aspectRatio": 1.7777777777777777,
+            "cursor": "always",
+            "deviceId": "screen:0:0",
+            "displaySurface": "monitor",
+            "frameRate": 60,
+            "height": 1080,
+            "logicalSurface": true,
+            "resizeMode": "none",
+            "width": 1920
+          },
+          "t": 1783404759729
+        },
+        {
+          "type": "tracks-stopped",
+          "details": {},
+          "t": 1783404759729
+        }
+      ],
+      "errors": []
+    }
+  },
+  "finalState": {
+    "secureContext": true,
+    "hasGetDisplayMedia": true,
+    "events": [
+      {
+        "type": "track-created",
+        "details": {
+          "aspectRatio": 1.7777777777777777,
+          "cursor": "always",
+          "deviceId": "screen:0:0",
+          "displaySurface": "monitor",
+          "frameRate": 30,
+          "height": 720,
+          "logicalSurface": true,
+          "resizeMode": "crop-and-scale",
+          "width": 1280
+        },
+        "t": 1783404759557
+      },
+      {
+        "type": "constraints-applied",
+        "details": {
+          "aspectRatio": 1.7777777777777777,
+          "cursor": "always",
+          "deviceId": "screen:0:0",
+          "displaySurface": "monitor",
+          "frameRate": 60,
+          "height": 1080,
+          "logicalSurface": true,
+          "resizeMode": "none",
+          "width": 1920
+        },
+        "t": 1783404759729
+      },
+      {
+        "type": "tracks-stopped",
+        "details": {},
+        "t": 1783404759729
+      }
+    ],
+    "errors": []
+  },
+  "events": [
+    {
+      "t": 1783404758784,
+      "type": "display-media-request",
+      "videoRequested": true,
+      "audioRequested": false
+    },
+    {
+      "t": 1783404759479,
+      "type": "display-media-source-selected",
+      "sourceCount": 12,
+      "selectedId": "screen:0:0",
+      "selectedName": "画面 1"
+    }
+  ]
+}

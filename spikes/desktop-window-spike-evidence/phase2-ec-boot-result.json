@@ -1,0 +1,321 @@
+{
+  "pass": true,
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46",
+  "origin": "http://127.0.0.1:<local-port>",
+  "pageState": {
+    "title": "Element Call",
+    "rootExists": true,
+    "rootChildCount": 1,
+    "bodyTextSample": "読み込んでいます…",
+    "bodyClass": "cpd-theme-dark",
+    "locationHref": "http://127.0.0.1:<local-port>/index.html?widgetId=ec-probe-widget&parentUrl=http%3A%2F%2F127.0.0.1%3A<local-port>%2F&roomId=%21probe%3Aexample.com&userId=%40alice%3Aexample.com&deviceId=DEVICE&baseUrl=https%3A%2F%2Fmatrix.example.com&intent=join_existing_voice&preload=true&skipLobby=true&disableVideo=true&hideVideoButton=true&theme=dark",
+    "parentIsSelf": true
+  },
+  "widgetMessages": [
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404992945",
+        "action": "supported_api_versions",
+        "data": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404992945",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": []
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404992973",
+        "action": "content_loaded",
+        "data": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404992973",
+        "action": "content_loaded",
+        "data": {},
+        "response": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404993579",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404993579",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        },
+        "response": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    }
+  ],
+  "consoleMessages": [
+    {
+      "level": 0,
+      "message": "Configuring rageshake persistence...",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "Element Call dev",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "UrlParams: final set of url params\n intent: join_existing_voice \nproperties: [object Object] configuration: [object Object]",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "Widget API is available",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "[PostmessageTransport] Sending object to http://127.0.0.1:<local-port>:  [object Object]",
+      "line": 13,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "[MediaDevices AudioInput] [audio-input] available devices: [object Map]",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "[MediaDevices AudioOutput] [audio-output] available devices: [object Map]",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "[MediaDevices VideoInput] [video-input] available devices: [object Map]",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 2,
+      "message": "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security\n  Policy set or a policy with \"unsafe-eval\" enabled. This exposes users of\n  this app to unnecessary security risks.\n\nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "line": 2,
+      "sourceId": "node:electron/js2c/renderer_init"
+    },
+    {
+      "level": 1,
+      "message": "[PostmessageTransport] Sending object to http://127.0.0.1:<local-port>:  [object Object]",
+      "line": 13,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "Posthog is not enabled because there is no api key or no host given in the config",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "[MediaDevices AudioInput] [audio-input] available devices: [object Map]",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "[MediaDevices AudioOutput] [audio-output] available devices: [object Map]",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "[MediaDevices VideoInput] [video-input] available devices: [object Map]",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 0,
+      "message": "calculateInitialMuteState: skipLobby=true, callIntent=audio isWidgetMode=true",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "MuteState: canControlDevices: true, enabled by default: true",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "MuteState: canControlDevices: false, enabled by default: false",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "MuteState: devices connected: false, disabling",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 1,
+      "message": "[PostmessageTransport] Sending object to http://127.0.0.1:<local-port>:  [object Object]",
+      "line": 13,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    },
+    {
+      "level": 0,
+      "message": "Using a matryoshka client",
+      "line": 76,
+      "sourceId": "http://127.0.0.1:<local-port>/assets/index-DHs7ka1T.js"
+    }
+  ],
+  "events": [
+    {
+      "t": 1783404992613,
+      "type": "server-started",
+      "origin": "http://127.0.0.1:<local-port>",
+      "ecDistDir": "<element-call-dist>"
+    },
+    {
+      "t": 1783404992952,
+      "type": "ec-widget-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404992945",
+        "action": "supported_api_versions",
+        "data": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404992958,
+      "type": "ec-console",
+      "level": 2,
+      "message": "%cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security\n  Policy set or a policy with \"unsafe-eval\" enabled. This exposes users of\n  this app to unnecessary security risks.\n\nFor more information and help, consult\nhttps://electronjs.org/docs/tutorial/security.\nThis warning will not show up\nonce the app is packaged.",
+      "line": 2,
+      "sourceId": "node:electron/js2c/renderer_init"
+    },
+    {
+      "t": 1783404992973,
+      "type": "ec-widget-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404992945",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": []
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404992974,
+      "type": "ec-widget-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404992973",
+        "action": "content_loaded",
+        "data": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404993001,
+      "type": "ec-widget-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404992973",
+        "action": "content_loaded",
+        "data": {},
+        "response": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404993579,
+      "type": "ec-widget-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404993579",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404993580,
+      "type": "ec-widget-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "ec-probe-widget",
+        "requestId": "widgetapi-1783404993579",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        },
+        "response": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    }
+  ]
+}

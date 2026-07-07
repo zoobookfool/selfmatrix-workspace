@@ -1,0 +1,153 @@
+{
+  "pass": true,
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46",
+  "matrixWidgetApi": "1.16.1",
+  "runResult": {
+    "ok": true,
+    "state": {
+      "parentIsSelf": true,
+      "loaded": true,
+      "events": [
+        {
+          "type": "started",
+          "details": {
+            "ready": true
+          },
+          "t": 1783404703298
+        },
+        {
+          "type": "content-loaded-resolved",
+          "details": {},
+          "t": 1783404703302
+        }
+      ],
+      "errors": [],
+      "hasTransport": true
+    }
+  },
+  "finalState": {
+    "parentIsSelf": true,
+    "loaded": true,
+    "events": [
+      {
+        "type": "started",
+        "details": {
+          "ready": true
+        },
+        "t": 1783404703298
+      },
+      {
+        "type": "content-loaded-resolved",
+        "details": {},
+        "t": 1783404703302
+      }
+    ],
+    "errors": [],
+    "hasTransport": true
+  },
+  "widgetMessages": [
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "probe-widget",
+        "requestId": "widgetapi-1783404703297",
+        "action": "supported_api_versions",
+        "data": {}
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "probe-widget",
+        "requestId": "widgetapi-1783404703298",
+        "action": "content_loaded",
+        "data": {}
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "probe-widget",
+        "requestId": "widgetapi-1783404703297",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {}
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "probe-widget",
+        "requestId": "widgetapi-1783404703298",
+        "action": "content_loaded",
+        "data": {},
+        "response": {}
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    }
+  ],
+  "events": [
+    {
+      "t": 1783404703298,
+      "type": "widget-api-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "probe-widget",
+        "requestId": "widgetapi-1783404703297",
+        "action": "supported_api_versions",
+        "data": {}
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404703300,
+      "type": "widget-api-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "probe-widget",
+        "requestId": "widgetapi-1783404703298",
+        "action": "content_loaded",
+        "data": {}
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404703300,
+      "type": "widget-api-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "probe-widget",
+        "requestId": "widgetapi-1783404703297",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {}
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783404703301,
+      "type": "widget-api-message",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "probe-widget",
+        "requestId": "widgetapi-1783404703298",
+        "action": "content_loaded",
+        "data": {},
+        "response": {}
+      },
+      "origin": "null",
+      "sourceIsSelf": true
+    }
+  ]
+}

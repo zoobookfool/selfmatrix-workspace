@@ -1,6 +1,6 @@
-# Desktop Window Spike: WebContentsView 再親子付け検証 (一部実測中)
+# Desktop Window Spike: WebContentsView 再親子付け検証 (実測済み・最終 LiveKit join 待ち)
 
-**状態: 次の判断ゲート、一部実測中。** [native-client-rethink.md](../design/native-client-rethink.md) の案 B
+**状態: ネイティブ版の小型 prototype へ進む判断材料は揃った。最終 GO は実 EC + dev MatrixRTC の join / 共有中移動で確認する。** [native-client-rethink.md](../design/native-client-rethink.md) の案 B
 (Electron シェル + 通話を WebContentsView 分離) が成立するかを、実装前に小さく検証する。
 
 ## 検証したい仮説
@@ -111,6 +111,10 @@ Electron の `WebContentsView` に EC widget / LiveKit 通話を載せ、同じ 
 
 - [phase1-reparent-result.json](desktop-window-spike-evidence/phase1-reparent-result.json)
 - [phase2-parent-bridge-result.json](desktop-window-spike-evidence/phase2-parent-bridge-result.json)
+- [phase2-widget-api-result.json](desktop-window-spike-evidence/phase2-widget-api-result.json)
+- [phase2-widget-api-origin-result.json](desktop-window-spike-evidence/phase2-widget-api-origin-result.json)
+- [phase2-ec-boot-result.json](desktop-window-spike-evidence/phase2-ec-boot-result.json)
+- [phase3-display-media-result.json](desktop-window-spike-evidence/phase3-display-media-result.json)
 
 環境:
 
@@ -152,3 +156,64 @@ Electron の `WebContentsView` に EC widget / LiveKit 通話を載せ、同じ 
 
 - parent bridge probe は結果 JSON を書けたが、Electron 子プロセスが残りコマンドが timeout した。
   probe runner 側の終了処理は要修正。検証結果そのものは `parent-result.json` に保存済み
+
+### Phase 2b: `matrix-widget-api` 実物 bridge
+
+結果: **PASS。ただし origin 条件あり**。
+
+- `matrix-widget-api` 1.16.1 の UMD bundle を実際に読み込み、`WidgetApi.sendContentLoaded()` を呼んだ
+- top-level `WebContentsView` なので `window.parent === window`
+- `targetOrigin="*"` では `supported_api_versions` / `content_loaded` を preload/IPC bridge が捕捉し、ack を返すと Promise が解決した
+- `targetOrigin="https://shell.example"` のように call view 自身の origin と違う値では、message event が発火せず timeout した
+
+判断:
+
+- Element Call 実物は `parentUrl` の origin を `targetOrigin` に使うため、ネイティブ版では **Cinny shell と EC bundle を同一 app origin で配信する** ことを設計条件にする
+- 同一 origin にできない構成では、単純な message event bridge では足りず、`postMessage` 呼び出し自体を shim する必要がある
+
+### Phase 2c: EC embedded bundle boot
+
+結果: **PASS。ただし join 前の boot 確認**。
+
+- Element Call の built `dist` をローカル HTTP で配信し、`parentUrl` も同じ origin にした
+- Electron `WebContentsView` 上で実 EC bundle が起動し、`Widget API is available` まで到達した
+- bridge 越しに `supported_api_versions` / `content_loaded` / `io.element.device_mute` を確認した
+- root は描画され、致命的な console error は出なかった
+- `preload=true` のため画面は join 待ちの loading 状態であり、これは実通話参加の検証ではない
+
+判断:
+
+- EC bundle を WebContentsView に載せること自体は blocker ではなさそう
+- 次の未確認点は、Cinny 実 shell の `ClientWidgetApi` 相当処理とつないだ状態で dev MatrixRTC に実 join できるか
+
+### Phase 3a: Electron displayMedia handler
+
+結果: **PASS**。
+
+- `session.setDisplayMediaRequestHandler` で `desktopCapturer` の screen source を返した
+- `navigator.mediaDevices.getDisplayMedia()` が video track を返した
+- 初期 constraints は `1280x720 / 30fps` として反映された
+- `track.applyConstraints()` で `1920x1080 / 60fps` へ変更できた
+
+判断:
+
+- 別窓内から配信開始し、720p/1080p/ソース解像度・15/30/60fps の選択を Electron 側 picker と EC constraints へ接続する実装は可能寄り
+- 未確認: Windows の system audio / loopback、共有中の view 再親子付け、実 LiveKit 送信 track の維持
+
+## 2026-07-07 時点の暫定判断
+
+**ネイティブ版の作成は「小型 prototype へ進めてよい」。**
+
+根拠:
+
+- `WebContentsView` 再親子付けだけでは reload / WebRTC loopback 切断が起きなかった
+- `matrix-widget-api` 実物の初期 message は preload/IPC bridge で往復できた
+- 実 EC embedded bundle は同一 origin 条件で boot し、Widget API 初期通信まで通った
+- Electron の画面共有 handler は source 選択と解像度/FPS constraints を反映できた
+
+ただし、production 実装の GO ではなく **次フェーズ着手 GO** とする。実装前提は次の通り。
+
+- Electron shell が Cinny と EC を同一 app origin で配信する
+- EC view は iframe ではなく top-level `WebContentsView` なので、Widget API は preload/IPC bridge を正式な境界として設計する
+- 画面共有 picker はブラウザ標準 UI ではなく Electron 側で実装する
+- 実 LiveKit join、共有中 view 移動、system audio、session/localStorage 共有は次の prototype 合格条件に残す

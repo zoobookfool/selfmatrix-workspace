@@ -1,6 +1,6 @@
 # クライアントのネイティブアプリ化 — 要件の再定義 (検討、2026-07-07)
 
-**ステータス: 検討ドラフト v0.1** — 運用者の方針転換提案を受けた要件の練り直し。
+**ステータス: 検討ドラフト v0.2** — 運用者の方針転換提案を受けた要件の練り直し。
 複数の AI (Claude / GPT 等) と運用者で議論するための土台。合意後に requirements.md と roadmap.md を改訂する。
 次の判断ゲートは [desktop-window-spike.md](../spikes/desktop-window-spike.md)。
 この文書は**単体で読める** — リポジトリや過去の経緯を参照できない読者でも、ここから検討に参加できることを意図している。
@@ -81,6 +81,24 @@
 
 **推奨: A → B の二段階。** A で配布・更新・公開面縮小をまず成立させ (cinny/EC はほぼ無改修)、
 B で「無再接続の窓移動」というネイティブ最大の果実を取る。
+
+### 2026-07-07 初回スパイクで決まった実装前提
+
+[desktop-window-spike.md](../spikes/desktop-window-spike.md) の初回実測では、案 B は **小型 prototype へ進めてよい** と判断した。
+ただし production 実装可ではなく、次の前提を守った prototype 着手 GO とする。
+
+1. **Cinny shell と EC bundle は同一 app origin で配信する。**
+   EC の `WidgetApi` は `parentUrl` の origin を `postMessage` の `targetOrigin` に使う。
+   WebContentsView では `window.parent === window` になるため、call view 自身の origin と `parentUrl` origin が違うと message event が発火せず timeout する。
+   ローカル HTTP (`http://127.0.0.1:<port>`) または app custom protocol 等で shell/EC を同一 origin に揃える。
+2. **Matrix Widget API は preload/IPC bridge を正式な境界として設計する。**
+   DOM iframe の親子関係は消えるため、`window.parent.postMessage` が cinny へ素で届くことはない。
+   初回スパイクでは `matrix-widget-api` 1.16.1 の `supported_api_versions` / `content_loaded` と EC 実 bundle の `io.element.device_mute` まで bridge できた。
+3. **画面共有 picker は Electron 側で実装する。**
+   `session.setDisplayMediaRequestHandler` + `desktopCapturer` で screen source を返し、`1280x720/30fps` から `1920x1080/60fps` への constraints 反映は確認済み。
+   Windows loopback audio、共有中 view 移動、LiveKit 送信 track 維持は次 prototype の合格条件に残す。
+4. **次の合格条件は実 EC + dev MatrixRTC join。**
+   built EC bundle の boot は通ったが、実通話参加・共有中移動・Cinny 実 shell の `ClientWidgetApi` 接続は未確認。
 
 ### 実装済み設計との関係
 
