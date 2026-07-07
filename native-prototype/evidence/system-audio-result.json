@@ -1,0 +1,28 @@
+{
+  "pass": true,
+  "task": "M1 step 3c-4 task A: system audio (loopback) real-machine check",
+  "platform": "win32",
+  "electron": "43.0.0",
+  "chrome": "150.0.7871.46",
+  "displayMediaHandlerDiag": {
+    "called": true,
+    "audioRequestedSeen": true,
+    "sourceSelected": true,
+    "audioModeUsed": "loopback",
+    "handlerError": null
+  },
+  "probeResult": {
+    "ok": true,
+    "videoTrackCount": 1,
+    "audioTrackCount": 1,
+    "audioTrackKind": "audio",
+    "audioTrackReadyStateInitial": "live",
+    "audioTrackReadyStateAfterSampling": "live",
+    "audioTrackLabel": "System audio",
+    "analyserSampledWithoutCrash": true,
+    "analyserSampleCount": 15,
+    "analyserError": null
+  },
+  "probeError": null,
+  "note": "loopback captures the system-wide output mix. No real speaker output is required or asserted (pass depends on audio track presence/liveness/AnalyserNode sampling, not audible sound). No microphone (getUserMedia) was used; no real audio device input/output setting was changed."
+}

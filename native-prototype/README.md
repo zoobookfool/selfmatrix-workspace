@@ -502,8 +502,32 @@ localStorage へ書き込んでおく必要がある — join 後に書き込ん
   掴むようにし、`native-callflow.e2e.mjs` がその window 上に絶えず変化する keep-alive
   オーバーレイを描画することで、この問題を回避している。
 
+## system audio (loopback) 実機確認 + アプリ単位音声キャプチャのスパイク (M1 step 3c-4)
+
+M1 step 3c-4 の残り 2 項目 (native-milestones.md 参照)。詳細な調査結果・比較表・M2 要件化への
+推奨は [spikes/app-audio-capture-spike.md](../spikes/app-audio-capture-spike.md) が正本。ここでは
+追加した検証入口のみ記す。
+
+- `npm run probe:system-audio` (`src/system-audio-probe.cjs` + `system-audio-probe.html`):
+  `registerDisplayMediaHandler()` と同じ判定式 (`request.audioRequested && win32 ? "loopback" :
+  false`) を単体の Electron スクリプトへ再現し、実ページの
+  `getDisplayMedia({ video: true, audio: true })` が実際に audio track (`readyState: "live"`) を
+  含む `MediaStream` を返すこと、その track を WebAudio `AnalyserNode` で 3 秒間サンプリングしても
+  クラッシュしないことを実機確認する。evidence: `evidence/system-audio-result.json`
+  (実測 pass:true — 詳細値は spike doc 参照)。`npm test` には含めない (音声デバイス依存のため)。
+- `npm run probe:app-audio-capture` (`src/app-audio-capture-probe.cjs`): アプリ単位 (per-window/
+  per-process) 音声キャプチャに相当する API が Electron 43 のこのビルドに隠れていないかを、
+  `session.defaultSession` / `desktopCapturer` の実オブジェクトへのリフレクションと、実際の
+  `desktopCapturer.getSources()` 呼び出し結果のフィールド形状で確認する。evidence:
+  `evidence/app-audio-capture-api-surface-result.json` — 該当する API は見つからず、
+  ドキュメントベースの結論 (Electron にはアプリ単位音声キャプチャの手段が無い) と整合した。
+- 結論 (spike doc の要約): システム音声 (全体ミックス) は実機確認 PASS 済み。アプリ単位の音声は
+  Electron 側に手段が無く、WASAPI Process Loopback のネイティブモジュール自作は工数 中〜大 —
+  M2 では **LATER** を推奨。
+
 ## まだやっていないこと
 
 - Cinny 本体の widget host と深く統合すること
 - auto update / installer / release signing
-- system audio / loopback の UX
+- system audio / loopback の UX (トグル UI 自体。キャプチャ機構は上記で実機確認済み)
+- アプリ単位の音声キャプチャ (上記スパイクの結論により当面 LATER)

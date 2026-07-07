@@ -56,9 +56,22 @@ step 3c-2/3c-3 (2 ユーザー通話 + 配信 + **窓移動 3 往復無再接続
 契約の live 化) も **2026-07-08 完了** — cinny b97da94 + workspace 本コミット。
 **M1 受け入れ条件「dev スタックで 2 ユーザー通話 + 配信 + 無再接続の窓往復が E2E で PASS」成立**
 (レビュアー独立再実行込み、[reviews/claude-review-m1-step3c23-20260708.md](../reviews/claude-review-m1-step3c23-20260708.md))。
-**残るは step 3c-4**: Docker dev スタック (`pnpm backend`) で実ログイン → cinny-shell モードから
-実 LiveKit join → 配信 + 無再接続の窓往復 E2E + 7 語彙の実 in-call DOM 検証 + system audio +
-アプリ単位音声スパイク → **M1 受け入れ・案 B 正式 GO/NO-GO**。
+step 3c-4 (system audio + アプリ単位音声スパイク) も **2026-07-08 完了** —
+system audio (loopback) は実測 PASS (audio track "System audio" が live、
+native-prototype/evidence/system-audio-result.json。EC は配信時に常に audio を要求する形状
+であることもソースで確認)。アプリ単位音声は Electron 43 に per-process の口が無いことを
+API リフレクション実測 + 文書で確認し、WASAPI プロセスループバックの自作は工数中〜大 →
+**推奨 LATER** ([spikes/app-audio-capture-spike.md](../spikes/app-audio-capture-spike.md)、
+運用者判断待ち)。
+
+### M1 完了 (2026-07-08) — 案 B 正式 GO を推奨
+
+受け入れ条件「dev スタックで 2 ユーザー通話 + 配信 + 無再接続の窓往復が E2E で PASS」は
+**成立** (レビュアー独立再実行込み)。技術面の裏付け: matrix-widget-api 無改造の iframe シム /
+CallWidgetDriver 無改造 / cinny 差分は native/ 4 ファイル + 最小接続 / 配信中の窓移動 3 往復
+無再接続 (実 contentView 遷移の積極的証拠つき) / localStorage 契約の live 化 / system audio 実測。
+**GO/NO-GO の正式判断と、アプリ単位音声の LATER 化は運用者の承認事項**。GO なら次は M2
+(selfmatrix-desktop リポジトリ新設 — 要運用者承認)。
 
 - **NativeWidgetTransport / NativeCallHost アダプタ**: cinny の ClientWidgetApi/CallWidgetDriver
   (iframe.contentWindow 前提) を WebContentsView に接続する層。設計分析の結果、

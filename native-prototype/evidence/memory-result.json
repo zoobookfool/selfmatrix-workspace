@@ -8,192 +8,192 @@
     {
       "label": "shell-only",
       "processCount": 7,
-      "totalWorkingSetSizeKB": 804804,
-      "totalPrivateBytesKB": 506524,
+      "totalWorkingSetSizeKB": 800064,
+      "totalPrivateBytesKB": 495496,
       "metrics": [
         {
           "type": "Browser",
-          "pid": 25256,
+          "pid": 30520,
           "cpuPercent": 0,
-          "workingSetSizeKB": 124012,
-          "peakWorkingSetSizeKB": 124012,
-          "privateBytesKB": 92756
+          "workingSetSizeKB": 121168,
+          "peakWorkingSetSizeKB": 121168,
+          "privateBytesKB": 90152
         },
         {
           "type": "GPU",
-          "pid": 37360,
+          "pid": 37748,
           "cpuPercent": 0,
-          "workingSetSizeKB": 129684,
-          "peakWorkingSetSizeKB": 130464,
-          "privateBytesKB": 188400
+          "workingSetSizeKB": 129376,
+          "peakWorkingSetSizeKB": 129740,
+          "privateBytesKB": 181692
         },
         {
           "type": "Utility",
-          "pid": 35692,
+          "pid": 26052,
           "cpuPercent": 0,
-          "workingSetSizeKB": 51220,
-          "peakWorkingSetSizeKB": 52564,
-          "privateBytesKB": 15096
+          "workingSetSizeKB": 51940,
+          "peakWorkingSetSizeKB": 53156,
+          "privateBytesKB": 15372
         },
         {
           "type": "Tab",
-          "pid": 32244,
+          "pid": 9412,
           "cpuPercent": 0,
-          "workingSetSizeKB": 130824,
-          "peakWorkingSetSizeKB": 131584,
-          "privateBytesKB": 73460
+          "workingSetSizeKB": 128452,
+          "peakWorkingSetSizeKB": 131312,
+          "privateBytesKB": 71588
         },
         {
           "type": "Tab",
-          "pid": 21736,
+          "pid": 4144,
           "cpuPercent": 0,
-          "workingSetSizeKB": 127728,
-          "peakWorkingSetSizeKB": 138152,
+          "workingSetSizeKB": 127248,
+          "peakWorkingSetSizeKB": 138960,
           "privateBytesKB": 59120
         },
         {
           "type": "Utility",
-          "pid": 32584,
+          "pid": 5472,
           "cpuPercent": 0,
-          "workingSetSizeKB": 88660,
-          "peakWorkingSetSizeKB": 88660,
-          "privateBytesKB": 10472
+          "workingSetSizeKB": 88892,
+          "peakWorkingSetSizeKB": 88892,
+          "privateBytesKB": 10476
         },
         {
           "type": "Utility",
-          "pid": 37724,
+          "pid": 6372,
           "cpuPercent": 0,
-          "workingSetSizeKB": 152676,
-          "peakWorkingSetSizeKB": 153048,
-          "privateBytesKB": 67220
+          "workingSetSizeKB": 152988,
+          "peakWorkingSetSizeKB": 153388,
+          "privateBytesKB": 67096
         }
       ]
     },
     {
       "label": "call-view-booted",
       "processCount": 7,
-      "totalWorkingSetSizeKB": 804832,
-      "totalPrivateBytesKB": 506700,
+      "totalWorkingSetSizeKB": 800108,
+      "totalPrivateBytesKB": 495964,
       "metrics": [
         {
           "type": "Browser",
-          "pid": 25256,
-          "cpuPercent": 0.009462575558176235,
-          "workingSetSizeKB": 124188,
-          "peakWorkingSetSizeKB": 124204,
-          "privateBytesKB": 92924
+          "pid": 30520,
+          "cpuPercent": 0.009987647092425455,
+          "workingSetSizeKB": 121432,
+          "peakWorkingSetSizeKB": 121432,
+          "privateBytesKB": 90604
         },
         {
           "type": "GPU",
-          "pid": 37360,
-          "cpuPercent": 0.00316909131825653,
-          "workingSetSizeKB": 129592,
-          "peakWorkingSetSizeKB": 130464,
-          "privateBytesKB": 188400
+          "pid": 37748,
+          "cpuPercent": 0.0031418068816995463,
+          "workingSetSizeKB": 129248,
+          "peakWorkingSetSizeKB": 129740,
+          "privateBytesKB": 181696
         },
         {
           "type": "Utility",
-          "pid": 35692,
+          "pid": 26052,
           "cpuPercent": 0,
-          "workingSetSizeKB": 51220,
-          "peakWorkingSetSizeKB": 52564,
-          "privateBytesKB": 15096
+          "workingSetSizeKB": 51940,
+          "peakWorkingSetSizeKB": 53156,
+          "privateBytesKB": 15372
         },
         {
           "type": "Tab",
-          "pid": 32244,
-          "cpuPercent": 0.003275909955205492,
-          "workingSetSizeKB": 130756,
-          "peakWorkingSetSizeKB": 131584,
-          "privateBytesKB": 73464
+          "pid": 9412,
+          "cpuPercent": 0.002927622042566196,
+          "workingSetSizeKB": 128348,
+          "peakWorkingSetSizeKB": 131312,
+          "privateBytesKB": 71596
         },
         {
           "type": "Tab",
-          "pid": 21736,
-          "cpuPercent": 0.0003293709122399216,
-          "workingSetSizeKB": 127728,
-          "peakWorkingSetSizeKB": 138152,
+          "pid": 4144,
+          "cpuPercent": 0.00028562207058863853,
+          "workingSetSizeKB": 127248,
+          "peakWorkingSetSizeKB": 138960,
           "privateBytesKB": 59120
         },
         {
           "type": "Utility",
-          "pid": 32584,
-          "cpuPercent": 0.0016379503117090659,
-          "workingSetSizeKB": 88672,
-          "peakWorkingSetSizeKB": 88672,
-          "privateBytesKB": 10476
+          "pid": 5472,
+          "cpuPercent": 0.0016512478792621832,
+          "workingSetSizeKB": 88904,
+          "peakWorkingSetSizeKB": 88904,
+          "privateBytesKB": 10480
         },
         {
           "type": "Utility",
-          "pid": 37724,
+          "pid": 6372,
           "cpuPercent": 0,
-          "workingSetSizeKB": 152676,
-          "peakWorkingSetSizeKB": 153048,
-          "privateBytesKB": 67220
+          "workingSetSizeKB": 152988,
+          "peakWorkingSetSizeKB": 153388,
+          "privateBytesKB": 67096
         }
       ]
     },
     {
       "label": "call-view-with-2-synthetic-viewer-streams",
       "processCount": 7,
-      "totalWorkingSetSizeKB": 987964,
-      "totalPrivateBytesKB": 719196,
+      "totalWorkingSetSizeKB": 987988,
+      "totalPrivateBytesKB": 724448,
       "metrics": [
         {
           "type": "Browser",
-          "pid": 25256,
-          "cpuPercent": 0.04252928076542395,
-          "workingSetSizeKB": 124744,
-          "peakWorkingSetSizeKB": 124744,
-          "privateBytesKB": 92964
+          "pid": 30520,
+          "cpuPercent": 0.042492281905022536,
+          "workingSetSizeKB": 122016,
+          "peakWorkingSetSizeKB": 122016,
+          "privateBytesKB": 90924
         },
         {
           "type": "GPU",
-          "pid": 37360,
-          "cpuPercent": 5.0701268504955985,
-          "workingSetSizeKB": 272292,
-          "peakWorkingSetSizeKB": 272692,
-          "privateBytesKB": 385588
+          "pid": 37748,
+          "cpuPercent": 5.024096535800059,
+          "workingSetSizeKB": 276136,
+          "peakWorkingSetSizeKB": 285744,
+          "privateBytesKB": 394056
         },
         {
           "type": "Utility",
-          "pid": 35692,
+          "pid": 26052,
           "cpuPercent": 0,
-          "workingSetSizeKB": 51220,
-          "peakWorkingSetSizeKB": 52564,
-          "privateBytesKB": 15096
+          "workingSetSizeKB": 51940,
+          "peakWorkingSetSizeKB": 53156,
+          "privateBytesKB": 15372
         },
         {
           "type": "Tab",
-          "pid": 32244,
+          "pid": 9412,
           "cpuPercent": 0,
-          "workingSetSizeKB": 130756,
-          "peakWorkingSetSizeKB": 131584,
-          "privateBytesKB": 73464
+          "workingSetSizeKB": 128348,
+          "peakWorkingSetSizeKB": 131312,
+          "privateBytesKB": 71596
         },
         {
           "type": "Tab",
-          "pid": 21736,
-          "cpuPercent": 0.44934960031741383,
-          "workingSetSizeKB": 167604,
-          "peakWorkingSetSizeKB": 167604,
-          "privateBytesKB": 74388
+          "pid": 4144,
+          "cpuPercent": 0.4347728484240353,
+          "workingSetSizeKB": 167656,
+          "peakWorkingSetSizeKB": 167656,
+          "privateBytesKB": 74924
         },
         {
           "type": "Utility",
-          "pid": 32584,
+          "pid": 5472,
           "cpuPercent": 0,
-          "workingSetSizeKB": 88672,
-          "peakWorkingSetSizeKB": 88672,
-          "privateBytesKB": 10476
+          "workingSetSizeKB": 88904,
+          "peakWorkingSetSizeKB": 88904,
+          "privateBytesKB": 10480
         },
         {
           "type": "Utility",
-          "pid": 37724,
+          "pid": 6372,
           "cpuPercent": 0,
-          "workingSetSizeKB": 152676,
-          "peakWorkingSetSizeKB": 153048,
-          "privateBytesKB": 67220
+          "workingSetSizeKB": 152988,
+          "peakWorkingSetSizeKB": 153388,
+          "privateBytesKB": 67096
         }
       ]
     }
