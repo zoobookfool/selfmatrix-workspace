@@ -14,11 +14,12 @@
   [desktop-window-spike.md](../spikes/desktop-window-spike.md) の初回実測では小型 prototype 着手可。ただし production 実装 GO は実 EC + dev MatrixRTC join / 共有中移動 / system audio 確認待ち。
 - ネイティブ版の前段として、重い Electron 実機テストへ全部を押し込まないための [test-harness.md](../design/test-harness.md) を追加した。
   Web UI harness / Widget protocol CLI / Electron smoke に分け、ネイティブ固有でない不具合を先に安く落とす方針。`test-harness/` の最小実装を追加し、`npm test` と Electron smoke は PASS 済み。
+- `native-prototype/` を追加した。実 Cinny/EC の build artifact を同一 local origin で配信し、EC を `WebContentsView` として起動、Widget API bridge、別窓移動/戻し、`io.element.join` 送信まで smoke PASS。
 
 ## 次の判断ゲート
 
 1. `test-harness/` の Playwright UI test を依存 install 後に実行する。
-2. Electron prototype では、Cinny shell と EC bundle を同一 app origin で配信し、Widget API bridge を正式な境界として設計する。
+2. `native-prototype/` を Cinny 本体の widget host と接続する設計へ進める。
 3. 実 EC + dev MatrixRTC で join / 共有中 view 移動 / system audio を確認する。
 4. 成立するなら `selfmatrix-desktop` 案 A -> 案 B を roadmap に追加する。成立しない、または実装コストが高すぎるなら、web 版の [call-window-mode.md](../design/call-window-mode.md) を実装候補に戻す。
 
@@ -27,6 +28,7 @@
 未完了・保留・検証待ちは [backlog.md](backlog.md) を正とする。主なもの:
 
 - test harness 整備
+- native prototype の Cinny widget host 接続
 - desktop window spike の最終 LiveKit join 検証
 - グリッド配信タイルのストリーム単体ポップアウト `🗗`
 - 話者オーバーレイ右クリックからのユーザー単位音量調整

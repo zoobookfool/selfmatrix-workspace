@@ -1,6 +1,6 @@
 # selfmatrix-workspace
 
-[SelfMatrix](https://github.com/zoobookfool/selfmatrix) プロジェクトの**作業リポジトリ**です。計画・設計・スパイク記録・レビュー・モックなど、開発プロセスの文書をここに置きます。**製品そのもの (デプロイ雛形・クライアント fork) はここにはありません** — 製品リポジトリは目的・構成・使い方のドキュメントだけを持ち、作業物はすべてこちらに分離しています (2026-07-06 の運用ルール)。フォークでのスパイク (技術検証) はコードを fork 側の `spike/*` ブランチに、記録をここに置きます (詳細は [fork-strategy.md](planning/fork-strategy.md))。
+[SelfMatrix](https://github.com/zoobookfool/selfmatrix) プロジェクトの**作業リポジトリ**です。計画・設計・スパイク記録・レビュー・モックなど、開発プロセスの文書をここに置きます。**製品そのもの (デプロイ雛形・クライアント fork) はここにはありません** — 製品リポジトリは目的・構成・使い方のドキュメントだけを持ち、作業物はすべてこちらに分離しています (2026-07-06 の運用ルール)。ただし、ネイティブ化検討のための小型 prototype / test harness は、製品本体へ切り出す前の検証入口としてこの workspace に置きます。フォークでのスパイク (技術検証) はコードを fork 側の `spike/*` ブランチに、記録をここに置きます (詳細は [fork-strategy.md](planning/fork-strategy.md))。
 
 ## リポジトリ体制
 
@@ -22,6 +22,7 @@
 | `reviews/` | AI レビューの記録 |
 | `fixes/` | 個別修正の記録とパッチ |
 | `test-harness/` | ネイティブ版前段の Web UI / Widget protocol / Electron smoke 検証入口 |
+| `native-prototype/` | Electron 版 SelfMatrix の小型 prototype。将来 `selfmatrix-desktop` へ切り出す候補 |
 
 ## 文書の読み方
 

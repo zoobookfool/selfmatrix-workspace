@@ -1,0 +1,14 @@
+{
+  "name": "selfmatrix-native-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SelfMatrix native desktop prototype using Electron WebContentsView.",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron src/main.cjs",
+    "smoke": "electron src/main.cjs --smoke"
+  },
+  "devDependencies": {
+    "electron": "43.0.0"
+  }
+}

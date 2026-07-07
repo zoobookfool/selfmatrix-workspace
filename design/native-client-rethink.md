@@ -111,6 +111,24 @@ B で「無再接続の窓移動」というネイティブ最大の果実を取
 
 この harness 整備を、`selfmatrix-desktop` 本実装前の P0 とする。
 
+### 実装 prototype の現在地
+
+`native-prototype/` に Electron 版の小型 prototype を追加した。
+これは product repo ではなく、将来の `selfmatrix-desktop` へ切り出す前の検証用実装。
+
+現在できること:
+
+- Cinny build artifact と Element Call build artifact を同一 local origin で配信する
+- Shell window で Cinny を iframe 表示する
+- EC を iframe ではなく `WebContentsView` として起動する
+- preload/IPC bridge で `supported_api_versions` / `content_loaded` / `io.element.device_mute` を受け、ack を返す
+- EC view を main window と call window の間で再親子付けする
+- shell から `io.element.join` を `toWidget` action として送る
+- `session.setDisplayMediaRequestHandler` を登録する
+
+2026-07-07 の smoke では、実 Cinny/EC の local dist を使い、EC boot、Widget API bridge、別窓移動/戻し、`io.element.join` 送信まで PASS。
+未確認は Cinny 本体の widget host との直接接続、実 MatrixRTC join、共有中移動、system audio。
+
 ### 実装済み設計との関係
 
 - 「別ウィンドウ通話開始モード」(call-window-mode.md v1.4、web 前提で設計済み・実装待ち) は
