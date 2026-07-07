@@ -116,6 +116,25 @@ const scenarios = {
     steps: [fromWidget("content_loaded", {})],
     expectedFailure: "source_not_self",
   },
+  "to-view-widget-id-mismatch": {
+    // F2a (受け入れレビュー修正): shell→callView 方向 (to-view) にも validateToViewMessage() による
+    // widgetId/api 方向の形状検証を main.cjs に追加した。この純関数を直接叩き、widgetId 不一致の
+    // to-view メッセージが reasons 付きで弾かれることを検証する (main.cjs は Electron 依存のため CLI
+    // からは import できないが、validateToViewMessage 自体は widget-bridge-protocol.cjs の
+    // Electron 非依存の純関数で main.cjs はこれを require するだけの薄い委譲)。
+    description:
+      "validateToViewMessage() rejects a to-view (shell→callView) message whose widgetId does not match " +
+      "the active call view widget.",
+    viaValidateToViewMessage: true,
+    message: {
+      api: "toWidget",
+      widgetId: "unexpected-widget",
+      requestId: "widgetapi-harness-to-view-001",
+      action: "capabilities",
+      data: {},
+    },
+    expectedFailure: "widget_id_mismatch",
+  },
 };
 
 function makeFromWidgetRequest(step, index, widgetId) {
@@ -223,6 +242,12 @@ function checkResponseExpectation(expect, responsePayload) {
   return { ok: true };
 }
 
+// F5 (受け入れレビュー修正): main.cjs が実際に listen しているのは "native:widget-from-view"
+// チャンネルのみ (widget-bridge-preload.cjs 参照)。これまでは ipcMessage の中身
+// (validateWidgetBridgeMessage の結果) だけを見ており、preload が別チャンネル名で送るよう壊れても
+// 検知できなかった。channel 名を明示的に検証し、不一致なら reason 付きで fail させる。
+const EXPECTED_FROM_VIEW_CHANNEL = "native:widget-from-view";
+
 function handleForwardedMessage(ipcMessage, expectedRequest, scenario, kind = "request") {
   if (!ipcMessage) {
     return {
@@ -230,6 +255,26 @@ function handleForwardedMessage(ipcMessage, expectedRequest, scenario, kind = "r
       channel: null,
       request: expectedRequest,
       validation: { ok: false, reasons: [{ code: "not_forwarded", message: "Preload did not forward the message to IPC." }] },
+    };
+  }
+
+  if (ipcMessage.channel !== EXPECTED_FROM_VIEW_CHANNEL) {
+    return {
+      kind,
+      channel: ipcMessage.channel,
+      request: expectedRequest,
+      forwarded: ipcMessage.payload,
+      validation: {
+        ok: false,
+        reasons: [
+          {
+            code: "unexpected_ipc_channel",
+            message: `Expected from-view forward on channel "${EXPECTED_FROM_VIEW_CHANNEL}" but got "${ipcMessage.channel}".`,
+            expectedChannel: EXPECTED_FROM_VIEW_CHANNEL,
+            actualChannel: ipcMessage.channel,
+          },
+        ],
+      },
     };
   }
 
@@ -263,6 +308,23 @@ function runBuildWidgetUrlScenario(scenario, transcript) {
   return transcript;
 }
 
+// F2a: purely-functional scenario runner for validateToViewMessage() — no preload harness needed
+// since the function under test takes a plain object and returns { ok, reasons }.
+function runValidateToViewMessageScenario(scenario, transcript) {
+  const validation = protocol.validateToViewMessage(scenario.message);
+  transcript.events.push({ kind: "to-view-validation", message: scenario.message, validation });
+
+  if (validation.ok) {
+    transcript.failure = { code: "expected_rejection_but_passed" };
+    transcript.pass = false;
+    return transcript;
+  }
+
+  transcript.failure = validation;
+  transcript.pass = validation.reasons.some((reason) => reason.code === scenario.expectedFailure);
+  return transcript;
+}
+
 function runScenario(name) {
   const scenario = scenarios[name];
   if (!scenario) {
@@ -284,6 +346,9 @@ function runScenario(name) {
   if (scenario.viaBuildWidgetUrl) {
     return runBuildWidgetUrlScenario(scenario, transcript);
   }
+  if (scenario.viaValidateToViewMessage) {
+    return runValidateToViewMessageScenario(scenario, transcript);
+  }
 
   const preload = createPreloadHarness(scenario.callOrigin);
   const stepChecks = [];
@@ -304,7 +369,7 @@ function runScenario(name) {
       }
 
       const response = { ...request, response: protocol.responseForWidgetRequest(request) };
-      const responseForwarded = preload.emitToPreload("widget-api-response", response);
+      const responseForwarded = preload.emitToPreload("native:widget-to-view", response);
       const responseEvent = handleForwardedMessage(responseForwarded[0], response, scenario, "response-loopback");
       transcript.events.push(responseEvent);
 
@@ -319,7 +384,7 @@ function runScenario(name) {
       step.data,
       `native-prototype-harness-${String(index + 1).padStart(3, "0")}`,
     );
-    const forwarded = preload.emitToPreload("widget-api-to-widget", request);
+    const forwarded = preload.emitToPreload("native:widget-to-view", request);
     const event = handleForwardedMessage(forwarded[0], request, scenario);
     transcript.events.push(event);
     stepChecks.push({ action: step.action, ok: event.validation.ok, reason: event.validation.ok ? undefined : "not_forwarded" });

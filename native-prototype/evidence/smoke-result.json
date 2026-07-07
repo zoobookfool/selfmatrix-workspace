@@ -5,16 +5,64 @@
   "origin": "http://127.0.0.1:<local-port>",
   "hardNavigationCount": 1,
   "sawJoinRequest": true,
+  "sawContentLoaded": true,
+  "handshake": {
+    "supportedVersionsIsReal": {
+      "pass": true,
+      "supportedVersionsCount": 14,
+      "note": "Stub always returned supported_versions: []; real ClientWidgetApi returns CurrentApiVersions (non-empty)."
+    },
+    "capabilitiesNegotiated": {
+      "pass": true,
+      "capabilitiesAskSeen": true,
+      "capabilitiesReplySeen": true,
+      "requestedCapabilityCount": 53,
+      "notifyCapabilitiesSeen": true,
+      "approvedCapabilityCount": 53
+    },
+    "contentLoadedAcked": true,
+    "rejectedMessageCount": 1,
+    "spoofRejected": true,
+    "spoofLeaked": false,
+    "unexpectedRejectedCount": 0,
+    "actionSequence": [
+      "from-view:supported_api_versions",
+      "to-view:supported_api_versions:response",
+      "from-view:supported_api_versions:response",
+      "from-view:content_loaded",
+      "to-view:content_loaded:response",
+      "to-view:capabilities",
+      "from-view:content_loaded:response",
+      "from-view:capabilities",
+      "from-view:capabilities:response",
+      "to-view:notify_capabilities",
+      "from-view:notify_capabilities",
+      "from-view:notify_capabilities:response",
+      "to-view:supported_api_versions",
+      "from-view:supported_api_versions",
+      "from-view:supported_api_versions:response",
+      "to-view:update_state",
+      "from-view:update_state",
+      "from-view:update_state:response",
+      "from-view:io.element.device_mute",
+      "to-view:io.element.device_mute:response",
+      "from-view:io.element.device_mute:response",
+      "to-view:io.element.join",
+      "from-view:io.element.join"
+    ]
+  },
+  "claimGuard": true,
   "cinnyDistExists": true,
   "ecDistExists": true,
   "callViewState": "attached",
   "widgetMessages": [
     {
-      "t": 1783417348301,
+      "t": 1783423851876,
+      "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783417348298",
+        "requestId": "widgetapi-1783423851872",
         "action": "supported_api_versions",
         "data": {}
       },
@@ -22,26 +70,72 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783417348317,
+      "t": 1783423851877,
+      "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783417348298",
+        "requestId": "widgetapi-1783423851872",
         "action": "supported_api_versions",
         "data": {},
         "response": {
-          "supported_versions": []
+          "supported_versions": [
+            "0.0.1",
+            "0.0.2",
+            "org.matrix.msc2762",
+            "org.matrix.msc2762_update_state",
+            "org.matrix.msc2871",
+            "org.matrix.msc2873",
+            "org.matrix.msc2931",
+            "org.matrix.msc2974",
+            "org.matrix.msc2876",
+            "org.matrix.msc3819",
+            "town.robin.msc3846",
+            "org.matrix.msc3869",
+            "org.matrix.msc3973",
+            "org.matrix.msc4039"
+          ]
+        }
+      }
+    },
+    {
+      "t": 1783423851891,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851872",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": [
+            "0.0.1",
+            "0.0.2",
+            "org.matrix.msc2762",
+            "org.matrix.msc2762_update_state",
+            "org.matrix.msc2871",
+            "org.matrix.msc2873",
+            "org.matrix.msc2931",
+            "org.matrix.msc2974",
+            "org.matrix.msc2876",
+            "org.matrix.msc3819",
+            "town.robin.msc3846",
+            "org.matrix.msc3869",
+            "org.matrix.msc3973",
+            "org.matrix.msc4039"
+          ]
         }
       },
       "origin": "http://127.0.0.1:<local-port>",
       "sourceIsSelf": true
     },
     {
-      "t": 1783417348318,
+      "t": 1783423851891,
+      "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783417348318",
+        "requestId": "widgetapi-1783423851891",
         "action": "content_loaded",
         "data": {}
       },
@@ -49,11 +143,35 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783417348332,
+      "t": 1783423851892,
+      "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783417348318",
+        "requestId": "widgetapi-1783423851891",
+        "action": "content_loaded",
+        "data": {},
+        "response": {}
+      }
+    },
+    {
+      "t": 1783423851892,
+      "direction": "to-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851892",
+        "action": "capabilities",
+        "data": {}
+      }
+    },
+    {
+      "t": 1783423851912,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851891",
         "action": "content_loaded",
         "data": {},
         "response": {}
@@ -62,11 +180,635 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783417349165,
+      "t": 1783423851919,
+      "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "native-prototype-001",
+        "requestId": "widgetapi-1783423851892",
+        "action": "capabilities",
+        "data": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423851921,
+      "direction": "from-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851892",
+        "action": "capabilities",
+        "data": {},
+        "response": {
+          "capabilities": [
+            "m.always_on_screen",
+            "org.matrix.msc4039.download_file",
+            "org.matrix.msc2762.timeline:!prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.call.notify",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.rtc.notification",
+            "org.matrix.msc2762.send.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.send.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.send.event:m.reaction",
+            "org.matrix.msc2762.send.event:m.room.redaction",
+            "org.matrix.msc2762.send.event:io.element.call.reaction",
+            "org.matrix.msc2762.send.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.send.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.receive.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.receive.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.receive.event:m.reaction",
+            "org.matrix.msc2762.receive.event:m.room.redaction",
+            "org.matrix.msc2762.receive.event:io.element.call.reaction",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#_@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.receive.state_event:m.room.create",
+            "org.matrix.msc2762.receive.state_event:m.room.name",
+            "org.matrix.msc2762.receive.state_event:m.room.member",
+            "org.matrix.msc2762.receive.state_event:m.room.encryption",
+            "org.matrix.msc2762.receive.state_event:org.matrix.msc3401.call.member",
+            "org.matrix.msc3819.send.to_device:m.call.invite",
+            "org.matrix.msc3819.send.to_device:m.call.candidates",
+            "org.matrix.msc3819.send.to_device:m.call.answer",
+            "org.matrix.msc3819.send.to_device:m.call.hangup",
+            "org.matrix.msc3819.send.to_device:m.call.reject",
+            "org.matrix.msc3819.send.to_device:m.call.select_answer",
+            "org.matrix.msc3819.send.to_device:m.call.negotiate",
+            "org.matrix.msc3819.send.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:m.call.replaces",
+            "org.matrix.msc3819.send.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc3819.receive.to_device:m.call.invite",
+            "org.matrix.msc3819.receive.to_device:m.call.candidates",
+            "org.matrix.msc3819.receive.to_device:m.call.answer",
+            "org.matrix.msc3819.receive.to_device:m.call.hangup",
+            "org.matrix.msc3819.receive.to_device:m.call.reject",
+            "org.matrix.msc3819.receive.to_device:m.call.select_answer",
+            "org.matrix.msc3819.receive.to_device:m.call.negotiate",
+            "org.matrix.msc3819.receive.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:m.call.replaces",
+            "org.matrix.msc3819.receive.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc4157.send.delayed_event",
+            "org.matrix.msc4157.update_delayed_event",
+            "org.matrix.msc4407.send.sticky_event",
+            "org.matrix.msc4407.receive.sticky_event"
+          ]
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423851921,
+      "direction": "to-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851921",
+        "action": "notify_capabilities",
+        "data": {
+          "requested": [
+            "m.always_on_screen",
+            "org.matrix.msc4039.download_file",
+            "org.matrix.msc2762.timeline:!prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.call.notify",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.rtc.notification",
+            "org.matrix.msc2762.send.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.send.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.send.event:m.reaction",
+            "org.matrix.msc2762.send.event:m.room.redaction",
+            "org.matrix.msc2762.send.event:io.element.call.reaction",
+            "org.matrix.msc2762.send.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.send.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.receive.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.receive.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.receive.event:m.reaction",
+            "org.matrix.msc2762.receive.event:m.room.redaction",
+            "org.matrix.msc2762.receive.event:io.element.call.reaction",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#_@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.receive.state_event:m.room.create",
+            "org.matrix.msc2762.receive.state_event:m.room.name",
+            "org.matrix.msc2762.receive.state_event:m.room.member",
+            "org.matrix.msc2762.receive.state_event:m.room.encryption",
+            "org.matrix.msc2762.receive.state_event:org.matrix.msc3401.call.member",
+            "org.matrix.msc3819.send.to_device:m.call.invite",
+            "org.matrix.msc3819.send.to_device:m.call.candidates",
+            "org.matrix.msc3819.send.to_device:m.call.answer",
+            "org.matrix.msc3819.send.to_device:m.call.hangup",
+            "org.matrix.msc3819.send.to_device:m.call.reject",
+            "org.matrix.msc3819.send.to_device:m.call.select_answer",
+            "org.matrix.msc3819.send.to_device:m.call.negotiate",
+            "org.matrix.msc3819.send.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:m.call.replaces",
+            "org.matrix.msc3819.send.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc3819.receive.to_device:m.call.invite",
+            "org.matrix.msc3819.receive.to_device:m.call.candidates",
+            "org.matrix.msc3819.receive.to_device:m.call.answer",
+            "org.matrix.msc3819.receive.to_device:m.call.hangup",
+            "org.matrix.msc3819.receive.to_device:m.call.reject",
+            "org.matrix.msc3819.receive.to_device:m.call.select_answer",
+            "org.matrix.msc3819.receive.to_device:m.call.negotiate",
+            "org.matrix.msc3819.receive.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:m.call.replaces",
+            "org.matrix.msc3819.receive.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc4157.send.delayed_event",
+            "org.matrix.msc4157.update_delayed_event",
+            "org.matrix.msc4407.send.sticky_event",
+            "org.matrix.msc4407.receive.sticky_event"
+          ],
+          "approved": [
+            "m.always_on_screen",
+            "org.matrix.msc4039.download_file",
+            "org.matrix.msc2762.timeline:!prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.call.notify",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.rtc.notification",
+            "org.matrix.msc2762.send.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.send.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.send.event:m.reaction",
+            "org.matrix.msc2762.send.event:m.room.redaction",
+            "org.matrix.msc2762.send.event:io.element.call.reaction",
+            "org.matrix.msc2762.send.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.send.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.receive.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.receive.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.receive.event:m.reaction",
+            "org.matrix.msc2762.receive.event:m.room.redaction",
+            "org.matrix.msc2762.receive.event:io.element.call.reaction",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#_@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.receive.state_event:m.room.create",
+            "org.matrix.msc2762.receive.state_event:m.room.name",
+            "org.matrix.msc2762.receive.state_event:m.room.member",
+            "org.matrix.msc2762.receive.state_event:m.room.encryption",
+            "org.matrix.msc2762.receive.state_event:org.matrix.msc3401.call.member",
+            "org.matrix.msc3819.send.to_device:m.call.invite",
+            "org.matrix.msc3819.send.to_device:m.call.candidates",
+            "org.matrix.msc3819.send.to_device:m.call.answer",
+            "org.matrix.msc3819.send.to_device:m.call.hangup",
+            "org.matrix.msc3819.send.to_device:m.call.reject",
+            "org.matrix.msc3819.send.to_device:m.call.select_answer",
+            "org.matrix.msc3819.send.to_device:m.call.negotiate",
+            "org.matrix.msc3819.send.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:m.call.replaces",
+            "org.matrix.msc3819.send.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc3819.receive.to_device:m.call.invite",
+            "org.matrix.msc3819.receive.to_device:m.call.candidates",
+            "org.matrix.msc3819.receive.to_device:m.call.answer",
+            "org.matrix.msc3819.receive.to_device:m.call.hangup",
+            "org.matrix.msc3819.receive.to_device:m.call.reject",
+            "org.matrix.msc3819.receive.to_device:m.call.select_answer",
+            "org.matrix.msc3819.receive.to_device:m.call.negotiate",
+            "org.matrix.msc3819.receive.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:m.call.replaces",
+            "org.matrix.msc3819.receive.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc4157.send.delayed_event",
+            "org.matrix.msc4157.update_delayed_event",
+            "org.matrix.msc4407.send.sticky_event",
+            "org.matrix.msc4407.receive.sticky_event"
+          ]
+        }
+      }
+    },
+    {
+      "t": 1783423851921,
+      "direction": "from-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851921",
+        "action": "notify_capabilities",
+        "data": {
+          "requested": [
+            "m.always_on_screen",
+            "org.matrix.msc4039.download_file",
+            "org.matrix.msc2762.timeline:!prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.call.notify",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.rtc.notification",
+            "org.matrix.msc2762.send.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.send.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.send.event:m.reaction",
+            "org.matrix.msc2762.send.event:m.room.redaction",
+            "org.matrix.msc2762.send.event:io.element.call.reaction",
+            "org.matrix.msc2762.send.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.send.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.receive.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.receive.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.receive.event:m.reaction",
+            "org.matrix.msc2762.receive.event:m.room.redaction",
+            "org.matrix.msc2762.receive.event:io.element.call.reaction",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#_@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.receive.state_event:m.room.create",
+            "org.matrix.msc2762.receive.state_event:m.room.name",
+            "org.matrix.msc2762.receive.state_event:m.room.member",
+            "org.matrix.msc2762.receive.state_event:m.room.encryption",
+            "org.matrix.msc2762.receive.state_event:org.matrix.msc3401.call.member",
+            "org.matrix.msc3819.send.to_device:m.call.invite",
+            "org.matrix.msc3819.send.to_device:m.call.candidates",
+            "org.matrix.msc3819.send.to_device:m.call.answer",
+            "org.matrix.msc3819.send.to_device:m.call.hangup",
+            "org.matrix.msc3819.send.to_device:m.call.reject",
+            "org.matrix.msc3819.send.to_device:m.call.select_answer",
+            "org.matrix.msc3819.send.to_device:m.call.negotiate",
+            "org.matrix.msc3819.send.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:m.call.replaces",
+            "org.matrix.msc3819.send.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc3819.receive.to_device:m.call.invite",
+            "org.matrix.msc3819.receive.to_device:m.call.candidates",
+            "org.matrix.msc3819.receive.to_device:m.call.answer",
+            "org.matrix.msc3819.receive.to_device:m.call.hangup",
+            "org.matrix.msc3819.receive.to_device:m.call.reject",
+            "org.matrix.msc3819.receive.to_device:m.call.select_answer",
+            "org.matrix.msc3819.receive.to_device:m.call.negotiate",
+            "org.matrix.msc3819.receive.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:m.call.replaces",
+            "org.matrix.msc3819.receive.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc4157.send.delayed_event",
+            "org.matrix.msc4157.update_delayed_event",
+            "org.matrix.msc4407.send.sticky_event",
+            "org.matrix.msc4407.receive.sticky_event"
+          ],
+          "approved": [
+            "m.always_on_screen",
+            "org.matrix.msc4039.download_file",
+            "org.matrix.msc2762.timeline:!prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.call.notify",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.rtc.notification",
+            "org.matrix.msc2762.send.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.send.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.send.event:m.reaction",
+            "org.matrix.msc2762.send.event:m.room.redaction",
+            "org.matrix.msc2762.send.event:io.element.call.reaction",
+            "org.matrix.msc2762.send.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.send.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.receive.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.receive.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.receive.event:m.reaction",
+            "org.matrix.msc2762.receive.event:m.room.redaction",
+            "org.matrix.msc2762.receive.event:io.element.call.reaction",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#_@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.receive.state_event:m.room.create",
+            "org.matrix.msc2762.receive.state_event:m.room.name",
+            "org.matrix.msc2762.receive.state_event:m.room.member",
+            "org.matrix.msc2762.receive.state_event:m.room.encryption",
+            "org.matrix.msc2762.receive.state_event:org.matrix.msc3401.call.member",
+            "org.matrix.msc3819.send.to_device:m.call.invite",
+            "org.matrix.msc3819.send.to_device:m.call.candidates",
+            "org.matrix.msc3819.send.to_device:m.call.answer",
+            "org.matrix.msc3819.send.to_device:m.call.hangup",
+            "org.matrix.msc3819.send.to_device:m.call.reject",
+            "org.matrix.msc3819.send.to_device:m.call.select_answer",
+            "org.matrix.msc3819.send.to_device:m.call.negotiate",
+            "org.matrix.msc3819.send.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:m.call.replaces",
+            "org.matrix.msc3819.send.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc3819.receive.to_device:m.call.invite",
+            "org.matrix.msc3819.receive.to_device:m.call.candidates",
+            "org.matrix.msc3819.receive.to_device:m.call.answer",
+            "org.matrix.msc3819.receive.to_device:m.call.hangup",
+            "org.matrix.msc3819.receive.to_device:m.call.reject",
+            "org.matrix.msc3819.receive.to_device:m.call.select_answer",
+            "org.matrix.msc3819.receive.to_device:m.call.negotiate",
+            "org.matrix.msc3819.receive.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:m.call.replaces",
+            "org.matrix.msc3819.receive.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc4157.send.delayed_event",
+            "org.matrix.msc4157.update_delayed_event",
+            "org.matrix.msc4407.send.sticky_event",
+            "org.matrix.msc4407.receive.sticky_event"
+          ]
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423851922,
+      "direction": "from-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851921",
+        "action": "notify_capabilities",
+        "data": {
+          "requested": [
+            "m.always_on_screen",
+            "org.matrix.msc4039.download_file",
+            "org.matrix.msc2762.timeline:!prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.call.notify",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.rtc.notification",
+            "org.matrix.msc2762.send.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.send.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.send.event:m.reaction",
+            "org.matrix.msc2762.send.event:m.room.redaction",
+            "org.matrix.msc2762.send.event:io.element.call.reaction",
+            "org.matrix.msc2762.send.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.send.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.receive.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.receive.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.receive.event:m.reaction",
+            "org.matrix.msc2762.receive.event:m.room.redaction",
+            "org.matrix.msc2762.receive.event:io.element.call.reaction",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#_@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.receive.state_event:m.room.create",
+            "org.matrix.msc2762.receive.state_event:m.room.name",
+            "org.matrix.msc2762.receive.state_event:m.room.member",
+            "org.matrix.msc2762.receive.state_event:m.room.encryption",
+            "org.matrix.msc2762.receive.state_event:org.matrix.msc3401.call.member",
+            "org.matrix.msc3819.send.to_device:m.call.invite",
+            "org.matrix.msc3819.send.to_device:m.call.candidates",
+            "org.matrix.msc3819.send.to_device:m.call.answer",
+            "org.matrix.msc3819.send.to_device:m.call.hangup",
+            "org.matrix.msc3819.send.to_device:m.call.reject",
+            "org.matrix.msc3819.send.to_device:m.call.select_answer",
+            "org.matrix.msc3819.send.to_device:m.call.negotiate",
+            "org.matrix.msc3819.send.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:m.call.replaces",
+            "org.matrix.msc3819.send.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc3819.receive.to_device:m.call.invite",
+            "org.matrix.msc3819.receive.to_device:m.call.candidates",
+            "org.matrix.msc3819.receive.to_device:m.call.answer",
+            "org.matrix.msc3819.receive.to_device:m.call.hangup",
+            "org.matrix.msc3819.receive.to_device:m.call.reject",
+            "org.matrix.msc3819.receive.to_device:m.call.select_answer",
+            "org.matrix.msc3819.receive.to_device:m.call.negotiate",
+            "org.matrix.msc3819.receive.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:m.call.replaces",
+            "org.matrix.msc3819.receive.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc4157.send.delayed_event",
+            "org.matrix.msc4157.update_delayed_event",
+            "org.matrix.msc4407.send.sticky_event",
+            "org.matrix.msc4407.receive.sticky_event"
+          ],
+          "approved": [
+            "m.always_on_screen",
+            "org.matrix.msc4039.download_file",
+            "org.matrix.msc2762.timeline:!prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.call.notify",
+            "org.matrix.msc2762.send.event:org.matrix.msc4075.rtc.notification",
+            "org.matrix.msc2762.send.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.send.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.send.event:m.reaction",
+            "org.matrix.msc2762.send.event:m.room.redaction",
+            "org.matrix.msc2762.send.event:io.element.call.reaction",
+            "org.matrix.msc2762.send.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.send.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.receive.event:org.matrix.rageshake_request",
+            "org.matrix.msc2762.receive.event:io.element.call.encryption_keys",
+            "org.matrix.msc2762.receive.event:m.reaction",
+            "org.matrix.msc2762.receive.event:m.room.redaction",
+            "org.matrix.msc2762.receive.event:io.element.call.reaction",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4310.rtc.decline",
+            "org.matrix.msc2762.receive.event:org.matrix.msc4143.rtc.member",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#_@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.send.state_event:org.matrix.msc3401.call.member#@prototype:selfmatrix.test_NATIVEPROTOTYPE_m.call",
+            "org.matrix.msc2762.receive.state_event:m.room.create",
+            "org.matrix.msc2762.receive.state_event:m.room.name",
+            "org.matrix.msc2762.receive.state_event:m.room.member",
+            "org.matrix.msc2762.receive.state_event:m.room.encryption",
+            "org.matrix.msc2762.receive.state_event:org.matrix.msc3401.call.member",
+            "org.matrix.msc3819.send.to_device:m.call.invite",
+            "org.matrix.msc3819.send.to_device:m.call.candidates",
+            "org.matrix.msc3819.send.to_device:m.call.answer",
+            "org.matrix.msc3819.send.to_device:m.call.hangup",
+            "org.matrix.msc3819.send.to_device:m.call.reject",
+            "org.matrix.msc3819.send.to_device:m.call.select_answer",
+            "org.matrix.msc3819.send.to_device:m.call.negotiate",
+            "org.matrix.msc3819.send.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.send.to_device:m.call.replaces",
+            "org.matrix.msc3819.send.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc3819.receive.to_device:m.call.invite",
+            "org.matrix.msc3819.receive.to_device:m.call.candidates",
+            "org.matrix.msc3819.receive.to_device:m.call.answer",
+            "org.matrix.msc3819.receive.to_device:m.call.hangup",
+            "org.matrix.msc3819.receive.to_device:m.call.reject",
+            "org.matrix.msc3819.receive.to_device:m.call.select_answer",
+            "org.matrix.msc3819.receive.to_device:m.call.negotiate",
+            "org.matrix.msc3819.receive.to_device:m.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:org.matrix.call.sdp_stream_metadata_changed",
+            "org.matrix.msc3819.receive.to_device:m.call.replaces",
+            "org.matrix.msc3819.receive.to_device:io.element.call.encryption_keys",
+            "org.matrix.msc4157.send.delayed_event",
+            "org.matrix.msc4157.update_delayed_event",
+            "org.matrix.msc4407.send.sticky_event",
+            "org.matrix.msc4407.receive.sticky_event"
+          ]
+        },
+        "response": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423851922,
+      "direction": "to-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851922",
+        "action": "supported_api_versions",
+        "data": {}
+      }
+    },
+    {
+      "t": 1783423851922,
+      "direction": "from-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851922",
+        "action": "supported_api_versions",
+        "data": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423851922,
+      "direction": "from-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851922",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": [
+            "0.0.1",
+            "0.0.2",
+            "org.matrix.msc2762",
+            "org.matrix.msc2762_update_state",
+            "org.matrix.msc2871",
+            "org.matrix.msc2873",
+            "org.matrix.msc2931",
+            "org.matrix.msc2974",
+            "org.matrix.msc2876",
+            "org.matrix.msc3819",
+            "town.robin.msc3846",
+            "org.matrix.msc3869",
+            "org.matrix.msc3973",
+            "org.matrix.msc4039"
+          ]
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423851922,
+      "direction": "to-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851922",
+        "action": "update_state",
+        "data": {
+          "state": []
+        }
+      }
+    },
+    {
+      "t": 1783423851922,
+      "direction": "from-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851922",
+        "action": "update_state",
+        "data": {
+          "state": []
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423851923,
+      "direction": "from-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423851922",
+        "action": "update_state",
+        "data": {
+          "state": []
+        },
+        "response": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423852287,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423852287",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423852288,
+      "direction": "to-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423852287",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        },
+        "response": {
+          "error": {
+            "message": "Unknown or unsupported action: io.element.device_mute"
+          }
+        }
+      }
+    },
+    {
+      "t": 1783423852288,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423852287",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        },
+        "response": {
+          "error": {
+            "message": "Unknown or unsupported action: io.element.device_mute"
+          }
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783423853740,
+      "direction": "to-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423853740",
+        "action": "io.element.join",
+        "data": {
+          "audioInput": null,
+          "videoInput": null
+        }
+      }
+    },
+    {
+      "t": 1783423853740,
+      "direction": "from-view",
+      "data": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783423853740",
         "action": "io.element.join",
         "data": {
           "audioInput": null,
@@ -77,46 +819,38 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783417349285,
+      "t": 1783423864242,
+      "type": "widget-message-rejected",
+      "direction": "from-view",
+      "validation": {
+        "ok": false,
+        "reasons": [
+          {
+            "code": "widget_id_mismatch",
+            "message": "Unexpected widgetId: spoofed-widget-id",
+            "expectedWidgetId": "selfmatrix-native-prototype-call",
+            "actualWidgetId": "spoofed-widget-id"
+          }
+        ]
+      },
       "data": {
         "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783417349286",
-        "action": "io.element.device_mute",
-        "data": {
-          "audio_enabled": true,
-          "video_enabled": false
-        }
-      },
-      "origin": "http://127.0.0.1:<local-port>",
-      "sourceIsSelf": true
-    },
-    {
-      "t": 1783417349286,
-      "data": {
-        "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783417349286",
-        "action": "io.element.device_mute",
-        "data": {
-          "audio_enabled": true,
-          "video_enabled": false
-        },
-        "response": {}
-      },
-      "origin": "http://127.0.0.1:<local-port>",
-      "sourceIsSelf": true
+        "widgetId": "spoofed-widget-id",
+        "requestId": "spoof-test-1",
+        "action": "selfmatrix.test.spoof",
+        "data": {}
+      }
     }
   ],
   "navigationEvents": [
     {
-      "t": 1783417348052,
+      "t": 1783423851682,
       "url": "http://127.0.0.1:<local-port>/ec/index.html?widgetId=selfmatrix-native-prototype-call&parentUrl=http%3A%2F%2F127.0.0.1%3A%3Clocal-port%3E%2Fdesktop-shell.html&roomId=%21prototype%3Aselfmatrix.test&userId=%40prototype%3Aselfmatrix.test&deviceId=NATIVEPROTOTYPE&baseUrl=https%3A%2F%2Fmatrix.example.invalid&intent=join_existing_voice&preload=true&skipLobby=true&disableVideo=true&hideVideoButton=true&theme=dark",
       "isInPlace": false,
       "isMainFrame": true
     },
     {
-      "t": 1783417348308,
+      "t": 1783423851884,
       "url": "http://127.0.0.1:<local-port>/ec/index.html?widgetId=selfmatrix-native-prototype-call&parentUrl=http%3A%2F%2F127.0.0.1%3A%3Clocal-port%3E%2Fdesktop-shell.html&roomId=%21prototype%3Aselfmatrix.test&userId=%40prototype%3Aselfmatrix.test&deviceId=NATIVEPROTOTYPE&baseUrl=https%3A%2F%2Fmatrix.example.invalid&intent=join_existing_voice&preload=true&skipLobby=true&disableVideo=true&hideVideoButton=true&theme=dark",
       "isInPlace": true,
       "isMainFrame": true

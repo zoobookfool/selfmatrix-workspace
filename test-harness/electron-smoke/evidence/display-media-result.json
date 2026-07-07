@@ -44,7 +44,7 @@
             "resizeMode": "crop-and-scale",
             "width": 1280
           },
-          "t": 1783413115867
+          "t": 1783419947762
         },
         {
           "type": "constraints-applied",
@@ -59,12 +59,12 @@
             "resizeMode": "none",
             "width": 1920
           },
-          "t": 1783413116176
+          "t": 1783419947970
         },
         {
           "type": "tracks-stopped",
           "details": {},
-          "t": 1783413116177
+          "t": 1783419947970
         }
       ],
       "errors": []
@@ -114,7 +114,7 @@
             "resizeMode": "crop-and-scale",
             "width": 1280
           },
-          "t": 1783413115867
+          "t": 1783419947762
         },
         {
           "type": "constraints-applied",
@@ -129,12 +129,12 @@
             "resizeMode": "none",
             "width": 1920
           },
-          "t": 1783413116176
+          "t": 1783419947970
         },
         {
           "type": "tracks-stopped",
           "details": {},
-          "t": 1783413116177
+          "t": 1783419947970
         },
         {
           "type": "audio-track-created",
@@ -166,12 +166,12 @@
               "voiceIsolation": false
             }
           },
-          "t": 1783413116746
+          "t": 1783419948385
         },
         {
           "type": "audio-tracks-stopped",
           "details": {},
-          "t": 1783413116746
+          "t": 1783419948385
         }
       ],
       "errors": []
@@ -194,7 +194,7 @@
           "resizeMode": "crop-and-scale",
           "width": 1280
         },
-        "t": 1783413115867
+        "t": 1783419947762
       },
       {
         "type": "constraints-applied",
@@ -209,12 +209,12 @@
           "resizeMode": "none",
           "width": 1920
         },
-        "t": 1783413116176
+        "t": 1783419947970
       },
       {
         "type": "tracks-stopped",
         "details": {},
-        "t": 1783413116177
+        "t": 1783419947970
       },
       {
         "type": "audio-track-created",
@@ -246,41 +246,41 @@
             "voiceIsolation": false
           }
         },
-        "t": 1783413116746
+        "t": 1783419948385
       },
       {
         "type": "audio-tracks-stopped",
         "details": {},
-        "t": 1783413116746
+        "t": 1783419948385
       }
     ],
     "errors": []
   },
   "events": [
     {
-      "t": 1783413115251,
+      "t": 1783419947361,
       "type": "display-media-request",
       "videoRequested": true,
       "audioRequested": false
     },
     {
-      "t": 1783413115730,
+      "t": 1783419947671,
       "type": "display-media-source-selected",
-      "sourceCount": 8,
+      "sourceCount": 7,
       "selectedId": "screen:0:0",
       "selectedName": "画面 1",
       "audio": false
     },
     {
-      "t": 1783413116178,
+      "t": 1783419947970,
       "type": "display-media-request",
       "videoRequested": true,
       "audioRequested": true
     },
     {
-      "t": 1783413116541,
+      "t": 1783419948254,
       "type": "display-media-source-selected",
-      "sourceCount": 8,
+      "sourceCount": 7,
       "selectedId": "screen:0:0",
       "selectedName": "画面 1",
       "audio": "loopback"

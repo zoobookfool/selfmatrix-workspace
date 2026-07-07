@@ -32,6 +32,13 @@ Claude が残りを実装。純関数を widget-bridge-protocol.cjs へ分離し
 
 設計は [design/native-widget-transport.md](../design/native-widget-transport.md) が正本 (2026-07-07 制定)。
 
+**進捗**: 検証 step 1 (A 単体 = 実 ClientWidgetApi + 実 EC dist のハンドシェイク実証) は
+**2026-07-07 完了** — matrix-widget-api@1.16.1 無改造の iframe シム + 素通しルータで
+supported_api_versions 14 件 / capabilities 53 承認 / content_loaded ack を証跡化
+(native-prototype/evidence/handshake-result.json)。受け入れは変異バッテリー 6 種全検知
+([reviews/claude-review-m1-step1-20260707.md](../reviews/claude-review-m1-step1-20260707.md))。
+次は step 2 (B 単体 = CallControl の preload 移設ミニマム版)。
+
 - **NativeWidgetTransport / NativeCallHost アダプタ**: cinny の ClientWidgetApi/CallWidgetDriver
   (iframe.contentWindow 前提) を WebContentsView に接続する層。設計分析の結果、
   (A) widget-api transport (低リスク: iframe シムで matrix-widget-api 無改造) と

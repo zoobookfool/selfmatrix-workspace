@@ -185,9 +185,27 @@ workspace の実行可能コード運用ルール (native-milestones 末尾) に
 
 | リスク | 深刻度 | 備考 |
 | --- | --- | --- |
-| (A) transport 差し替え | 低 | iframe 依存 2 行のみ、matrix-widget-api 無改造 |
+| (A) transport 差し替え | 低 | iframe 依存 2 行のみ、matrix-widget-api 無改造。**step 1 で実証済み** (2026-07-07、実 ClientWidgetApi + 実 EC dist で 14 versions / 53 capabilities のハンドシェイク完走) |
 | (B) DOM コントロール移設 | **高** | Phase 2b の Discord 風コントロールバー全部が対象。EC の DOM 構造変化 (testid) への依存は web 版と同等のまま |
-| inboundWindow=globalThis 制約 | 低 | shell preload の window.postMessage 折り返しで満たせる (M0 で同型を実証済み) |
+| inboundWindow=globalThis 制約 | 低 | shell preload の window.postMessage 折り返しで満たせる (step 1 で実証済み) |
 | `waitForIframeLoad=false` 前提 | 低 | 'load' 未発火でも contentLoadedWaitTimer が未セットになるだけ |
 | TURN servers 未実装 | 低 | web 版と同じ既定挙動。ネイティブ化で悪化しない |
 | CallPopout 廃止判断 | 中 | M3 の再親子付け検証 (M1 の窓往復) が前提。NO-GO 時は web 版 call-window-mode に戻る |
+
+### step 1 レビューで判明した残存リスク (M2 セキュリティ監査への引き継ぎ)
+
+- **同一オリジン子フレームから main world API への到達**: prototype は cinny を同一オリジン iframe
+  で埋め込むため、子フレーム内の JS が `window.parent` 経由で親の main world (送信 API) に届く。
+  これは contextIsolation とは別レイヤーのブラウザ標準の同一オリジンアクセス。対策として送信 API を
+  claim-once 化 (初回取得後は閉じる) + to-view 方向にも形状検証を実装。本番 (M2) では cinny が
+  トップフレームになり前提が変わるため、**送信 API の公開境界は M2 監査で再設計**すること
+- **shell ウィンドウ sandbox:false**: ClientWidgetApi をページ script で動かす構成により
+  この設定の意味が重くなった。M2 で sandbox:true 化または構成見直しを検討
+- **echo 現象 (既知・無害)**: call view preload は自分が postMessage した to-view メッセージも
+  自分の 'message' リスナーで拾って from-view として再転送する。matrix-widget-api の
+  PostmessageTransport が方向フィルタ (`request.api !== invertedDirection`) と requestId 照合
+  (`outboundRequests`) で必ず握り潰すことをライブラリ実コードで確認済み (無限ループ・誤応答なし)。
+  actionSequence にはこのノイズが混ざる。**test-harness の CLI はこの loopback を検証の観測点として
+  利用しているため、echo を抑制してはならない**
+- **to-view 系の証跡フィールドは「host が送った」ことの記録**であり EC の受信証明ではない。
+  受信は capabilities 交渉の reply 到達で担保している (コード上にコメントで明記)

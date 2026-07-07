@@ -1,0 +1,40 @@
+{
+  "scenario": "to-view-widget-id-mismatch",
+  "description": "validateToViewMessage() rejects a to-view (shell→callView) message whose widgetId does not match the active call view widget.",
+  "widgetId": "selfmatrix-native-prototype-call",
+  "pass": true,
+  "events": [
+    {
+      "kind": "to-view-validation",
+      "message": {
+        "api": "toWidget",
+        "widgetId": "unexpected-widget",
+        "requestId": "widgetapi-harness-to-view-001",
+        "action": "capabilities",
+        "data": {}
+      },
+      "validation": {
+        "ok": false,
+        "reasons": [
+          {
+            "code": "widget_id_mismatch",
+            "message": "Unexpected widgetId: unexpected-widget",
+            "expectedWidgetId": "selfmatrix-native-prototype-call",
+            "actualWidgetId": "unexpected-widget"
+          }
+        ]
+      }
+    }
+  ],
+  "failure": {
+    "ok": false,
+    "reasons": [
+      {
+        "code": "widget_id_mismatch",
+        "message": "Unexpected widgetId: unexpected-widget",
+        "expectedWidgetId": "selfmatrix-native-prototype-call",
+        "actualWidgetId": "unexpected-widget"
+      }
+    ]
+  }
+}

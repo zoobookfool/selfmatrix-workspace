@@ -12,5 +12,8 @@
   },
   "devDependencies": {
     "electron": "43.0.0"
+  },
+  "dependencies": {
+    "matrix-widget-api": "1.16.1"
   }
 }

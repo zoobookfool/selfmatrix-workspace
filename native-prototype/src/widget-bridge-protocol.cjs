@@ -4,6 +4,14 @@
 
 const WIDGET_ID = "selfmatrix-native-prototype-call";
 
+// EC dist へ渡す固定パラメータ群。main.cjs の ecUrl() と、shell 側の widget-config.json
+// エンドポイント (shell-widget-host.js が本物の matrix-widget-api Widget を構築する際に使う) の
+// 両方から参照される単一の正本。リテラルの重複を避けるためここに集約する。
+const WIDGET_ROOM_ID = "!prototype:selfmatrix.test";
+const WIDGET_USER_ID = "@prototype:selfmatrix.test";
+const WIDGET_DEVICE_ID = "NATIVEPROTOTYPE";
+const WIDGET_BASE_URL = "https://matrix.example.invalid";
+
 function assertSameOrigin(callUrl, parentUrl) {
   const callOrigin = new URL(callUrl).origin;
   const parentOrigin = new URL(parentUrl).origin;
@@ -71,6 +79,12 @@ function isWidgetApiMessage(data) {
   );
 }
 
+// M1 step 1 以降、このスタブ応答はライブ経路 (main.cjs のルータ) からは呼ばれない。
+// 実際の応答は shell 側の本物の ClientWidgetApi / CallWidgetDriver 相当
+// (native-prototype/src/shell-widget-host.js の NativeWidgetDriver) が生成する
+// (design/native-widget-transport.md §2.1)。この純関数は test-harness/cli/widget-protocol.mjs が
+// widget-bridge-preload.cjs の応答折り返し配線 (request→response のラウンドトリップ形状) を単体で
+// 検証するためだけに残してある。
 function responseForWidgetRequest(request) {
   switch (request.action) {
     case "supported_api_versions":
@@ -132,12 +146,56 @@ function validateWidgetBridgeMessage(message, expected) {
   return { ok: true, reasons: [] };
 }
 
+// shell (信頼できるホスト自身の ClientWidgetApi) → callView 方向の形状検証。
+// F2a: この方向は送信元が shell 自身の実装のため M0 由来の validateWidgetBridgeMessage
+// (sourceIsSelf / origin チェック) は不要だが、widgetId と api 方向だけは最低限確認する。
+// design/native-widget-transport.md の「残存リスク」節にある通り、prototype は cinny を同一
+// オリジン iframe として埋め込むため、その子フレームが window.parent 経由で送信 API に触れる
+// 余地がある (F2b の claim-once はこれを閉じる主対策、こちらは防御多重化の形状検証)。
+// host は toWidget のリクエスト (capabilities ask, notify_capabilities, io.element.join 等) と、
+// fromWidget リクエストへの応答 (api は "fromWidget" のまま .response が付く) の両方を送るため、
+// api は "toWidget" / "fromWidget" のどちらも許容する。
+function validateToViewMessage(message) {
+  if (!message || typeof message !== "object") {
+    return {
+      ok: false,
+      reasons: [{ code: "invalid_message", message: "To-view message must be an object." }],
+    };
+  }
+
+  const reasons = [];
+
+  if (message.widgetId !== WIDGET_ID) {
+    reasons.push({
+      code: "widget_id_mismatch",
+      message: `Unexpected widgetId: ${message.widgetId}`,
+      expectedWidgetId: WIDGET_ID,
+      actualWidgetId: message.widgetId,
+    });
+  }
+
+  if (message.api !== "toWidget" && message.api !== "fromWidget") {
+    reasons.push({
+      code: "invalid_api_direction",
+      message: `Unexpected api for a to-view message: ${message.api}`,
+    });
+  }
+
+  if (reasons.length > 0) return { ok: false, reasons };
+  return { ok: true, reasons: [] };
+}
+
 module.exports = {
   WIDGET_ID,
+  WIDGET_ROOM_ID,
+  WIDGET_USER_ID,
+  WIDGET_DEVICE_ID,
+  WIDGET_BASE_URL,
   assertSameOrigin,
   buildWidgetUrl,
   createWidgetRequest,
   isWidgetApiMessage,
   responseForWidgetRequest,
   validateWidgetBridgeMessage,
+  validateToViewMessage,
 };

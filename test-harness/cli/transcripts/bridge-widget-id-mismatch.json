@@ -9,7 +9,7 @@
   "events": [
     {
       "kind": "request",
-      "channel": "widget-api-message",
+      "channel": "native:widget-from-view",
       "request": {
         "api": "fromWidget",
         "widgetId": "unexpected-widget",
