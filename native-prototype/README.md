@@ -291,9 +291,97 @@ cinny 側 (`NativeCallControl.ts`) は M1 step 3a では自分のクリック成
 どのフィールドが実際に入っているかで安全にマージ可否を判定するため、無関係な push
 (例: `toggleTarget` の push 形状) が届いても無視される。
 
+## E2E: 実ログイン→実 LiveKit join (M1 step 3c-1)
+
+`native-prototype/e2e/native-join.e2e.mjs` は、ここまでの smoke/cinny-shell-smoke (すべて
+バックエンド無し前提) とは違い、**本物のローカル dev Matrix/LiveKit スタックが起動している
+こと**を前提に、cinny の実ログイン画面から実際に LiveKit へ join するところまでを
+playwright-core の `_electron` API で自動操作し、実測する。**`npm test` には含まれない** —
+バックエンドが無い環境では動かせないため、独立した `npm run e2e:join` として切り出してある
+(バックエンド未起動時は明確なエラーで fail し、偽 PASS は返さない)。
+
+### 実行手順
+
+1. ローカル dev Matrix/LiveKit スタックを起動する (`element-call` ディレクトリで
+   `pnpm backend`、Docker が必要)。`https://synapse.m.localhost/.well-known/matrix/client` の
+   `org.matrix.msc4143.rtc_foci` が引ければ準備完了。
+2. `element-call` ディレクトリで `pnpm install` 済みであること (このスクリプトは
+   `playwright-core` を native-prototype 自身の依存に追加せず、`element-call` の pnpm store
+   から glob 解決で借用する)。
+3. dev ユーザー (既定は alice) のパスワードを環境変数で渡す。**パスワードをファイルやコマンド
+   履歴に残る形で書かないこと** — 実行するシェルのその場限りの環境変数として渡す。
+
+   ```powershell
+   $env:SELFMATRIX_E2E_PASSWORD_ALICE = "..."
+   npm run e2e:join
+   ```
+
+4. 終了コード 0/1 で pass/fail が分かる。証跡は `evidence/native-join-result.json`
+   (パスワード・個人絶対パスを含まないようサニタイズ済み。OpenID access_token も念のため
+   redact 済み) と、スクリーンショット 2 枚:
+   - `evidence/native-join.png` — mainWindow (cinny) 自身の見た目。cinny の Discord 風通話
+     コントロールバーや「通話中 1 人」表示は写るが、`BrowserWindow.capturePage()` は
+     `addChildView()` された call view (別 WebContentsView) を合成しない (実測) ため、
+     Element Call 自体の中身はここには写らない。
+   - `evidence/native-join-callview.png` — call view (Element Call) 自身を個別に
+     `webContents.capturePage()` した画像。実際の in-call UI (参加者タイル、マイク/退出
+     ボタン等) が写る。
+
+### pass 条件
+
+- `bridgeDetected`: cinny 側で `NativeCallEmbed` 経路に入り、`openCallView()` が URL 検証を
+  通過して call view がロードされたこと。
+- `realJoinObserved`: EC (widget) から `io.element.join` (fromWidget) が実際に main へ届いたこと。
+- `inCallUi`: EC の DOM に `[data-testid="incall_leave"]` が出現したこと。
+- `livekitConnected`: call view の dom-ready 時に注入した `RTCPeerConnection` ラッパ経由で、
+  少なくとも 1 接続が `connected`/`completed` に到達したこと (`window.__selfmatrixPcs`)。
+
+### 環境専用フラグ (`--e2e-real-join`)
+
+`main.cjs` は `--e2e-real-join` (Playwright が Electron 起動時に渡す) を見たときだけ、
+**dev/E2E 専用**の Chromium switch を 3 つ appendSwitch する:
+`ignore-certificate-errors` (dev CA 用)、`use-fake-ui-for-media-stream` /
+`use-fake-device-for-media-stream` (実オーディオデバイスを絶対に使わないため)、
+`host-resolver-rules=MAP *.m.localhost 127.0.0.1` (この開発機の OS リゾルバが
+`*.m.localhost` の多段サブドメインを解決できないため、Chromium 側にも明示マップする)。
+同フラグはさらに call view の dom-ready 時に RTCPeerConnection 監視ラッパを注入し、
+`global.__selfmatrixE2E` (main プロセスの `state` への窓口) を有効にする。
+これらは常に `isE2ERealJoin` でガードされており、通常起動では絶対に有効化されない。
+
+### 実装にあたって見つけた/直した既存バグ
+
+E2E を実際に通す過程で、smoke/cinny-shell-smoke (バックエンド無し) では顕在化しなかった
+4 つの実バグが見つかったため、あわせて修正した (native-prototype 自身のコードのみ。
+cinny 側のソースは一切変更していない):
+
+1. **`.wasm` の Content-Type 欠落**: 静的サーバの `contentType()` が `.wasm` を
+   知らず `application/octet-stream` を返していた。matrix-js-sdk の rust crypto は
+   `WebAssembly.compileStreaming()` で読み込むため MIME type が厳密に `application/wasm`
+   でないと失敗し、cinny がログイン後ずっと「起動中です」のまま進行しなくなっていた。
+2. **`--cinny-shell` の path prefix と cinny の router basename の不一致**: cinny の
+   React Router は `build.config.ts` の `base:'/'` により basename `"/"` で組み立てられて
+   おり、オリジンのルートを自分が占有する前提でルーティングする。以前は mainWindow を
+   `${origin}/cinny/` (パスプレフィックス付き) でロードしていたため、cinny のルータが
+   実際の pathname (`/cinny/lobby` 等) をそのまま解釈し、"cinny" を `:spaceIdOrAlias`
+   パラメータとして誤マッチさせ、存在しない space の lobby に迷い込んでいた。
+   `--cinny-shell` モードでは `"/"` 自体を cinny の `index.html` として配信し、
+   mainWindow も `${origin}/` をロードするよう変更した (harness モードの `/cinny/` iframe
+   埋め込みはそのまま維持)。
+3. **cinny のルートアセット 404**: 上の base:'/' 前提により、`/assets/*.js` /
+   `/config.json` / `/sw.js` / `/public/locales/*.json` 等がサイトルート相対の絶対パスで
+   参照される。既知の他ルートに一致しないリクエストは cinny dist へのフォールバックとして
+   ルート相対でも配信するようにした (`/ec/`, `/public/element-call/` をシャドーしないよう、
+   その 2 つは先に判定してから 404 させている)。
+4. **widget-api の widgetId 固定値ミスマッチ**: `native:widget-to-view` /
+   `native:widget-from-view` の検証が、常に prototype 合成 widget 専用の固定 `WIDGET_ID`
+   とだけ照合していた。cinny 本体の実 widget (`CallEmbed.getWidget()` が生成する
+   `widgetId: 'call-embed'`) はこれと一致しないため、ハンドシェイクが全滅していた。
+   `openCallView()` が検証済み URL から実際の widgetId を読み取り、その通話中はそちらと
+   照合するようにした (`state.activeWidgetId`)。既存の smoke/cinny-shell-smoke は元から
+   固定 `WIDGET_ID` の URL しか使わないため挙動は変わらない。
+
 ## まだやっていないこと
 
 - Cinny 本体の widget host と深く統合すること
-- 実 Matrix account / dev MatrixRTC / LiveKit join
 - auto update / installer / release signing
 - system audio / loopback の UX

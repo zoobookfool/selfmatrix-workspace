@@ -4,6 +4,7 @@
 
 | 日付 | ファイル | 対象 | 結論 / 状態 |
 | --- | --- | --- | --- |
+| 2026-07-08 | [claude-review-m1-step3c1-20260708.md](claude-review-m1-step3c1-20260708.md) | M1 step 3c-1 (実ログイン→実 LiveKit join E2E) | E2E 独立再実行 PASS。実バグ 4 件修正を確認、fail-closed 化等を適用して**受け入れ** |
 | 2026-07-07 | [claude-review-m1-step3b-20260707.md](claude-review-m1-step3b-20260707.md) | M1 step 3b (シェル契約適合 + cinny 契約拡張) | 変異 4 種全検知。ok 未検査 (critical、誤ミュート実害) 等 G1〜G7 即日修正して**受け入れ** |
 | 2026-07-07 | [claude-review-m1-step3a-20260707.md](claude-review-m1-step3a-20260707.md) | M1 step 3a (cinny native/ モジュール、spike/native-shell) | popout 素通り降格等 major 2 件を A〜E 即日修正して**受け入れ**。E2E ゲートは 3c |
 | 2026-07-07 | [claude-review-m1-step2-20260707.md](claude-review-m1-step2-20260707.md) | M1 step 2 (CallControl DOM 移設の単体実証) | 変異 4 種全検知。realClickConfirmed 未組込等 major 3 件を F6〜F9 即日修正して**受け入れ** |

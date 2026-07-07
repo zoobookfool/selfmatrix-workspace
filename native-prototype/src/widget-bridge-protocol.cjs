@@ -4,6 +4,11 @@
 
 const WIDGET_ID = "selfmatrix-native-prototype-call";
 
+// validateCallViewUrl() の widgetId allow-list (M1 step 3c-1 受け入れレビュー修正)。
+// prototype 自身の合成 WIDGET_ID と、cinny CallEmbed が使う固定 widget id "call-embed" のみを
+// 正当な値として扱う。新しい正当値が増えたらここに追加する (単一の正本)。
+const KNOWN_WIDGET_IDS = Object.freeze([WIDGET_ID, "call-embed"]);
+
 // EC dist へ渡す固定パラメータ群。main.cjs の ecUrl() と、shell 側の widget-config.json
 // エンドポイント (shell-widget-host.js が本物の matrix-widget-api Widget を構築する際に使う) の
 // 両方から参照される単一の正本。リテラルの重複を避けるためここに集約する。
@@ -117,6 +122,21 @@ function validateCallViewUrl(url, { expectedOrigin, basePaths = EC_BASE_PATHS } 
     });
   }
 
+  // M1 step 3c-1 受け入れレビュー修正 (allow-list): main.cjs はこの URL の widgetId クエリを
+  // その通話の照合期待値 (state.activeWidgetId) として採用するため、値そのものも既知の集合に
+  // 限定する。これが無いと「低信頼側が URL に書いた任意の値を、同じ低信頼側発メッセージの照合
+  // 期待値に使う」という設計上のトートロジーになる。既知の値: prototype 自身の WIDGET_ID と
+  // cinny CallEmbed の固定 widget id "call-embed"。
+  const widgetIdParam = parsed.searchParams.get("widgetId");
+  if (widgetIdParam !== null && !KNOWN_WIDGET_IDS.includes(widgetIdParam)) {
+    reasons.push({
+      code: "widget_id_not_allowed",
+      message: `Call view URL widgetId is not in the known allow-list: ${widgetIdParam}`,
+      allowedWidgetIds: KNOWN_WIDGET_IDS,
+      actualWidgetId: widgetIdParam,
+    });
+  }
+
   if (reasons.length > 0) return { ok: false, reasons };
   return { ok: true, reasons: [] };
 }
@@ -218,7 +238,18 @@ function validateWidgetBridgeMessage(message, expected) {
 // host は toWidget のリクエスト (capabilities ask, notify_capabilities, io.element.join 等) と、
 // fromWidget リクエストへの応答 (api は "fromWidget" のまま .response が付く) の両方を送るため、
 // api は "toWidget" / "fromWidget" のどちらも許容する。
-function validateToViewMessage(message) {
+//
+// M1 step 3c-1: `expectedWidgetId` を引数化した (既定値は従来どおりの固定 WIDGET_ID なので、
+// 引数を渡さない既存の呼び出し元 (test-harness/cli/widget-protocol.mjs) の挙動は変わらない)。
+// 従来はここが常に prototype 固有の固定 WIDGET_ID とだけ比較していたが、これは
+// prototype 自身が組み立てる合成 widget (buildLocalCallUrl()/widget-config.json、常に
+// widgetId===WIDGET_ID) でしか成立しない前提だった。cinny 本体の実 NativeCallEmbed は
+// 自分自身の widget (`CallEmbed.getWidget()` が生成する `widgetId: 'call-embed'`) を使うため、
+// このチェックを固定値のままにすると実 cinny 経由の to-view メッセージが全て
+// widget_id_mismatch で拒否され、ハンドシェイクそのものが成立しなくなる。呼び出し元
+// (main.cjs) が `openCallView()` で検証済みの URL から実際の widgetId を読み取り、通話ごとに
+// ここへ渡すことで、どちらの経路 (prototype 合成 widget / cinny 実 widget) でも正しく機能する。
+function validateToViewMessage(message, expectedWidgetId = WIDGET_ID) {
   if (!message || typeof message !== "object") {
     return {
       ok: false,
@@ -228,11 +259,11 @@ function validateToViewMessage(message) {
 
   const reasons = [];
 
-  if (message.widgetId !== WIDGET_ID) {
+  if (message.widgetId !== expectedWidgetId) {
     reasons.push({
       code: "widget_id_mismatch",
       message: `Unexpected widgetId: ${message.widgetId}`,
-      expectedWidgetId: WIDGET_ID,
+      expectedWidgetId,
       actualWidgetId: message.widgetId,
     });
   }
@@ -250,6 +281,7 @@ function validateToViewMessage(message) {
 
 module.exports = {
   WIDGET_ID,
+  KNOWN_WIDGET_IDS,
   WIDGET_ROOM_ID,
   WIDGET_USER_ID,
   WIDGET_DEVICE_ID,

@@ -37,6 +37,14 @@ const {
 const SPOOF_ACTION = "selfmatrix.test.spoof";
 const SPOOF_WIDGET_ID = "spoofed-widget-id";
 
+// M1 step 3c-1 受け入れレビュー修正: 通話が非アクティブ (openCallView 前 / closeCallView 後、
+// state.activeWidgetId === null) のときは widget メッセージを widgetId 照合せず必ず拒否する
+// (fail-closed)。以前の `?? WIDGET_ID` は「未アクティブなのに固定値と一致すれば受理される」fail-open だった。
+const NO_ACTIVE_CALL_REJECTION = Object.freeze({
+  ok: false,
+  reasons: [{ code: "no_active_call", message: "No active call (openCallView not performed)." }],
+});
+
 // M1 step 2 (B 単体実証): native:call-control:invoke の correlationId 方式往復管理。
 // main は action の意味を解釈しない中継役に徹する (design/native-widget-transport.md §2.2) —
 // ここで持つのは「どの応答をどの ipcMain.handle() 呼び出しに戻すか」の相関だけで、
@@ -77,6 +85,78 @@ const isMemoryProbe = process.argv.includes("--memory-probe");
 const isCinnyShellSmoke = process.argv.includes("--cinny-shell-smoke");
 const isCinnyShell = isCinnyShellSmoke || process.argv.includes("--cinny-shell");
 
+// SelfMatrix M1 step 3c-1: ネイティブシェルからの実ログイン → 実 LiveKit join を検証する
+// E2E (native-prototype/e2e/native-join.e2e.mjs) 専用モード。--cinny-shell と併用する
+// (トポロジは --cinny-shell が決める。このフラグは E2E 計装だけを追加で有効にする)。
+// **dev/E2E 実行専用— 本番/通常起動では絶対にこのフラグを渡さないこと。**
+const isE2ERealJoin = process.argv.includes("--e2e-real-join");
+if (isE2ERealJoin && app) {
+  // ローカル dev Matrix/LiveKit スタック (element-call/dev-backend-docker-compose.yml) は
+  // 自己署名の開発用 CA (element-call/backend/dev_tls_local-ca.crt) を使っている。この switch
+  // 無しでは https://synapse.m.localhost / https://matrix-rtc.m.localhost への接続が TLS
+  // エラーで失敗する。dev/E2E 限定 — 本番ビルドではこの分岐自体に到達しない。
+  app.commandLine.appendSwitch("ignore-certificate-errors");
+  // getUserMedia() のデバイス選択ダイアログ/許可プロンプトを自動承認し、実マイク/カメラの
+  // 代わりに合成 (fake) デバイスを使わせる。このワークスペースの絶対条件 (実オーディオ
+  // デバイスを検証に使わない) を満たすための必須設定。dev/E2E 限定。
+  app.commandLine.appendSwitch("use-fake-ui-for-media-stream");
+  app.commandLine.appendSwitch("use-fake-device-for-media-stream");
+  // dev Matrix/LiveKit スタックは *.m.localhost (synapse.m.localhost, matrix-rtc.m.localhost,
+  // synapse.othersite.m.localhost) を使う。curl はホスト名末尾の ".localhost" を DNS 問い合わせ
+  // 無しでループバックへ特別扱いする実装を持つが (実測: `curl -v` が DNS を引かず ::1/127.0.0.1 へ
+  // 直接繋いだ)、この開発機の OS リゾルバ (getaddrinfo) と Node の dns.lookup() はどちらもこの
+  // 多段サブドメイン形式を解決できない (実測: ENOTFOUND) — Chromium のネットワークスタックが
+  // 同じ制約を持つ場合に備え、OS リゾルバに依存せず明示的に 127.0.0.1 へマップする。
+  app.commandLine.appendSwitch("host-resolver-rules", "MAP *.m.localhost 127.0.0.1");
+}
+
+// M1 step 3c-1: call view (EC) の main world へ dom-ready 時に注入する RTCPeerConnection
+// ラッパ。実 LiveKit 接続が確立したことを、main プロセス外 (e2e スクリプト) から
+// electronApp.evaluate() 経由で観測できるようにするための計装。window.RTCPeerConnection を
+// Proxy で包み、生成された各インスタンスの connectionState/iceConnectionState の変化を
+// window.__selfmatrixPcs (plain object の配列、構造化複製可能) に記録する。生成された
+// RTCPeerConnection インスタンス自体は素の `new target(...)` の戻り値そのものなので、
+// prototype チェーンは変えていない (instanceof チェックへの影響が無い)。dom-ready は
+// document のロード完了時点で発火するため、EC のバンドルが実際に RTCPeerConnection を
+// 生成する (LiveKit 接続開始) よりも十分前に注入が完了する。
+const E2E_RTC_WRAPPER_SCRIPT = `(() => {
+  if (window.__selfmatrixPcs) return;
+  window.__selfmatrixPcs = [];
+  const NativeRTCPeerConnection = window.RTCPeerConnection;
+  if (!NativeRTCPeerConnection) return;
+  let nextId = 0;
+  const Wrapped = new Proxy(NativeRTCPeerConnection, {
+    construct(target, args) {
+      const pc = new target(...args);
+      const id = nextId += 1;
+      const record = {
+        id,
+        connectionState: pc.connectionState,
+        iceConnectionState: pc.iceConnectionState,
+        reachedConnected: false,
+        createdAt: Date.now(),
+      };
+      window.__selfmatrixPcs.push(record);
+      const update = () => {
+        record.connectionState = pc.connectionState;
+        record.iceConnectionState = pc.iceConnectionState;
+        if (
+          record.connectionState === "connected" ||
+          record.iceConnectionState === "connected" ||
+          record.iceConnectionState === "completed"
+        ) {
+          record.reachedConnected = true;
+        }
+      };
+      pc.addEventListener("connectionstatechange", update);
+      pc.addEventListener("iceconnectionstatechange", update);
+      update();
+      return pc;
+    },
+  });
+  window.RTCPeerConnection = Wrapped;
+})();`;
+
 const state = {
   origin: null,
   server: null,
@@ -84,6 +164,12 @@ const state = {
   callWindow: null,
   callView: null,
   callViewState: "none",
+  // M1 step 3c-1: 現在アクティブな通話の widgetId (openCallView() が検証済み URL から読み取って
+  // 設定する。closeCallView() でリセット)。from-view/to-view のバリデーションはこの値と照合する。
+  // 未アクティブ時 (null) は NO_ACTIVE_WIDGET_ID センチネルと照合され必ず拒否される (fail-closed。
+  // 3c-1 受け入れレビュー指摘: `?? WIDGET_ID` の fail-open フォールバックを廃止) — 詳細は
+  // widget-bridge-protocol.cjs の validateToViewMessage() コメント参照。
+  activeWidgetId: null,
   widgetMessages: [],
   // M1 step 2 (B 単体実証): native:call-control:* (invoke 要求/応答/MutationObserver state push) の
   // 全メッセージをここに記録する。widgetMessages と同じ「main は中継するだけ、判定は別関数に外出し」
@@ -121,6 +207,12 @@ function contentType(filePath) {
   if (ext === ".woff2") return "font/woff2";
   if (ext === ".mp3") return "audio/mpeg";
   if (ext === ".ogg") return "audio/ogg";
+  // M1 step 3c-1: cinny (matrix-js-sdk の rust crypto) は起動時に .wasm を
+  // WebAssembly.compileStreaming()/instantiateStreaming() で読み込む。これは Content-Type が
+  // 厳密に "application/wasm" であることを要求し (それ以外だと
+  // "Incorrect response MIME type. Expected 'application/wasm'." で失敗する)、この判定漏れが
+  // 無いと cinny はログイン後ずっと「起動中です」のまま進行しなくなる (実測)。
+  if (ext === ".wasm") return "application/wasm";
   return "application/octet-stream";
 }
 
@@ -153,7 +245,25 @@ function startServer() {
   const server = http.createServer((request, response) => {
     const url = new URL(request.url, "http://127.0.0.1");
 
-    if (url.pathname === "/" || url.pathname === "/desktop-shell.html") {
+    // M1 step 3c-1 (実測で発覚した修正): cinny の React Router は build.config.ts の
+    // base:'/' により basename="/" で組み立てられており、「オリジンのルートを cinny 自身が
+    // 占有する」ことを前提にした相対パスでルーティングする。以前は --cinny-shell モードでも
+    // mainWindow を `${origin}/cinny/` へロードしていたため、cinny のルータは実際の pathname
+    // (例: `/cinny/lobby`) をそのまま解釈し、"cinny" を `:spaceIdOrAlias` パラメータとして
+    // 誤マッチさせ、存在しない space の lobby ルートに迷い込んでいた (実機テストで実測)。
+    // ルート ("/") はモード次第で出し分ける: --cinny-shell (-smoke) は cinny の index.html を
+    // 直接ルートで配信し (isCinnyShell)、それ以外 (既定/--smoke/--memory-probe) は従来どおり
+    // harness (desktop-shell.html) を配信する。`/desktop-shell.html` という明示パスは
+    // モードによらず常に harness を指す (cinny 埋め込みモードの iframe が参照するため)。
+    if (url.pathname === "/") {
+      if (isCinnyShell) {
+        serveFile(response, path.join(cinnyDist, "index.html"));
+      } else {
+        serveFile(response, path.join(__dirname, "desktop-shell.html"));
+      }
+      return;
+    }
+    if (url.pathname === "/desktop-shell.html") {
       serveFile(response, path.join(__dirname, "desktop-shell.html"));
       return;
     }
@@ -208,6 +318,30 @@ function startServer() {
       const filePath = resolveStatic(ecDist, url.pathname.slice("/public/element-call/".length), true);
       if (filePath) return serveFile(response, filePath);
     }
+    // EC の base path (上の 2 ブロック) はここまでに一致すれば必ず return 済み。ファイルが
+    // 見つからなかった場合 (壊れた/未知の /ec/, /public/element-call/ パス) も、下の cinny
+    // ルートフォールバックへ絶対にフォールスルーさせない (シャドーイング防止、実装要件参照)。
+    if (url.pathname.startsWith("/ec/") || url.pathname.startsWith("/public/element-call/")) {
+      response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end("Not found");
+      return;
+    }
+
+    // M1 step 3c-1: cinny の dist/index.html (build.config.ts の base:'/' 設定) は
+    // /assets/*.js, /config.json, /sw.js, /public/locales/*.json 等をサイトルート相対の絶対
+    // パスで参照する。--cinny-shell モードは上で "/" 自体を cinny の index.html にしたので
+    // これらのリクエストは実質そのまま cinny 向けだが、harness モード (cinny を /cinny/ 配下の
+    // iframe として埋め込む、既定/--smoke/--memory-probe) では harness 自身が "/" を占有して
+    // いるため、この 2 番目のフォールバックが無いと同じ 404 が起きる (トップフレームモードで
+    // 実際にログイン画面等を操作するには解決が必須だった — バックエンド無しの smoke/
+    // cinny-shell-smoke は window.selfmatrixNative の存在と URL 文字列しか見ないため、このバグは
+    // 今まで顕在化していなかった)。既知の他ルート (/, /desktop-shell.*, /vendor/...,
+    // /widget-config.json, /health.json, /cinny/*, /ec/*, /public/element-call/*) は上で先に
+    // 判定済みなので、ここに到達するのはそのどれでもないパスのみ — cinny dist をルート相対でも
+    // フォールバック配信する (SPA の index.html フォールバックはしない: 本当に存在しないパスは
+    // 404 のままにする)。
+    const cinnyRootFile = resolveStatic(cinnyDist, url.pathname, false);
+    if (cinnyRootFile) return serveFile(response, cinnyRootFile);
 
     response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     response.end("Not found");
@@ -242,7 +376,16 @@ function createMainWindow() {
   // トップフレームでロードする、本番同様の topology。既定/--smoke/--memory-probe は
   // 従来どおり desktop-shell.html (harness) を維持する。preload (shell-preload.cjs) は
   // どちらのモードでも同一 — window.selfmatrixNative は常にこの preload が公開する。
-  win.loadURL(isCinnyShell ? `${state.origin}/cinny/` : `${state.origin}/desktop-shell.html`);
+  //
+  // M1 step 3c-1 (実機テストで発覚、修正): 以前はここで `${origin}/cinny/` (パスプレフィックス
+  // 付き) をロードしていたが、cinny の React Router は basename="/" (build.config.ts の
+  // base:'/') で組み立てられており「自分がオリジンのルートを占有している」ことを前提にルーティング
+  // する。プレフィックス付きでロードすると、cinny のルータは実際の pathname (例: `/cinny/lobby`)
+  // をそのまま解釈してしまい、"cinny" を `:spaceIdOrAlias` パラメータとして誤マッチさせ、
+  // 存在しない space の lobby ルートに迷い込む (実機ログインで実際に再現/特定した)。
+  // --cinny-shell モードではオリジンのルート ("/") 自体を cinny の index.html として配信する
+  // よう startServer() 側も変更したので、ここも合わせてルートをロードする。
+  win.loadURL(isCinnyShell ? `${state.origin}/` : `${state.origin}/desktop-shell.html`);
   state.mainWindow = win;
   win.on("resize", updateCallViewBounds);
   return win;
@@ -350,6 +493,21 @@ function createCallViewIfNeeded() {
     });
   });
 
+  // M1 step 3c-1 (E2E 実 LiveKit join 検証専用): dom-ready のたびに RTCPeerConnection
+  // 監視ラッパを main world へ注入する。dom-ready は EC のバンドルが実際に接続処理を始める
+  // (ユーザー操作/自動 join を経た後) よりずっと前に発火するため、注入漏れなく先回りできる。
+  if (isE2ERealJoin) {
+    view.webContents.on("dom-ready", () => {
+      view.webContents.executeJavaScript(E2E_RTC_WRAPPER_SCRIPT, true).catch((error) => {
+        state.widgetMessages.push({
+          t: Date.now(),
+          type: "e2e-rtc-wrapper-inject-error",
+          error: String(error && error.message ? error.message : error),
+        });
+      });
+    });
+  }
+
   // G7 (受け入れレビュー修正): 初回ロード (openCallView() の loadURL()、同じ URL 検証を
   // 通過済み) 後の call view には、何のナビゲーション制限も無かった。`webContents.loadURL()` は
   // "will-navigate"/"will-redirect" を発火させない (Electron の仕様: これらはユーザー操作や
@@ -422,6 +580,12 @@ async function openCallView(url) {
     );
   }
 
+  // M1 step 3c-1: 検証済み URL から実際の widgetId を読み取り、from-view/to-view のバリデーション
+  // (native:widget-from-view / native:widget-to-view の ipcMain ハンドラ) がこの通話中はこの値と
+  // 照合するようにする。URL に widgetId が無い (通常は起き得ない) 場合のみ固定 WIDGET_ID に
+  // フォールバックする。
+  state.activeWidgetId = new URL(url).searchParams.get("widgetId") || WIDGET_ID;
+
   createCallViewIfNeeded();
   await state.callView.webContents.loadURL(url);
 }
@@ -444,6 +608,7 @@ async function closeCallView() {
   }
   state.callView = null;
   state.callViewState = "none";
+  state.activeWidgetId = null;
 }
 
 function updateCallViewBounds() {
@@ -634,10 +799,15 @@ function setupIpc() {
   // M0 で確立した origin / widgetId / sourceIsSelf===true の検証を継続適用する。拒否された
   // メッセージは shell へ転送しない (widget-message-rejected として記録するのみ)。
   ipcMain.on("native:widget-from-view", (_event, message) => {
-    const validation = validateWidgetBridgeMessage(message, {
-      expectedOrigin: state.origin,
-      expectedWidgetId: WIDGET_ID,
-    });
+    // M1 step 3c-1: 固定 WIDGET_ID ではなく、その通話が実際に openCallView() で検証された
+    // widgetId (state.activeWidgetId) と照合する。未アクティブ時 (null) は照合せず必ず拒否
+    // (fail-closed、NO_ACTIVE_CALL_REJECTION コメント参照)。
+    const validation = state.activeWidgetId === null
+      ? NO_ACTIVE_CALL_REJECTION
+      : validateWidgetBridgeMessage(message, {
+          expectedOrigin: state.origin,
+          expectedWidgetId: state.activeWidgetId,
+        });
     if (!validation.ok) {
       state.widgetMessages.push({
         t: Date.now(),
@@ -664,7 +834,9 @@ function setupIpc() {
   // 不合格でも main.cjs は「解釈しないルータ」のままであり、応答内容の生成はしない — 転送するか
   // 拒否するかだけを判定する。
   ipcMain.on("native:widget-to-view", (_event, message) => {
-    const validation = validateToViewMessage(message);
+    const validation = state.activeWidgetId === null
+      ? NO_ACTIVE_CALL_REJECTION
+      : validateToViewMessage(message, state.activeWidgetId);
     if (!validation.ok) {
       state.widgetMessages.push({
         t: Date.now(),
@@ -1233,7 +1405,10 @@ async function runCinnyShellSmoke() {
     true,
   );
   const topFrameUrl = win.webContents.getURL();
-  const cinnyTopFrame = topFrameUrl.startsWith(`${state.origin}/cinny/`);
+  // M1 step 3c-1: createMainWindow() は --cinny-shell モードで `${origin}/` (ルート直下、
+  // /cinny/ プレフィックスなし) をロードするよう変更した (cinny の React Router basename="/"
+  // との不一致で誤ルーティングが起きるのを実機で確認したため、上の win.loadURL() コメント参照)。
+  const cinnyTopFrame = topFrameUrl === `${state.origin}/`;
 
   // 2. 通話 1 本分の transport を一度だけ claim し (real NativeCallEmbed のコンストラクタが
   // claimWidgetTransport() を呼ぶのと同じ操作)、以降の全ステップで使い回す。onCallControlState()
@@ -1349,9 +1524,11 @@ async function runCinnyShellSmoke() {
   // 使うのは、エイリアス route を削除する変異にもこのテストが反応するようにするため — 実装要件の
   // 変異耐性節参照)。openCallView() が resolve し、EC からの content_loaded (from-view) が main に
   // 到達することを確認する。
+  // M1 step 3c-1: parentPath は cinny が実際にロードされている場所 ("/", ルート直下) に合わせる
+  // (win.loadURL() コメント参照)。
   const validUrl = buildLocalCallUrl({
     ecPath: "/public/element-call/index.html",
-    parentPath: "/cinny/",
+    parentPath: "/",
   });
   const validOpenOutcome = await win.webContents.executeJavaScript(
     `window.__selfmatrixShellSmoke.transport.openCallView(${JSON.stringify(validUrl)})
@@ -1474,6 +1651,55 @@ async function runCinnyShellSmoke() {
   app.exit(result.pass ? 0 : 1);
 }
 
+// M1 step 3c-1: native-join.e2e.mjs (playwright-core の electronApp.evaluate()) がこの
+// プロセス外から main プロセスの内部状態を読める窓口。main プロセスの `state`/`callView` は
+// このモジュールのスコープ内変数であり、electronApp.evaluate() に渡す関数はこのプロセスの
+// グローバルスコープで実行される (ただしモジュールスコープ変数へは直接触れない) ため、
+// dev/E2E 限定でここだけ `global` 経由に橋渡しする。既存の全 smoke/cinny-shell-smoke パスは
+// この窓口に一切依存しない (isE2ERealJoin でのみ有効化)。
+function setupE2EIntrospection() {
+  if (!isE2ERealJoin) return;
+  global.__selfmatrixE2E = {
+    // 主要な main 側状態のスナップショット (widgetMessages 等は生の値のまま — サニタイズは
+    // e2e スクリプト側が証跡書き出し時に行う)。
+    getSnapshot: () => ({
+      origin: state.origin,
+      callViewState: state.callViewState,
+      activeWidgetId: state.activeWidgetId,
+      widgetMessages: state.widgetMessages,
+      navigationEvents: state.navigationEvents,
+      preloadErrors: state.preloadErrors,
+    }),
+    // call view (EC) の main world で任意の式を評価する。call view が無ければ ok:false を
+    // 返すだけで例外にはしない (e2e スクリプト側のポーリングループが単純になる)。
+    evalInCallView: async (code) => {
+      if (!state.callView || state.callView.webContents.isDestroyed()) {
+        return { ok: false, reason: "no_call_view" };
+      }
+      try {
+        const value = await state.callView.webContents.executeJavaScript(code, true);
+        return { ok: true, value };
+      } catch (error) {
+        return { ok: false, reason: String(error && error.message ? error.message : error) };
+      }
+    },
+    // M1 step 3c-1: BrowserWindow.capturePage() (mainWindow 自身) は addChildView() された
+    // call view (別 WebContentsView) を合成してくれない (実測: cinny 自身の UI しか写らない) ので、
+    // call view の実体を別画像として個別にキャプチャする専用ヘルパーを用意する。
+    captureCallViewPng: async () => {
+      if (!state.callView || state.callView.webContents.isDestroyed()) {
+        return { ok: false, reason: "no_call_view" };
+      }
+      try {
+        const image = await state.callView.webContents.capturePage();
+        return { ok: true, base64: image.toPNG().toString("base64") };
+      } catch (error) {
+        return { ok: false, reason: String(error && error.message ? error.message : error) };
+      }
+    },
+  };
+}
+
 async function main() {
   await app.whenReady();
   if (!fs.existsSync(path.join(cinnyDist, "index.html"))) {
@@ -1485,6 +1711,7 @@ async function main() {
 
   setupIpc();
   setupDisplayMediaHandler();
+  setupE2EIntrospection();
   await startServer();
   createMainWindow();
   if (isSmoke) await runSmoke();
