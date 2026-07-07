@@ -1,0 +1,13 @@
+{
+  "scenario": "bridge-origin-mismatch",
+  "description": "Fail fast when parentUrl origin does not match the call view origin.",
+  "widgetId": "selfmatrix-call-widget",
+  "callOrigin": "https://app.selfmatrix.test",
+  "parentOrigin": "https://shell.selfmatrix.test",
+  "pass": true,
+  "events": [],
+  "failure": {
+    "code": "origin_mismatch",
+    "message": "Widget targetOrigin must match the call view origin for message-event bridge mode."
+  }
+}

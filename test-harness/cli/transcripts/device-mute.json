@@ -1,0 +1,34 @@
+{
+  "scenario": "device-mute",
+  "description": "Widget reports microphone enabled and camera disabled.",
+  "widgetId": "selfmatrix-call-widget",
+  "callOrigin": "https://app.selfmatrix.test",
+  "parentOrigin": "https://app.selfmatrix.test",
+  "pass": true,
+  "events": [
+    {
+      "direction": "fromWidget",
+      "request": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-001",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        }
+      },
+      "response": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-001",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        },
+        "response": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Display Media Smoke</title>
+  </head>
+  <body>
+    <video id="preview" autoplay muted playsinline></video>
+    <script>
+      window.__displayMediaState = {
+        secureContext: window.isSecureContext,
+        hasGetDisplayMedia: Boolean(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia),
+        events: [],
+        errors: [],
+      };
+
+      function record(type, details) {
+        window.__displayMediaState.events.push({ type, details, t: Date.now() });
+      }
+
+      window.__runDisplayMediaProbe = async function () {
+        try {
+          const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              frameRate: { ideal: 30, max: 30 },
+            },
+            audio: false,
+          });
+          const videoTrack = stream.getVideoTracks()[0];
+          const beforeConstraints = videoTrack.getSettings();
+          record("track-created", beforeConstraints);
+
+          await videoTrack.applyConstraints({
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            frameRate: { ideal: 60, max: 60 },
+          });
+
+          const afterConstraints = videoTrack.getSettings();
+          document.getElementById("preview").srcObject = stream;
+          record("constraints-applied", afterConstraints);
+          stream.getTracks().forEach((track) => track.stop());
+          record("tracks-stopped", {});
+          return { ok: true, beforeConstraints, afterConstraints, state: window.__displayMediaState };
+        } catch (error) {
+          window.__displayMediaState.errors.push(String(error && error.stack ? error.stack : error));
+          return { ok: false, error: String(error && error.stack ? error.stack : error), state: window.__displayMediaState };
+        }
+      };
+    </script>
+  </body>
+</html>

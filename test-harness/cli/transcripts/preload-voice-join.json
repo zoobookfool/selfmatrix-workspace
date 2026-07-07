@@ -1,0 +1,96 @@
+{
+  "scenario": "preload-voice-join",
+  "description": "Widget boot, content_loaded, host join request, and device_mute update.",
+  "widgetId": "selfmatrix-call-widget",
+  "callOrigin": "https://app.selfmatrix.test",
+  "parentOrigin": "https://app.selfmatrix.test",
+  "pass": true,
+  "events": [
+    {
+      "direction": "fromWidget",
+      "request": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-001",
+        "action": "supported_api_versions",
+        "data": {}
+      },
+      "response": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-001",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": []
+        }
+      }
+    },
+    {
+      "direction": "fromWidget",
+      "request": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-002",
+        "action": "content_loaded",
+        "data": {}
+      },
+      "response": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-002",
+        "action": "content_loaded",
+        "data": {},
+        "response": {}
+      }
+    },
+    {
+      "direction": "toWidget",
+      "request": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-003",
+        "action": "io.element.join",
+        "data": {
+          "audioInput": null,
+          "videoInput": null
+        }
+      },
+      "response": {
+        "api": "toWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-003",
+        "action": "io.element.join",
+        "data": {
+          "audioInput": null,
+          "videoInput": null
+        },
+        "response": {}
+      }
+    },
+    {
+      "direction": "fromWidget",
+      "request": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-004",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        }
+      },
+      "response": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-call-widget",
+        "requestId": "widgetapi-harness-004",
+        "action": "io.element.device_mute",
+        "data": {
+          "audio_enabled": true,
+          "video_enabled": false
+        },
+        "response": {}
+      }
+    }
+  ]
+}

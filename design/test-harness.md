@@ -1,7 +1,15 @@
 # SelfMatrix Test Harness 設計 (検討、2026-07-07)
 
-**ステータス: ドラフト v0.1。** ネイティブ版に進む前に、重い Electron 実機テストへ全部を押し込まないための検証入口を整理する。
+**ステータス: ドラフト v0.2、最小実装あり。** ネイティブ版に進む前に、重い Electron 実機テストへ全部を押し込まないための検証入口を整理する。
 この文書は [native-client-rethink.md](native-client-rethink.md) と [desktop-window-spike.md](../spikes/desktop-window-spike.md) の次段として読む。
+
+実装入口:
+
+- [test-harness/README.md](../test-harness/README.md)
+- `npm test`: Widget protocol CLI + Web static contract。2026-07-07 に PASS
+- Electron smoke: 2026-07-07 に Electron 43 runtime で `reparent` / `displayMedia` ともに PASS
+- `npm run test:web`: Playwright UI test。依存 install 後に実行
+- `npm run smoke:electron:reparent` / `npm run smoke:electron:display-media`: Electron smoke。依存 install 後に実行
 
 ## 目的
 
@@ -161,12 +169,17 @@ test-harness/
   artifacts/
 ```
 
-ただし、最初から全部作らない。
-初期着手は次の 3 点に絞る。
+初期実装は次の 3 点に絞った。
 
 1. Widget protocol CLI の `supported_api_versions` / `content_loaded` / `device_mute`
-2. Web UI harness の配信タイル右クリックメニュー
+2. Web UI harness の配信タイル右クリックメニューと話者 overlay 右クリックメニュー
 3. Electron smoke の `displayMedia` + `WebContentsView` 再親子付け
+
+未実施:
+
+- Playwright 実ブラウザ test の実行
+- 実 Cinny / EC artifact の読み込み
+- dev MatrixRTC / LiveKit への実接続
 
 ## Backlog への反映方針
 

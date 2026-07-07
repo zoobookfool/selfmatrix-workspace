@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Reparent Smoke</title>
+  </head>
+  <body>
+    <h1>Reparent Smoke</h1>
+    <script>
+      const loadCount = Number(sessionStorage.getItem("selfmatrixSmokeLoadCount") || "0") + 1;
+      sessionStorage.setItem("selfmatrixSmokeLoadCount", String(loadCount));
+
+      window.__probeState = {
+        loadCount,
+        unloads: Number(sessionStorage.getItem("selfmatrixSmokeUnloads") || "0"),
+        messages: [],
+        pcConnectionState: "new",
+        dataChannelState: "connecting",
+      };
+
+      window.addEventListener("beforeunload", () => {
+        window.__probeState.unloads += 1;
+        sessionStorage.setItem("selfmatrixSmokeUnloads", String(window.__probeState.unloads));
+      });
+
+      async function startLoopback() {
+        const a = new RTCPeerConnection();
+        const b = new RTCPeerConnection();
+        const channel = a.createDataChannel("selfmatrix-smoke");
+
+        channel.addEventListener("open", () => {
+          window.__probeState.dataChannelState = channel.readyState;
+          channel.send("hello");
+        });
+        channel.addEventListener("message", (event) => {
+          window.__probeState.messages.push(event.data);
+        });
+
+        b.addEventListener("datachannel", (event) => {
+          event.channel.addEventListener("message", (message) => event.channel.send(`echo:${message.data}`));
+        });
+
+        a.addEventListener("icecandidate", (event) => event.candidate && b.addIceCandidate(event.candidate));
+        b.addEventListener("icecandidate", (event) => event.candidate && a.addIceCandidate(event.candidate));
+        a.addEventListener("connectionstatechange", () => {
+          window.__probeState.pcConnectionState = a.connectionState;
+        });
+
+        const offer = await a.createOffer();
+        await a.setLocalDescription(offer);
+        await b.setRemoteDescription(offer);
+        const answer = await b.createAnswer();
+        await b.setLocalDescription(answer);
+        await a.setRemoteDescription(answer);
+
+        window.__connections = { a, b, channel };
+      }
+
+      startLoopback().catch((error) => {
+        window.__probeState.error = String(error && error.stack ? error.stack : error);
+      });
+    </script>
+  </body>
+</html>

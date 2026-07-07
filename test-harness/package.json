@@ -1,0 +1,20 @@
+{
+  "name": "selfmatrix-test-harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:cli && npm run test:web:static",
+    "test:cli": "node cli/widget-protocol.mjs --all --write-transcripts",
+    "harness:widget": "node cli/widget-protocol.mjs",
+    "web:serve": "node web/server.mjs",
+    "test:web:static": "node web/tests/static-contract.mjs",
+    "test:web": "playwright test",
+    "smoke:electron:reparent": "electron electron-smoke/src/reparent-probe.cjs",
+    "smoke:electron:display-media": "electron electron-smoke/src/display-media-probe.cjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0",
+    "electron": "43.0.0"
+  }
+}

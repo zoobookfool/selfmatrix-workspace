@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SelfMatrix Web UI Harness</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101114;
+        --panel: #1f2026;
+        --panel-2: #2b2d34;
+        --line: #3d4049;
+        --text: #f2f3f5;
+        --muted: #a7abb5;
+        --accent: #5f6df2;
+        --green: #23a55a;
+        --danger: #ed4245;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+
+      .app {
+        display: grid;
+        grid-template-columns: 72px 280px 1fr;
+        min-height: 100vh;
+      }
+
+      .servers {
+        background: #15161a;
+        border-right: 1px solid #252730;
+        padding: 12px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .server {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+      }
+
+      .channels {
+        background: #191a1f;
+        border-right: 1px solid #333640;
+        padding: 18px 14px;
+      }
+
+      .channel-heading {
+        font-size: 18px;
+        font-weight: 800;
+        margin-bottom: 24px;
+      }
+
+      .voice-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 44px;
+        border-radius: 8px;
+        padding: 0 10px;
+        background: #30323a;
+        color: #d7d9df;
+      }
+
+      .voice-row strong {
+        flex: 1;
+      }
+
+      .call {
+        position: relative;
+        min-width: 0;
+        display: grid;
+        grid-template-rows: 48px 1fr 88px;
+        background: #060607;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 18px;
+        border-bottom: 1px solid #23252d;
+        background: #0f1014;
+      }
+
+      .status {
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .stage {
+        position: relative;
+        overflow: hidden;
+        background: #000;
+      }
+
+      .stream-tile {
+        position: absolute;
+        inset: 28px 32px;
+        border: 1px solid #59606d;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+          linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+          #08090c;
+        background-size: 80px 80px;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .stream-content {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: #c8cad2;
+        font-size: 24px;
+        font-weight: 800;
+      }
+
+      .quality-badge {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: rgba(35, 37, 44, 0.92);
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-weight: 800;
+        font-size: 13px;
+      }
+
+      .speaker-overlay {
+        position: absolute;
+        left: 22px;
+        bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        cursor: grab;
+        user-select: none;
+      }
+
+      .speaker-overlay[data-speaking="true"] .avatar {
+        outline: 3px solid var(--green);
+      }
+
+      .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #b97aff;
+        display: grid;
+        place-items: center;
+        color: #111;
+        font-weight: 900;
+      }
+
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        border-top: 1px solid #23252d;
+        background: #0f1014;
+      }
+
+      .control {
+        min-width: 54px;
+        height: 44px;
+        border-radius: 8px;
+        border: 1px solid #373a44;
+        color: var(--text);
+        background: var(--panel);
+        font-weight: 800;
+      }
+
+      .control.danger {
+        background: var(--danger);
+        border-color: var(--danger);
+      }
+
+      .menu {
+        position: fixed;
+        width: 260px;
+        padding: 8px;
+        border-radius: 8px;
+        background: #2b2d34;
+        border: 1px solid #3f424d;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+        z-index: 10;
+      }
+
+      .menu[hidden] {
+        display: none;
+      }
+
+      .menu-item {
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        color: var(--text);
+      }
+
+      .menu-item:hover {
+        background: #393c46;
+      }
+
+      .menu-label {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin: 8px 10px 4px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <aside class="servers" aria-label="サーバー">
+        <div class="server">SM</div>
+        <div class="server">G</div>
+        <div class="server">+</div>
+      </aside>
+
+      <aside class="channels" aria-label="チャンネル">
+        <div class="channel-heading">ガンダムがしてぇんだ</div>
+        <div class="voice-row">
+          <span>🔊</span>
+          <strong>雑談</strong>
+          <span>通話中</span>
+        </div>
+      </aside>
+
+      <section class="call" aria-label="通話">
+        <header class="topbar">
+          <strong>雑談 / やみさんのスクリーン</strong>
+          <div class="status" data-testid="call-status">通話中 2人 / 配信 1本</div>
+        </header>
+
+        <section class="stage" data-testid="call-stage">
+          <article class="stream-tile" data-testid="stream-tile-yami" aria-label="やみさんの配信">
+            <div class="stream-content">SCREEN SHARE</div>
+            <div class="quality-badge" data-testid="quality-badge">1080p 60 FPS</div>
+            <div class="speaker-overlay" data-testid="speaker-overlay-yami" data-speaking="true">
+              <span class="avatar">や</span>
+              <strong>やみさん</strong>
+              <span>🎙</span>
+            </div>
+          </article>
+        </section>
+
+        <footer class="footer" aria-label="通話操作">
+          <button class="control" data-testid="mute-button">Mic</button>
+          <button class="control" data-testid="share-button">Share</button>
+          <button class="control" data-testid="layout-button">Grid</button>
+          <button class="control danger" data-testid="hangup-button">Exit</button>
+        </footer>
+      </section>
+    </main>
+
+    <div class="menu" role="menu" data-testid="stream-context-menu" hidden>
+      <div class="menu-item" role="menuitem">視聴を中止 <span>×</span></div>
+      <div class="menu-item" role="menuitem">ミュート <input data-testid="stream-muted" type="checkbox" /></div>
+      <span class="menu-label">配信の音量</span>
+      <div class="menu-item"><input data-testid="stream-volume" type="range" min="0" max="200" value="100" /></div>
+      <div class="menu-item" role="menuitem">配信をポップアウト <span>↗</span></div>
+      <div class="menu-item" role="menuitem">配信減衰 <input data-testid="ducking-enabled" type="checkbox" checked /></div>
+      <span class="menu-label">配信減衰強度</span>
+      <div class="menu-item"><input data-testid="ducking-strength" type="range" min="0" max="100" value="45" /></div>
+    </div>
+
+    <div class="menu" role="menu" data-testid="speaker-context-menu" hidden>
+      <div class="menu-item" role="menuitem">やみさんをミュート <input data-testid="speaker-muted" type="checkbox" /></div>
+      <span class="menu-label">やみさんの音量</span>
+      <div class="menu-item"><input data-testid="speaker-volume" type="range" min="0" max="200" value="100" /></div>
+    </div>
+
+    <script>
+      const state = {
+        streamVolume: 100,
+        speakerVolume: 100,
+        streamMenuOpen: false,
+        speakerMenuOpen: false,
+      };
+      window.__harnessState = state;
+
+      const streamTile = document.querySelector('[data-testid="stream-tile-yami"]');
+      const speakerOverlay = document.querySelector('[data-testid="speaker-overlay-yami"]');
+      const streamMenu = document.querySelector('[data-testid="stream-context-menu"]');
+      const speakerMenu = document.querySelector('[data-testid="speaker-context-menu"]');
+
+      function showMenu(menu, event) {
+        event.preventDefault();
+        streamMenu.hidden = true;
+        speakerMenu.hidden = true;
+        menu.hidden = false;
+        menu.style.left = `${Math.min(event.clientX, window.innerWidth - 280)}px`;
+        menu.style.top = `${Math.min(event.clientY, window.innerHeight - 260)}px`;
+        state.streamMenuOpen = menu === streamMenu;
+        state.speakerMenuOpen = menu === speakerMenu;
+      }
+
+      streamTile.addEventListener("contextmenu", (event) => showMenu(streamMenu, event));
+      speakerOverlay.addEventListener("contextmenu", (event) => {
+        event.stopPropagation();
+        showMenu(speakerMenu, event);
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".menu")) {
+          streamMenu.hidden = true;
+          speakerMenu.hidden = true;
+          state.streamMenuOpen = false;
+          state.speakerMenuOpen = false;
+        }
+      });
+
+      document.querySelector('[data-testid="stream-volume"]').addEventListener("input", (event) => {
+        state.streamVolume = Number(event.target.value);
+      });
+
+      document.querySelector('[data-testid="speaker-volume"]').addEventListener("input", (event) => {
+        state.speakerVolume = Number(event.target.value);
+      });
+    </script>
+  </body>
+</html>

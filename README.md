@@ -21,6 +21,7 @@
 | `spikes/` | 技術検証の記録と証跡 |
 | `reviews/` | AI レビューの記録 |
 | `fixes/` | 個別修正の記録とパッチ |
+| `test-harness/` | ネイティブ版前段の Web UI / Widget protocol / Electron smoke 検証入口 |
 
 ## 文書の読み方
 
@@ -52,7 +53,7 @@
 | [mocks/ui-mock.html](design/mocks/ui-mock.html) | 視覚基準 | 操作できる UI モック v2.2。v1.5 の追加仕様と衝突する場合は ui-design-notes を優先 |
 | [call-window-mode.md](design/call-window-mode.md) | 実装保留 | 別ウィンドウ通話開始モード v1.4。ネイティブ化検討の結論待ち |
 | [native-client-rethink.md](design/native-client-rethink.md) | ドラフト | クライアントのネイティブアプリ化。小型 prototype 着手可、最終 LiveKit join 待ち |
-| [test-harness.md](design/test-harness.md) | ドラフト | ネイティブ版の前段として Web UI / Widget protocol CLI / Electron smoke の検証入口を整理 |
+| [test-harness.md](design/test-harness.md) | ドラフト | ネイティブ版の前段として Web UI / Widget protocol CLI / Electron smoke の検証入口を整理。最小実装あり |
 | [ec-tile-ui-plan.md](design/ec-tile-ui-plan.md) | 履歴 | EC タイル UI の実装計画と進捗 |
 | [i18n.md](design/i18n.md) | 正本 | 多言語対応 (言語パック方式) の設計 |
 
