@@ -100,6 +100,17 @@ B で「無再接続の窓移動」というネイティブ最大の果実を取
 4. **次の合格条件は実 EC + dev MatrixRTC join。**
    built EC bundle の boot は通ったが、実通話参加・共有中移動・Cinny 実 shell の `ClientWidgetApi` 接続は未確認。
 
+### テスト戦略の追加
+
+ネイティブ版はテストが重くなるため、production app だけで全回帰を確認しない。
+[test-harness.md](test-harness.md) に沿って、次の 3 層を先に用意する。
+
+- Web UI harness: 通話 UI、右クリックメニュー、画質/FPS、話者 overlay を Playwright で確認する
+- Widget protocol CLI: Matrix Widget API / bridge の action transcript を高速に確認する
+- Electron smoke harness: WebContentsView 再親子付け、displayMedia、system audio など OS 境界だけを見る
+
+この harness 整備を、`selfmatrix-desktop` 本実装前の P0 とする。
+
 ### 実装済み設計との関係
 
 - 「別ウィンドウ通話開始モード」(call-window-mode.md v1.4、web 前提で設計済み・実装待ち) は

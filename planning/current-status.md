@@ -10,20 +10,24 @@
 - 通話 UI は画面共有特化、視聴オプトイン、画質/FPS ピッカー、話者オーバーレイ、配信タイル音量調整、RNNoise ノイズ抑制まで実装済み。
   話者オーバーレイ右クリックからのユーザー単位音量調整は未実装扱いで、[backlog.md](backlog.md) を正とする。
 - 別ウィンドウ通話開始モードは [call-window-mode.md](../design/call-window-mode.md) v1.4 で UI 合意済みだが、実装はネイティブ化検討の結論待ち。
-- クライアントのネイティブ化は [native-client-rethink.md](../design/native-client-rethink.md) v0.1 のドラフト段階。次の判断ゲートは [desktop-window-spike.md](../spikes/desktop-window-spike.md)。
+- クライアントのネイティブ化は [native-client-rethink.md](../design/native-client-rethink.md) v0.2 のドラフト段階。
+  [desktop-window-spike.md](../spikes/desktop-window-spike.md) の初回実測では小型 prototype 着手可。ただし production 実装 GO は実 EC + dev MatrixRTC join / 共有中移動 / system audio 確認待ち。
+- ネイティブ版の前段として、重い Electron 実機テストへ全部を押し込まないための [test-harness.md](../design/test-harness.md) を追加した。
+  Web UI harness / Widget protocol CLI / Electron smoke に分け、ネイティブ固有でない不具合を先に安く落とす方針。
 
 ## 次の判断ゲート
 
-1. [desktop-window-spike.md](../spikes/desktop-window-spike.md) を実施する。
-2. Electron WebContentsView で動作中の通話 view をウィンドウ間で再親子付けしても、EC widget / LiveKit 接続がリロード・再参加しないか確認する。
-3. 成立するなら `selfmatrix-desktop` 案 A -> 案 B を roadmap に追加する。
-4. 成立しない、または実装コストが高すぎるなら、web 版の [call-window-mode.md](../design/call-window-mode.md) を実装候補に戻す。
+1. [test-harness.md](../design/test-harness.md) に沿って、Widget protocol CLI / Web UI harness / Electron smoke の最小 3 点を作る。
+2. Electron prototype では、Cinny shell と EC bundle を同一 app origin で配信し、Widget API bridge を正式な境界として設計する。
+3. 実 EC + dev MatrixRTC で join / 共有中 view 移動 / system audio を確認する。
+4. 成立するなら `selfmatrix-desktop` 案 A -> 案 B を roadmap に追加する。成立しない、または実装コストが高すぎるなら、web 版の [call-window-mode.md](../design/call-window-mode.md) を実装候補に戻す。
 
 ## 直近の未完了
 
 未完了・保留・検証待ちは [backlog.md](backlog.md) を正とする。主なもの:
 
-- desktop window spike
+- test harness 整備
+- desktop window spike の最終 LiveKit join 検証
 - グリッド配信タイルのストリーム単体ポップアウト `🗗`
 - 話者オーバーレイ右クリックからのユーザー単位音量調整
 - SFU 切断時の自動再参加
