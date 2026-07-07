@@ -83,3 +83,24 @@ Electron の `WebContentsView` に EC widget / LiveKit 通話を載せ、同じ 
 - `BrowserView` は使わず `WebContentsView` を使う。
 - 最前面固定、外部ミュート制御はこのスパイクの主目的ではない。画面共有ピッカーと画質/FPS 選択は、別窓通話の必須操作として Phase 3 の合否に含める。
 - 成果物は fork/product ブランチへ混ぜず、実験コードを一時 repo または `spike/*` ブランチに置き、結果だけをこの文書へ追記する。
+
+
+## 追加の検証観点 (2026-07-07、着手前ギャップ監査より)
+
+1. **window.parent 問題 (当落を決める)**: matrix-widget-api (widget 側) は `globalThis.parent` 固定で
+   postMessage する。WebContentsView は DOM の親子関係ではないため、分離後に cinny 側へメッセージが
+   届く経路が存在するかを最初に確認する。届かない場合は preload/IPC による中継層の設計が必要 —
+   その工数込みで案 B の成否を判定すること。「同一プロセス内 iframe のままで動いていた」誤検証に注意
+2. **Electron 既知バグの事前確認**: WebContentsView の再親子付けに関する issue #47247 (クラッシュ/無反応)
+   と #44652 (removeChildView 後の表示残留)。検証に使う Electron バージョンを固定し、これらの
+   再現有無をスパイク結果に記録する
+3. **session partition と localStorage 契約**: cinny⇔EC の画質/FPS・ミニタイル位置連携は同一オリジン
+   localStorage 依存 (screenShareSettings.ts / miniTileStripSettings.ts)。分離した WebContentsView が
+   同じ session を共有していることを、実際にピッカーで値を変えて EC 側が拾うことまで確認する
+4. **画面共有は案 A 段階の前提条件**: Electron では getDisplayMedia に
+   `session.setDisplayMediaRequestHandler` + 自前ソースピッカー UI が必要 (ブラウザと同じには動かない)。
+   EC が組み立てる width/height/frameRate constraints が desktopCapturer 経由でどう扱われるかも
+   実機確認する。Windows の `audio: 'loopback'` (システム音声) の動作可否もここで併せて記録する
+5. **dev TLS CA**: NODE_EXTRA_CA_CERTS は Electron で効かない既知問題があるため、dev backend への
+   接続は `setCertificateVerifyProc` 等の dev 専用処置を用意してから検証を始める (これが無いと
+   イテレーション自体が止まる)
