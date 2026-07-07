@@ -53,5 +53,5 @@ Cinny本体の差分は小さく保ちます。Matrix SDK、暗号化、sync 周
 
 実例:
 
-- cinny `spike/call-popout`(コード)↔ [popout-spike.md](popout-spike.md)(記録)
-- element-call `spike/media-params`(コード)↔ [client-spike-results.md](client-spike-results.md)(記録)
+- cinny `spike/call-popout`(コード)↔ [popout-spike.md](../spikes/popout-spike.md)(記録)
+- element-call `spike/media-params`(コード)↔ [client-spike-results.md](../spikes/client-spike-results.md)(記録)

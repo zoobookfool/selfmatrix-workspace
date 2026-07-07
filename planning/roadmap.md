@@ -16,7 +16,7 @@
 - サービス名: **SelfMatrix** に決定 (リポジトリ名も selfmatrix / selfmatrix-cinny / selfmatrix-element-call に統一済み)
 - デプロイ形態: 運用者自身の環境は **A: 自宅 + VPS** に決定 (ポート開放不可の回線のため)。
   スターターとしては「自宅オンリー / VPS 単独 / 自宅 + VPS」をサポート対象とする (Phase 4 の profile 整備に反映)
-- VPS: **さくらのVPS** を採用予定 (適合確認と各社の帯域比較は [bandwidth-comparison.md](bandwidth-comparison.md) 参照)
+- VPS: **さくらのVPS** を採用予定 (適合確認と各社の帯域比較は [bandwidth-comparison.md](../spikes/bandwidth-comparison.md) 参照)
 - 経路方針: 経路 A (Cloudflare → VPS → Tailscale → 自宅) で確定。ドメインは Cloudflare DNS 管理下の手持ちドメインを充当
 - `SERVER_NAME`: 手持ちドメインのサブドメイン(ラベル `selfmatrix`)に決定 (2026-07-03)。
   サブドメイン方式の注意は home-server-network.md の「サブドメインを SERVER_NAME にする場合」参照
@@ -55,7 +55,7 @@ Exit criteria:
 
 ## Phase 2a: Client spike(判断ゲート、目安1週間)
 
-第一候補 Cinny fork の採用可否を、改修着手前に検証します。検証環境と詳細手順は [client-spike.md](client-spike.md) を参照してください。
+第一候補 Cinny fork の採用可否を、改修着手前に検証します。検証環境と詳細手順は [client-spike.md](../spikes/client-spike.md) を参照してください。
 
 - Cinny の Voice/Video Room で複数人同時画面共有が表示できるか
 - 埋め込み Element Call 層でエンコードパラメータ(解像度プリセット、Opus ビットレート)を上書きできるか
@@ -68,17 +68,17 @@ Exit criteria:
 - 切替の場合、fork-strategy.md を対象クライアントで書き直す
 
 **結果 (2026-07-02): 完了・合格。** 4項目クリアで **Cinny fork 続行が確定**。
-記録は [client-spike-results.md](client-spike-results.md) 参照。
+記録は [client-spike-results.md](../spikes/client-spike-results.md) 参照。
 
 ## Phase 2b: Client fork
 
-**UI 合意の現行正本は [ui-design-notes.md](ui-design-notes.md) (v1.4) と [mocks/ui-mock.html](mocks/ui-mock.html) (v2.2)。**
+**UI 合意の現行正本は [ui-design-notes.md](../design/ui-design-notes.md) (v1.4) と [mocks/ui-mock.html](../design/mocks/ui-mock.html) (v2.2)。**
 以下は Phase 2b 着手当時 (v1.2) の計画記述であり、履歴として残しています。現在の未実装差分は
 本ロードマップの Phase 8「UI 設計 v1.4 と実装の差分」を正としてください。ポップアウトの主対象は
 その後の合意で「通話 UI 全体」に変わっています (配信単体ポップアウトは補助機能)。
 
 **(履歴、2026-07-02 当時)** UI の合意事項は ui-design-notes.md (v1.2) を正とします。
-リスク扱いだったポップアウトは技術検証済み ([popout-spike.md](popout-spike.md)):
+リスク扱いだったポップアウトは技術検証済み ([popout-spike.md](../spikes/popout-spike.md)):
 配信ストリーム単位のポップアウト (再接続なし) を主機能として EC fork のタイル UI に実装します。
 
 **進捗 (2026-07-03): fork リポジトリ作成済み**(selfmatrix-cinny / selfmatrix-element-call、
@@ -182,7 +182,7 @@ Exit criteria:
 ## Phase 6: Hi-res audio subsystem
 
 **進捗 (2026-07-05): スパイク完了 — JackTrip (hub mode) の採用 (「買う」) を推奨。** 記録は
-[hires-spike.md](hires-spike.md)。机上調査で SonoBus は star 型中継が構造的に不可 (音声は常に P2P) かつ保守停滞、
+[hires-spike.md](../spikes/hires-spike.md)。机上調査で SonoBus は star 型中継が構造的に不可 (音声は常に P2P) かつ保守停滞、
 Jamulus は 48kHz 固定のため除外。実機検証で VPS 上のヘッドレス hub による 192kHz/24bit ステレオ
 中継が成立 (クライアント 1 台 ≈9.8Mbps/方向、2 台同時で線形スケールを実測。レイテンシは要件に対し
 桁で余裕)。残条件: JackTrip は非圧縮 PCM 固定のため可逆圧縮 SHOULD は未達 — 10 人ステレオ
@@ -199,7 +199,7 @@ Jamulus は 48kHz 固定のため除外。実機検証で VPS 上のヘッドレ
 **実装完了 + 別リポジトリ化 (2026-07-05)**: モジュール一式は独立リポジトリ
 **selfmatrix-hires** に分離 (provision.sh + README ガイド + shellcheck CI。スターター側で
 実装・2 系統レビュー・CI 通過済みのものを移植)。本リポジトリには方針記録とスパイク記録
-([hires-spike.md](hires-spike.md)) のみ残す。残: 本番 VPS への配備と聴感・実接続の検証 (運用者が実施。
+([hires-spike.md](../spikes/hires-spike.md)) のみ残す。残: 本番 VPS への配備と聴感・実接続の検証 (運用者が実施。
 exit criteria の充足判定はその結果を待つ)。
 
 - スパイク: SonoBus / JackTrip(hub)を 192kHz/24bit・10 人・片道 150ms 以内で検証し、買う/作るを判断
