@@ -30,8 +30,14 @@ Claude が残りを実装。純関数を widget-bridge-protocol.cjs へ分離し
 
 ## M1: 通話コアの成立 (スパイク完了 → 正式 GO/NO-GO)
 
+設計は [design/native-widget-transport.md](../design/native-widget-transport.md) が正本 (2026-07-07 制定)。
+
 - **NativeWidgetTransport / NativeCallHost アダプタ**: cinny の ClientWidgetApi/CallWidgetDriver
-  (iframe.contentWindow 前提) を WebContentsView に接続する層。ここが最大の未検証リスク
+  (iframe.contentWindow 前提) を WebContentsView に接続する層。設計分析の結果、
+  (A) widget-api transport (低リスク: iframe シムで matrix-widget-api 無改造) と
+  (B) CallControl の DOM スクレイピング移設 (高リスク: WebContentsView は DOM 非公開のため
+  call view preload への移植 + RPC 化が必須。Phase 2b の Discord 風コントロールバー全部が対象)
+  の 2 系統に分解された。**(B) を M1 スコープに明示的に含める**
 - 実 dev MatrixRTC/LiveKit への join (テスト用スタブではなく本物の通話)
 - **共有中・通話中の view 移動** (メイン⇔別窓) で無再接続を実証
 - session partition / localStorage 契約 (画質ピッカー等) が分離後も生きることの実機確認

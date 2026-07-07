@@ -54,6 +54,7 @@
 | [ui-design-notes.md](design/ui-design-notes.md) | 正本 | UI 合意 v1.5。通話・配信・シェルの現行方針 |
 | [mocks/ui-mock.html](design/mocks/ui-mock.html) | 視覚基準 | 操作できる UI モック v2.2。v1.5 の追加仕様と衝突する場合は ui-design-notes を優先 |
 | [call-window-mode.md](design/call-window-mode.md) | 履歴 (web 版フォールバック専用) | ネイティブ版は Discord 準拠へ方針変更 (2026-07-07)。正本は native-milestones M3 |
+| [native-widget-transport.md](design/native-widget-transport.md) | 正本 (M1 設計) | ネイティブ版アダプタ設計。iframe シム + 素通しルータ / CallControl の RPC 移設 |
 | [native-client-rethink.md](design/native-client-rethink.md) | ドラフト | クライアントのネイティブアプリ化。小型 prototype 着手可、最終 LiveKit join 待ち |
 | [test-harness.md](design/test-harness.md) | ドラフト | ネイティブ版の前段として Web UI / Widget protocol CLI / Electron smoke の検証入口を整理。最小実装あり |
 | [ec-tile-ui-plan.md](design/ec-tile-ui-plan.md) | 履歴 | EC タイル UI の実装計画と進捗 |
