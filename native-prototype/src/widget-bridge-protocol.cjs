@@ -20,9 +20,21 @@ function assertSameOrigin(callUrl, parentUrl) {
   }
 }
 
+// M1 step 3b: シェル静的サーバが EC dist を配信する既知の base path 群。
+// `/ec/` は M0/M1 step 1-2 から使われてきた prototype 固有の path。`/public/element-call/` は
+// step 3b で追加したエイリアス (design/native-widget-transport.md step 3b 実装要件 1/4) — cinny 本体
+// (`CallEmbed.ts`/`NativeCallEmbed.ts`) は web 版と同じ `<origin>/public/element-call/index.html` を
+// 無改造で組み立てるため、シェル側がこの path を EC dist へエイリアスする必要がある。
+// openCallView() の URL 検証 (validateCallViewUrl) はこの両方を許可 prefix として扱う。
+const EC_BASE_PATHS = ["/ec/", "/public/element-call/"];
+
 // callOrigin / parentOrigin を別々に受け取れる純関数。production の ecUrl() は両方に
 // 同じ origin (state.origin) を渡す薄い呼び出しになる。test-harness はここへ意図的に
 // 異なる origin を渡し、assertSameOrigin が実際に呼ばれていることを検証する。
+// M1 step 3b: ecPath/parentPath を差し替え可能にした (デフォルトは既存の "/ec/index.html" /
+// "/desktop-shell.html" のまま、既存呼び出し元の挙動は不変)。cinny-shell モードの smoke は
+// ecPath: "/public/element-call/index.html" (エイリアス route) / parentPath: "/cinny/" を渡して
+// 「cinny が実際に組み立てる URL」形状を再現する。
 function buildWidgetUrl({
   callOrigin,
   parentOrigin = callOrigin,
@@ -37,9 +49,11 @@ function buildWidgetUrl({
   disableVideo,
   hideVideoButton,
   theme,
+  ecPath = "/ec/index.html",
+  parentPath = "/desktop-shell.html",
 }) {
-  const parentUrl = `${parentOrigin}/desktop-shell.html`;
-  const callUrl = `${callOrigin}/ec/index.html`;
+  const parentUrl = `${parentOrigin}${parentPath}`;
+  const callUrl = `${callOrigin}${ecPath}`;
   assertSameOrigin(callUrl, parentUrl);
   const params = new URLSearchParams({
     widgetId,
@@ -56,6 +70,55 @@ function buildWidgetUrl({
     theme,
   });
   return `${callUrl}?${params.toString()}`;
+}
+
+// M1 step 3b 実装要件 1: openCallView(completeWidgetUrl) の URL 検証。cinny レンダラ
+// (相対的に低信頼) が組み立てた URL をシェルが無検証で loadURL しないための関門。
+// 拒否理由は validateWidgetBridgeMessage 等と同じ形状 ({ok, reasons: [{code, message, ...}]}) に揃える。
+function validateCallViewUrl(url, { expectedOrigin, basePaths = EC_BASE_PATHS } = {}) {
+  if (typeof url !== "string" || url.length === 0) {
+    return {
+      ok: false,
+      reasons: [{ code: "invalid_url", message: "Call view URL must be a non-empty string." }],
+    };
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch (error) {
+    return {
+      ok: false,
+      reasons: [{ code: "invalid_url", message: `Call view URL failed to parse: ${String(error && error.message ? error.message : error)}` }],
+    };
+  }
+
+  const reasons = [];
+
+  if (expectedOrigin) {
+    const expected = new URL(expectedOrigin).origin;
+    if (parsed.origin !== expected) {
+      reasons.push({
+        code: "origin_mismatch",
+        message: `Call view URL origin does not match the shell's own origin: ${parsed.origin} !== ${expected}`,
+        expectedOrigin: expected,
+        actualOrigin: parsed.origin,
+      });
+    }
+  }
+
+  const matchesKnownBase = basePaths.some((base) => parsed.pathname.startsWith(base));
+  if (!matchesKnownBase) {
+    reasons.push({
+      code: "base_path_mismatch",
+      message: `Call view URL path is not under a known EC dist base: ${parsed.pathname}`,
+      basePaths,
+      actualPathname: parsed.pathname,
+    });
+  }
+
+  if (reasons.length > 0) return { ok: false, reasons };
+  return { ok: true, reasons: [] };
 }
 
 function createWidgetRequest(action, data, requestId) {
@@ -191,6 +254,7 @@ module.exports = {
   WIDGET_USER_ID,
   WIDGET_DEVICE_ID,
   WIDGET_BASE_URL,
+  EC_BASE_PATHS,
   assertSameOrigin,
   buildWidgetUrl,
   createWidgetRequest,
@@ -198,4 +262,5 @@ module.exports = {
   responseForWidgetRequest,
   validateWidgetBridgeMessage,
   validateToViewMessage,
+  validateCallViewUrl,
 };

@@ -19,9 +19,14 @@ async function refreshStatus() {
   readyDot.classList.toggle("ready", status.callViewState !== "none");
 }
 
+// M1 step 3b: 通話 View は shell-widget-host.js の boot() が起動時に自動で
+// openCallView(completeUrl) を呼んでロード済みのはず。このボタンは手動での再オープン
+// (同じ URL での reload) 用の手段として残す — window.selfmatrixNative.ensureCallView() は
+// もう URL をロードしない「create-only」ガードに変わったため、これを直接呼んでも EC は
+// ロードされない (新契約では URL 駆動の openCallView() 経由が必須)。
 document.getElementById("ensure-call").addEventListener("click", async () => {
-  log("ensure call view");
-  await window.selfmatrixNative.ensureCallView();
+  log("open call view (openCallView)");
+  await window.selfmatrixWidgetHost.openCall();
   await refreshStatus();
 });
 

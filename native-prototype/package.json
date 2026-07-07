@@ -8,7 +8,9 @@
     "start": "electron src/main.cjs",
     "smoke": "electron src/main.cjs --smoke",
     "memory": "electron src/main.cjs --memory-probe",
-    "test": "npm run smoke && npm run memory"
+    "cinny-shell": "electron src/main.cjs --cinny-shell",
+    "cinny-shell-smoke": "electron src/main.cjs --cinny-shell-smoke",
+    "test": "npm run smoke && npm run memory && npm run cinny-shell-smoke"
   },
   "devDependencies": {
     "electron": "43.0.0"

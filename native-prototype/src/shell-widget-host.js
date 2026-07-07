@@ -18,9 +18,19 @@
 //
 // nodeIntegration:false のページなので ipcRenderer には直接触れない。shell-preload.cjs が
 // contextBridge 経由で公開する window.selfmatrixNative.claimWidgetTransport() を起動時に一度だけ
-// 呼び、そこから受け取る sendToView() / notifyWidgetHostReady() を薄く呼ぶだけで、main プロセスへの
-// 実際の IPC 送信は preload 側の責務のままにする (F2b, 受け入れレビュー修正: claim-once の理由は
-// 下の IIFE 冒頭のコメント参照)。
+// 呼び、そこから受け取る sendToView()/openCallView()/closeCallView()/callControlInvoke()/
+// onCallControlState() を薄く呼ぶだけで、main プロセスへの実際の IPC 送信は preload 側の責務の
+// ままにする (F2b, 受け入れレビュー修正: claim-once の理由は下の IIFE 冒頭のコメント参照)。
+//
+// M1 step 3b (design §3 step 3b 実装要件 2): cinny 側の nativeBridge.ts 契約に合わせて
+// このスクリプトも新契約に追随させた。旧実装は window.selfmatrixNative.ensureCallView() (静的な
+// /widget-config.json 方式、main.cjs が固定 URL を組み立てる) を呼んでいたが、新契約では
+// このスクリプト自身が (cinny の NativeCallEmbed と同じように) widget.getCompleteUrl() で
+// 完成 URL を組み立て、claim 済みトランスポートの openCallView(completeUrl) を呼ぶ。
+// notifyWidgetHostReady() は廃止済み — new ClientWidgetApi(...) の直後に openCallView() を
+// 呼ぶ、という呼び出し順序そのものが「'message' リスナー登録済み」を保証するため、別途
+// 合図を送る必要が無くなった (design の順序不変条件、nativeBridge.ts の openCallView() 契約
+// コメント参照)。
 (function () {
   "use strict";
 
@@ -70,12 +80,32 @@
 
     const config = await fetch("/widget-config.json").then((response) => response.json());
 
+    // M1 step 3b: cinny の CallEmbed.getWidget()/NativeCallEmbed 同様、widget.url テンプレートに
+    // 完成 URL 相当のクエリパラメータをあらかじめ埋め込んでおく (この harness には $ 変数を解決する
+    // 実際のテンプレート機構が無いので、値はここで直接組み立てる)。widget.getCompleteUrl() は
+    // それをそのまま返す (下記)。main.cjs の buildLocalCallUrl() の既定値と同じパラメータ集合。
+    const parentUrl = `${window.location.origin}/desktop-shell.html`;
+    const params = new URLSearchParams({
+      widgetId: config.widgetId,
+      parentUrl,
+      roomId: config.roomId,
+      userId: config.userId,
+      deviceId: config.deviceId,
+      baseUrl: config.baseUrl,
+      intent: "join_existing_voice",
+      preload: "true",
+      skipLobby: "true",
+      disableVideo: "true",
+      hideVideoButton: "true",
+      theme: "dark",
+    });
+    const templateUrl = `${window.location.origin}/ec/index.html?${params.toString()}`;
+
     const widget = new mxwidgets.Widget({
       id: config.widgetId,
       creatorUserId: config.userId,
       type: "m.call",
-      // Widget.origin (= transport.targetOrigin, 本シムでは未使用) の算出にのみ使われるテンプレート URL。
-      url: `${window.location.origin}/ec/index.html`,
+      url: templateUrl,
       waitForIframeLoad: false,
     });
 
@@ -106,18 +136,33 @@
       notify("inbound", event.data);
     });
 
+    // M1 step 3b 実装要件 4: call view preload からの state push を UI ログにも流す
+    // (手動確認用の補助的な観測経路。onCallControlState() の配線自体はここで初めて動作確認
+    // されるわけではなく、cinny-shell smoke がより厳密に検証する — これは harness の手動デモ用)。
+    widgetTransport.onCallControlState((pushedState) => notify("call-control-state", pushedState));
+
+    // M1 step 3b (design §3 step 3b 実装要件 2): cinny の NativeCallEmbed コンストラクタと同じ
+    // 手順 — widget.getCompleteUrl() で完成 URL を組み立てる。this harness の widget.url は
+    // 既にクエリパラメータを含む具体値なので (テンプレート変数を使っていない)、getCompleteUrl() は
+    // それをそのまま返す。
+    const completeUrl = widget.getCompleteUrl({ currentUserId: config.userId });
+
     window.selfmatrixWidgetHost = {
       config,
       widget,
       driver,
       clientWidgetApi,
+      completeUrl,
       // io.element.join 等のホスト起点カスタム action。本番の CallEmbed も
       // call.transport.send() 経由でこれと同じものを呼ぶ (design §1.3)。
       // F3 (受け入れレビュー修正): 「通話 View 起動」ボタンを押す前に Join/DeviceMute/Hangup を
       // 押すと転送先の call view が無く 10 秒無音タイムアウトになる退行があった
       // (M0 の sendWidgetAction は ensureCallView を内包していたが、M1 step 1 の素通しルータ化で
       // 抜け落ちていた)。送信前に必ず ensureCallView() を await する — 既に起動済みなら
-      // main.cjs 側の ensureCallView() が即 return するだけで無害。
+      // main.cjs 側の createCallViewIfNeeded() が即 return するだけで無害。
+      // M1 step 3b: この guard は「view を作るだけ (URL はロードしない)」の ensureCallView() の
+      // ままにしてある — boot() が既に openCallView(completeUrl) で読み込み済みのはずなので、
+      // ここで openCallView() を再度呼んで EC をリロードしてしまわないようにするため。
       async sendAction(action, data) {
         await window.selfmatrixNative.ensureCallView();
         return clientWidgetApi.transport.send(action, data || {});
@@ -136,9 +181,22 @@
       callControlToggle() {
         return widgetTransport.callControlInvoke("toggleTarget");
       },
+      // M1 step 3b 新設: desktop-shell.js の「通話 View 起動」ボタンから手動で
+      // (再) オープンするためのラッパー。boot() 完了時に自動で 1 度呼ばれるのに加え、
+      // 手動リロード確認用にも使える (同じ completeUrl での再 loadURL は冪等な reload として扱う)。
+      openCall() {
+        return widgetTransport.openCallView(completeUrl);
+      },
+      closeCall() {
+        return widgetTransport.closeCallView();
+      },
     };
 
-    widgetTransport.notifyWidgetHostReady();
+    // M1 step 3b (design §3 step 3b 実装要件 2): cinny の NativeCallEmbed コンストラクタが
+    // `new ClientWidgetApi(...)` (上、'message' リスナー登録を同期的に完了させる) の直後に
+    // 自分で openCallView() を呼ぶのと同じ手順をここでも踏む。旧 notifyWidgetHostReady() の
+    // 合図待ちは、この呼び出し順序そのものが安全性を保証するようになったため不要になった。
+    await widgetTransport.openCallView(completeUrl);
   }
 
   boot().catch((error) => {

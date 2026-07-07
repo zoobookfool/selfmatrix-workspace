@@ -25,10 +25,10 @@ const {
   WIDGET_USER_ID,
   WIDGET_DEVICE_ID,
   WIDGET_BASE_URL,
-  assertSameOrigin,
   buildWidgetUrl,
   validateWidgetBridgeMessage,
   validateToViewMessage,
+  validateCallViewUrl,
 } = require("./widget-bridge-protocol.cjs");
 
 // F1 (受け入れレビュー修正): smoke がハンドシェイク完了後に注入する偽メッセージの action 名。
@@ -44,15 +44,38 @@ const SPOOF_WIDGET_ID = "spoofed-widget-id";
 const pendingCallControlInvokes = new Map();
 let callControlInvokeSeq = 0;
 
-// call view (EC WebContentsView) の永続パーティション名。ensureCallView() の
+// call view (EC WebContentsView) の永続パーティション名。createCallViewIfNeeded() の
 // WebContentsView 生成と、call-control-preload.cjs を 2 本目の preload として登録する
 // session.fromPartition() の両方から同じ文字列を参照する必要があるため定数化した。
 const CALL_VIEW_PARTITION = "persist:selfmatrix-native-prototype-call";
+
+// G3 (受け入れレビュー修正): cinny 側 NativeCallControlAction (cinny/src/app/plugins/call/native/
+// NativeCallControl.ts) が宣言する契約語彙 7 種のコピー。文字列そのものは cinny 側の enum の値と
+// 手動同期している (main.cjs は cinny のソースを直接 import できないため)。runCinnyShellSmoke() は
+// この 7 つを実際に transport.callControlInvoke() で invoke し、call-control-preload.cjs の
+// switch 分岐がこの語彙を全て解釈することを検証する — 以前は 7 action のうちどれ 1 つも
+// テストから呼ばれていなかった (toggleTarget という単体実証専用の別 action しか invoke されて
+// いなかった)。
+const CALL_CONTROL_VOCABULARY = [
+  "toggleScreenshare",
+  "toggleSpotlight",
+  "toggleEmphasis",
+  "toggleReactions",
+  "toggleSettings",
+  "setSoundOn",
+  "setSoundOff",
+];
 
 const appRoot = path.resolve(__dirname, "..");
 const evidenceDir = path.join(appRoot, "evidence");
 const isSmoke = process.argv.includes("--smoke");
 const isMemoryProbe = process.argv.includes("--memory-probe");
+// M1 step 3b 実装要件 5: --cinny-shell はトップフレームモード (mainWindow が
+// desktop-shell.html ではなく <origin>/cinny/ を直接ロードする、本番 topology)。
+// --cinny-shell-smoke はそのモードで item 7 の自動判定を行う専用フラグで、常に
+// トップフレームモードのロードも伴う。
+const isCinnyShellSmoke = process.argv.includes("--cinny-shell-smoke");
+const isCinnyShell = isCinnyShellSmoke || process.argv.includes("--cinny-shell");
 
 const state = {
   origin: null,
@@ -66,25 +89,14 @@ const state = {
   // 全メッセージをここに記録する。widgetMessages と同じ「main は中継するだけ、判定は別関数に外出し」
   // という方針を踏襲する。
   callControlMessages: [],
-  // 診断用 (call view 側 preload の読み込み時例外を記録。ensureCallView() 参照)。
+  // 診断用 (call view 側 preload の読み込み時例外を記録。createCallViewIfNeeded() 参照)。
   preloadErrors: [],
   navigationEvents: [],
-  widgetHostReady: null,
-  resolveWidgetHostReady: null,
 };
-
-// shell 側 (mainWindow の通常ページスクリプト, src/shell-widget-host.js) が本物の
-// ClientWidgetApi を構築し 'message' リスナーの登録まで終えたことを main プロセスへ知らせる合図。
-// ensureCallView() はこの合図を待ってから EC の読み込みを開始する。待たないと、EC が起動直後に
-// 送る supported_api_versions / content_loaded を shell 側がまだリッスンしておらず取りこぼす
-// 競合が起き得る (design/native-widget-transport.md §1.1 の inboundWindow=globalThis 制約)。
-state.widgetHostReady = new Promise((resolve) => {
-  state.resolveWidgetHostReady = resolve;
-});
 
 if (app) {
   app.on("window-all-closed", () => {
-    if (!isSmoke && !isMemoryProbe) app.quit();
+    if (!isSmoke && !isMemoryProbe && !isCinnyShellSmoke) app.quit();
   });
 }
 
@@ -187,6 +199,15 @@ function startServer() {
       const filePath = resolveStatic(ecDist, url.pathname.slice("/ec/".length), true);
       if (filePath) return serveFile(response, filePath);
     }
+    // M1 step 3b 実装要件 4: cinny の CallEmbed.ts/NativeCallEmbed.ts は無改造では
+    // `<origin>/public/element-call/index.html` (web 版と同じ base) で完成 URL を組み立てる。
+    // シェルの静的サーバにこのエイリアス route を追加し、EC dist をそこでも配信することで
+    // cinny 側コードを一切変更せずに URL がそのまま解決するようにする。openCallView() の URL
+    // 検証 (widget-bridge-protocol.cjs の EC_BASE_PATHS) にもこの prefix を含めてある。
+    if (url.pathname.startsWith("/public/element-call/")) {
+      const filePath = resolveStatic(ecDist, url.pathname.slice("/public/element-call/".length), true);
+      if (filePath) return serveFile(response, filePath);
+    }
 
     response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     response.end("Not found");
@@ -208,7 +229,7 @@ function createMainWindow() {
     title: "SelfMatrix Native Prototype",
     width: 1400,
     height: 860,
-    show: !isSmoke,
+    show: !isSmoke && !isCinnyShellSmoke,
     webPreferences: {
       preload: path.join(__dirname, "shell-preload.cjs"),
       nodeIntegration: false,
@@ -216,7 +237,12 @@ function createMainWindow() {
       sandbox: false,
     },
   });
-  win.loadURL(`${state.origin}/desktop-shell.html`);
+  // M1 step 3b 実装要件 5: --cinny-shell (/--cinny-shell-smoke) はトップフレームモード —
+  // mainWindow が harness (desktop-shell.html + cinny iframe) ではなく cinny 本体を直接
+  // トップフレームでロードする、本番同様の topology。既定/--smoke/--memory-probe は
+  // 従来どおり desktop-shell.html (harness) を維持する。preload (shell-preload.cjs) は
+  // どちらのモードでも同一 — window.selfmatrixNative は常にこの preload が公開する。
+  win.loadURL(isCinnyShell ? `${state.origin}/cinny/` : `${state.origin}/desktop-shell.html`);
   state.mainWindow = win;
   win.on("resize", updateCallViewBounds);
   return win;
@@ -243,8 +269,14 @@ function createCallWindow() {
   return win;
 }
 
-function ecUrl() {
-  // URL 組み立てと assertSameOrigin 呼び出しは buildWidgetUrl() 内にある。ここはその薄い委譲。
+// M1 step 3b: harness/smoke 用の既定 widget パラメータで完成 URL を組み立てる汎用ヘルパー。
+// URL 組み立てと assertSameOrigin 呼び出しは buildWidgetUrl() 内にある。ここはその薄い委譲。
+// `overrides.ecPath`/`overrides.parentPath` で EC dist の base path / parentUrl の path を
+// 差し替えられる (既定は従来どおり "/ec/index.html" / "/desktop-shell.html")。
+// cinny-shell smoke (runCinnyShellSmoke()) はここへ ecPath: "/public/element-call/index.html",
+// parentPath: "/cinny/" を渡し、「cinny が実際に組み立てる URL」形状 (エイリアス route 経由) を
+// 再現した「正当な URL」テストケースを作る。
+function buildLocalCallUrl(overrides = {}) {
   return buildWidgetUrl({
     callOrigin: state.origin,
     parentOrigin: state.origin,
@@ -259,29 +291,18 @@ function ecUrl() {
     disableVideo: "true",
     hideVideoButton: "true",
     theme: "dark",
+    ...overrides,
   });
 }
 
-function withTimeout(promise, ms, message) {
-  let timer;
-  const timeout = new Promise((_resolve, reject) => {
-    timer = setTimeout(() => reject(new Error(message)), ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
-}
-
-async function ensureCallView() {
+// M1 step 3b: WebContentsView 自体の生成 (URL のロードは伴わない)。detachCallView()/
+// attachCallView() (シェル内部の窓移動デモ、cinny の契約には含まれない — design §2.3 の
+// 「CallPopout はネイティブでは不要、M3 の再親子付けで置き換え」参照) がガードとして呼ぶ。
+// 実際の EC ロードは openCallView(url) の責務に分離した (旧 ensureCallView() は生成とロードの
+// 両方を一度にやっていたが、新契約では URL は呼び出し元 (cinny/harness) が渡すものであり、
+// main が独自に組み立てて先読みロードしてはならない)。
+function createCallViewIfNeeded() {
   if (state.callView) return;
-
-  // shell 側の本物の ClientWidgetApi が 'message' リスナーの登録を終えるまで EC の読み込みを
-  // 待つ (state 初期化コメント参照)。ここで待たずに loadURL してしまうと、shell-widget-host.js の
-  // 起動が終わる前に EC が送る初回の supported_api_versions/content_loaded を取りこぼし得る。
-  await withTimeout(
-    state.widgetHostReady,
-    10000,
-    "Timed out waiting for shell-widget-host.js to report native:widget-host-ready. " +
-      "The shell's ClientWidgetApi never finished booting (see desktop-shell.html script load order).",
-  );
 
   // M1 step 2 (B 単体実証): CallControl 相当の DOM 操作ロジック (call-control-preload.cjs) を
   // 2 本目の preload として同じ call view partition/session に登録する。webPreferences.preload
@@ -289,8 +310,8 @@ async function ensureCallView() {
   // call-control-preload.cjs 冒頭のコメント参照 (sandbox 下の preload の require() は
   // "electron" 以外を解決できないことを実測で確認した)。session.registerPreloadScript() は
   // ファイルとしての分離を保ったまま、同じフレームに追加の preload を読み込ませられる。
-  // ensureCallView() はこの関数の先頭の早期 return により call view 1 個の寿命中に一度しか
-  // 呼ばれないため、登録も一度きりで良い。
+  // createCallViewIfNeeded() はこの関数の先頭の早期 return により call view 1 個の寿命中に
+  // 一度しか呼ばれないため、登録も一度きりで良い。
   session.fromPartition(CALL_VIEW_PARTITION).registerPreloadScript({
     filePath: path.join(__dirname, "call-control-preload.cjs"),
     type: "frame",
@@ -316,13 +337,113 @@ async function ensureCallView() {
   // 診断用: call view 側のいずれかの preload (widget-bridge-preload.cjs /
   // call-control-preload.cjs) が読み込み時に例外を投げた場合、smoke は「対象が見つからず
   // タイムアウトし続ける」形でしか失敗が見えず原因追跡が難しい。preload-error を記録しておく。
+  // G6 (受け入れレビュー修正): 以前は preloadPath (絶対パス) と error.stack (絶対パスを含み得る
+  // スタックトレース) をそのまま積んでおり、evidence の deepSanitizeEvidence()/
+  // sanitizeEvidenceMessage() はどちらも origin 文字列の置換しかしないため、preloadErrors は
+  // サニタイズ対象外の絶対パス漏洩経路になっていた。捕捉時点で basename のみ/message のみに
+  // 落としてしまうことで、そもそも絶対パスやスタックトレースを state に保持しないようにする。
   view.webContents.on("preload-error", (_event, preloadPath, error) => {
-    state.preloadErrors.push({ t: Date.now(), preloadPath, error: String(error && error.stack ? error.stack : error) });
+    state.preloadErrors.push({
+      t: Date.now(),
+      preloadPath: path.basename(preloadPath),
+      error: String(error && error.message ? error.message : error),
+    });
   });
+
+  // G7 (受け入れレビュー修正): 初回ロード (openCallView() の loadURL()、同じ URL 検証を
+  // 通過済み) 後の call view には、何のナビゲーション制限も無かった。`webContents.loadURL()` は
+  // "will-navigate"/"will-redirect" を発火させない (Electron の仕様: これらはユーザー操作や
+  // ページ自身の window.location 変更/リンククリック/サーバリダイレクトのみで発火する) ため、
+  // ここでの検証は openCallView() の URL 検証と二重にはならず、「ロードされた EC コンテンツが
+  // (侵害されていた場合や不具合で) 自発的に他所へ遷移しようとする」経路を塞ぐためのもの。
+  // openCallView() と同じ validateCallViewUrl() を再利用し、不合格なら preventDefault() で
+  // 実際のナビゲーションを止め、openCallView() と同じ type:"call-view-url-rejected" として
+  // widgetMessages に記録する (runCinnyShellSmoke() 等の既存の rejection 判定と同じ形状、
+  // via フィールドで発生源を区別できるようにしてある)。EC 内部の SPA 遷移 (pushState/hash) は
+  // in-page navigation として will-navigate の対象外のため、既存 smoke の hardNavigationCount
+  // 判定 (did-start-navigation ベース) には影響しない。
+  view.webContents.on("will-navigate", (event, url) => {
+    const validation = validateCallViewUrl(url, { expectedOrigin: state.origin });
+    if (!validation.ok) {
+      event.preventDefault();
+      state.widgetMessages.push({
+        t: Date.now(),
+        type: "call-view-url-rejected",
+        url,
+        validation,
+        via: "will-navigate",
+      });
+    }
+  });
+  view.webContents.on("will-redirect", (event, url) => {
+    const validation = validateCallViewUrl(url, { expectedOrigin: state.origin });
+    if (!validation.ok) {
+      event.preventDefault();
+      state.widgetMessages.push({
+        t: Date.now(),
+        type: "call-view-url-rejected",
+        url,
+        validation,
+        via: "will-redirect",
+      });
+    }
+  });
+  // G7: call view から window.open()/target=_blank 等で新規ウィンドウを開かせる必要は無い
+  // (design の想定する EC 埋め込みは常にこの WebContentsView 内で完結する) ため、常に deny する。
+  view.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
 
   state.mainWindow.contentView.addChildView(view);
   updateCallViewBounds();
-  await view.webContents.loadURL(ecUrl());
+}
+
+// M1 step 3b 実装要件 1/2 (design §3 step 3b): claimWidgetTransport() が返す
+// openCallView(completeWidgetUrl) の main 側実装。cinny レンダラ (相対的に低信頼) が
+// 組み立てた URL を無検証で loadURL しない — 同一オリジンかつ EC dist の既知 base
+// (widget-bridge-protocol.cjs の EC_BASE_PATHS: "/ec/" または "/public/element-call/") 配下の
+// pathname であることを検証する。不合格な場合は例外を投げて claim 済みトランスポート越しの
+// Promise を reject させ、`{type:"call-view-url-rejected", url}` を widgetMessages に記録する
+// (call view は絶対にロードしない)。
+async function openCallView(url) {
+  const validation = validateCallViewUrl(url, { expectedOrigin: state.origin });
+  if (!validation.ok) {
+    // 他の widgetMessages エントリ (from-view/to-view の origin フィールド等) と同じ方針で、
+    // ここでは生の値のまま積む。サニタイズは evidence 書き出し時 (sanitizeEvidenceMessage()) に
+    // まとめて行う — こうしておくと、ライブな state.widgetMessages を直接照合する
+    // runCinnyShellSmoke() 側は「main に実際に渡された生の URL」と単純比較でき、
+    // サニタイズ後の文字列同士を突き合わせる余計な結合を避けられる。
+    state.widgetMessages.push({
+      t: Date.now(),
+      type: "call-view-url-rejected",
+      url,
+      validation,
+    });
+    throw new Error(
+      `native:open-call-view: rejected URL (${validation.reasons.map((reason) => reason.code).join(", ")})`,
+    );
+  }
+
+  createCallViewIfNeeded();
+  await state.callView.webContents.loadURL(url);
+}
+
+// M1 step 3b 新設: 通話 View を閉じる (NativeCallEmbed の dispose/hangup 時に呼ばれる想定、
+// nativeBridge.ts の closeCallView() 契約)。次回 openCallView() が呼ばれれば
+// createCallViewIfNeeded() が新しい WebContentsView を作り直す。
+async function closeCallView() {
+  if (!state.callView) return;
+  const owner = state.callViewState === "detached" ? state.callWindow : state.mainWindow;
+  if (owner && !owner.isDestroyed()) {
+    try {
+      owner.contentView.removeChildView(state.callView);
+    } catch (error) {
+      state.widgetMessages.push({ t: Date.now(), type: "close-call-view-detach-error", error: String(error) });
+    }
+  }
+  if (!state.callView.webContents.isDestroyed()) {
+    state.callView.webContents.close();
+  }
+  state.callView = null;
+  state.callViewState = "none";
 }
 
 function updateCallViewBounds() {
@@ -339,7 +460,7 @@ function updateCallViewBounds() {
 }
 
 async function detachCallView() {
-  await ensureCallView();
+  createCallViewIfNeeded();
   if (!state.callWindow) createCallWindow();
   if (state.callViewState !== "detached") {
     state.mainWindow.contentView.removeChildView(state.callView);
@@ -350,13 +471,29 @@ async function detachCallView() {
 }
 
 async function attachCallView() {
-  await ensureCallView();
+  createCallViewIfNeeded();
   if (state.callViewState !== "attached") {
     state.callWindow?.contentView.removeChildView(state.callView);
     state.mainWindow.contentView.addChildView(state.callView);
     state.callViewState = "attached";
     updateCallViewBounds();
   }
+}
+
+// M1 step 3b: shell/harness/smoke が「call view が (createCallViewIfNeeded()/openCallView() を
+// 経て) attached 状態になる」のを待つための共通ヘルパー。新契約では EC の読み込みは呼び出し元
+// (cinny の NativeCallEmbed、または harness の shell-widget-host.js) が
+// `new ClientWidgetApi(...)` 直後に自発的に openCallView() を呼ぶことで起きる (design §3 step 3b
+// 実装要件 2)。main 側の smoke/memory-probe はもう自分で ensureCallView() を能動的に呼ばず、
+// この自発的な呼び出しが実際に起きるのを待つだけにする — これは「シェルは薄いルータで、
+// 通話 View を開く判断はレンダラ側が握る」という新契約をより忠実に検証することになる。
+async function waitForCallViewAttached(timeoutMs = 10000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    if (state.callViewState === "attached" && state.callView) return true;
+    await wait(100);
+  }
+  return false;
 }
 
 // runSmoke() が main プロセス内から shell 側の本物の ClientWidgetApi へ toWidget カスタム
@@ -392,13 +529,17 @@ function invokeCallControlFromShell() {
 // EC 側の React マウント (ErrorView 到達までの非同期チェーン) 完了を待つため、対象コントロールが
 // 見つかるまで invoke を再試行する。call-control-preload.cjs の invoke() は対象が無ければ
 // 副作用なしで { ok:false, reason:"target_not_found" } を返すだけなので、再試行は安全に冪等。
-async function waitForCallControlInvoke(timeoutMs = 10000) {
+// M1 step 3b: invokeFn を差し替え可能にした (既定は harness の
+// window.selfmatrixWidgetHost.callControlToggle() 経由)。cinny-shell smoke (shell-widget-host.js が
+// 存在しないトップフレームモード) は claim 済みトランスポートの callControlInvoke() を直接叩く
+// invokeFn を渡して同じ再試行ロジックを再利用する。
+async function waitForCallControlInvoke(timeoutMs = 10000, invokeFn = invokeCallControlFromShell) {
   const started = Date.now();
   let lastResult = null;
   let lastError = null;
   while (Date.now() - started < timeoutMs) {
     try {
-      lastResult = await invokeCallControlFromShell();
+      lastResult = await invokeFn();
       lastError = null;
       if (lastResult && lastResult.ok) return { result: lastResult, error: null };
     } catch (error) {
@@ -477,13 +618,17 @@ function setupIpc() {
     cinnyDist,
     ecDist,
   }));
-  ipcMain.handle("native:ensure-call-view", () => ensureCallView());
+  // M1 step 3b: window.selfmatrixNative.ensureCallView() は「create-only」ガードのまま残す
+  // (harness の detach/attach デモや sendWidgetActionFromShell() の F3 対策が使う想定)。
+  // URL 付きのロードは claim 済みトランスポートの openCallView() に一本化した。
+  ipcMain.handle("native:ensure-call-view", () => createCallViewIfNeeded());
   ipcMain.handle("native:detach-call-view", () => detachCallView());
   ipcMain.handle("native:attach-call-view", () => attachCallView());
 
-  ipcMain.on("native:widget-host-ready", () => {
-    state.resolveWidgetHostReady();
-  });
+  // M1 step 3b (design §3 step 3b 実装要件 1/2): claimWidgetTransport() が返す
+  // openCallView(completeWidgetUrl)/closeCallView() の main 側実体。
+  ipcMain.handle("native:open-call-view", (_event, url) => openCallView(url));
+  ipcMain.handle("native:close-call-view", () => closeCallView());
 
   // callView → shell 方向。call view の未信頼な (EC/widget) コンテキストから来るメッセージなので
   // M0 で確立した origin / widgetId / sourceIsSelf===true の検証を継続適用する。拒否された
@@ -606,7 +751,30 @@ function sanitizeEvidenceMessage(message) {
   return {
     ...message,
     origin: sanitizeEvidenceString(message.origin),
+    // M1 step 3b: call-view-url-rejected エントリの url フィールドも同じ方針でサニタイズする
+    // (message.url が無いエントリでは sanitizeEvidenceString(undefined) === undefined のまま)。
+    url: sanitizeEvidenceString(message.url),
   };
+}
+
+// M1 step 3b (item 9, cinny-shell-result.json 新設): call-view-url-rejected エントリは
+// `validation.reasons[].message/expectedOrigin/actualOrigin` に生の origin (127.0.0.1:<port>) が
+// 埋め込まれる。sanitizeEvidenceMessage() は浅い (トップレベル origin/url だけ) サニタイズなので、
+// この新しい evidence ファイル用に再帰的に文字列を洗う専用ヘルパーを用意した。既存の
+// evidence ファイル (smoke/handshake/call-control/memory-result.json) の出力形状は変えたくない
+// ため、既存の sanitizeEvidenceMessage() 呼び出し箇所には手を入れず、cinny-shell-result.json の
+// 書き出しにだけこちらを使う。
+function deepSanitizeEvidence(value) {
+  if (typeof value === "string") return sanitizeEvidenceString(value);
+  if (Array.isArray(value)) return value.map((item) => deepSanitizeEvidence(item));
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [key, nested] of Object.entries(value)) {
+      out[key] = deepSanitizeEvidence(nested);
+    }
+    return out;
+  }
+  return value;
 }
 
 function wait(ms) {
@@ -773,7 +941,17 @@ function analyzeHandshake() {
 }
 
 async function runSmoke() {
-  await ensureCallView();
+  // M1 step 3b: もう main が能動的に ensureCallView() で通話 View を作ってロードしない。
+  // shell-widget-host.js の boot() が claim 済みトランスポートの openCallView(completeUrl) を
+  // 自発的に呼ぶのを待つだけにする (waitForCallViewAttached() コメント参照) — これは cinny 本番の
+  // NativeCallEmbed コンストラクタが行う手順と同型。
+  const callViewAttached = await waitForCallViewAttached();
+  if (!callViewAttached) {
+    throw new Error(
+      "runSmoke(): call view never reached the attached state. shell-widget-host.js's boot() " +
+        "never called openCallView() (see shell-widget-host.js).",
+    );
+  }
   const sawContentLoaded = await waitForWidgetAction("content_loaded");
   // capability 交渉 (content_loaded の ack を契機に beginCapabilities() が自動発火する) が
   // 往復し終える猶予。EC 側の応答を待つだけなので固定 wait ではなく安全側に長めを確保。
@@ -802,8 +980,11 @@ async function runSmoke() {
   // させる。EC の React マウント (ErrorView 到達までの非同期チェーン) 完了まで再試行する。
   // F6: realClickConfirmed の判定基準時刻として、最初の invoke 試行開始時刻を記録しておく
   // (analyzeCallControl() コメント参照)。
+  // G5 (受け入れレビュー修正): 既定の 10000ms は実測 (~9.95s、EC の ErrorView マウントまでの
+  // 内部ネットワークタイムアウト待ち) に対して際どい。runCinnyShellSmoke() 側の同種の待機
+  // (waitForCallControlInvoke(20000, ...)) と同じ 20000ms を明示的に渡し、水準を揃える。
   const callControlInvokeStartedAt = Date.now();
-  const callControlOutcome = await waitForCallControlInvoke();
+  const callControlOutcome = await waitForCallControlInvoke(20000);
   // MutationObserver → IPC push → main 中継が届くまでの猶予。
   await wait(500);
   const callControl = analyzeCallControl(callControlOutcome.result, callControlOutcome.error, callControlInvokeStartedAt);
@@ -960,7 +1141,7 @@ async function memorySnapshot(label) {
 }
 
 async function injectSyntheticViewerStreams() {
-  await ensureCallView();
+  await waitForCallViewAttached();
   return state.callView.webContents.executeJavaScript(
     `(() => {
       const streams = [];
@@ -1003,7 +1184,9 @@ async function runMemoryProbe() {
   await wait(700);
   snapshots.push(await memorySnapshot("shell-only"));
 
-  await ensureCallView();
+  // M1 step 3b: shell-widget-host.js の boot() が自発的に openCallView() を呼ぶのを待つ
+  // (runSmoke() と同じ変更理由。waitForCallViewAttached() コメント参照)。
+  await waitForCallViewAttached();
   const sawContentLoaded = await waitForWidgetAction("content_loaded");
   snapshots.push(await memorySnapshot("call-view-booted"));
 
@@ -1027,6 +1210,270 @@ async function runMemoryProbe() {
   app.exit(result.pass ? 0 : 1);
 }
 
+// M1 step 3b 実装要件 7: cinny-shell smoke。--cinny-shell-smoke モードは mainWindow が cinny 本体を
+// 直接トップフレームでロードする (createMainWindow() の isCinnyShell 分岐、本番同様の topology)。
+// このプロトタイプにはバックエンドが無いため、cinny 自身がログイン画面から先に進んで実際に
+// NativeCallEmbed を構築することは無い。そのためこの smoke は「本番で NativeCallEmbed がやるはず
+// のこと」を main プロセスから executeJavaScript 経由で代わりに実行し、shell-preload.cjs が
+// window.selfmatrixNative として公開する契約そのもの (design/native-widget-transport.md の
+// nativeBridge.ts 契約) を直接検証する。claim-once のため、claim は一度だけ行い、以降の全ステップは
+// 同じ transport インスタンス (window.__selfmatrixShellSmoke) を使い回す。
+async function runCinnyShellSmoke() {
+  const win = state.mainWindow;
+
+  // 1. cinny が top frame でロード完了し、window.selfmatrixNative が main world に存在すること。
+  await win.webContents.executeJavaScript(
+    `(document.readyState === "complete" ? Promise.resolve() : new Promise((resolve) => {
+      window.addEventListener("load", () => resolve(), { once: true });
+    }))`,
+    true,
+  );
+  const bridgePresent = await win.webContents.executeJavaScript(
+    `typeof window.selfmatrixNative !== "undefined" && typeof window.selfmatrixNative.claimWidgetTransport === "function"`,
+    true,
+  );
+  const topFrameUrl = win.webContents.getURL();
+  const cinnyTopFrame = topFrameUrl.startsWith(`${state.origin}/cinny/`);
+
+  // 2. 通話 1 本分の transport を一度だけ claim し (real NativeCallEmbed のコンストラクタが
+  // claimWidgetTransport() を呼ぶのと同じ操作)、以降の全ステップで使い回す。onCallControlState()
+  // の購読もここで一度だけ登録する (design §3 step 3b 実装要件 4 の受信側)。
+  // cinny 自身の NativeCallEmbed は openCallView() の前に本物の ClientWidgetApi を構築するが、
+  // このプロトタイプにはバックエンドが無くログイン画面より先に進めないため、この smoke は
+  // NativeCallEmbed が本来やるはずのこと (claim + ClientWidgetApi 構築) を代わりに行う。
+  // ClientWidgetApi が無いと EC からの supported_api_versions/capabilities リクエストに誰も
+  // 応答せず、EC がローディング画面のまま進行しなくなる (実測で確認済み — shell-widget-host.js の
+  // boot() が harness モードで同じ役割を果たしている理由と同じ)。iframe シム/driver は
+  // shell-widget-host.js のものと同じ最小実装をこの page-context スクリプト文字列内に複製している
+  // (executeJavaScript の文字列注入という制約上、モジュールとして共有require できないため)。
+  await win.webContents.executeJavaScript(
+    `(async () => {
+      window.__selfmatrixShellSmoke = {
+        transport: window.selfmatrixNative.claimWidgetTransport(),
+        pushes: [],
+      };
+      window.__selfmatrixShellSmoke.unsubscribe = window.__selfmatrixShellSmoke.transport.onCallControlState(
+        (pushedState) => { window.__selfmatrixShellSmoke.pushes.push(pushedState); },
+      );
+
+      if (!window.mxwidgets) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "/vendor/matrix-widget-api.js";
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("failed to load /vendor/matrix-widget-api.js"));
+          document.head.appendChild(script);
+        });
+      }
+      const mxwidgets = window.mxwidgets;
+      const widget = new mxwidgets.Widget({
+        id: ${JSON.stringify(WIDGET_ID)},
+        creatorUserId: ${JSON.stringify(WIDGET_USER_ID)},
+        type: "m.call",
+        url: window.location.origin + "/public/element-call/index.html",
+        waitForIframeLoad: false,
+      });
+      class NativeWidgetDriver extends mxwidgets.WidgetDriver {
+        validateCapabilities(requested) {
+          return Promise.resolve(new Set(requested));
+        }
+      }
+      const driver = new NativeWidgetDriver();
+      const shim = {
+        contentWindow: {
+          postMessage(message) { window.__selfmatrixShellSmoke.transport.sendToView(message); },
+        },
+        addEventListener() {},
+        removeEventListener() {},
+      };
+      // new ClientWidgetApi(...) はコンストラクタ内で同期的に 'message' リスナー登録を完了する
+      // (design §1.1)。以降の openCallView() 呼び出し (悪性 URL も含む、本物の EC ロードは
+      // 起きなくても害はない) はすべてこの後に行われるため、順序不変条件を満たす。
+      window.__selfmatrixShellSmoke.clientWidgetApi = new mxwidgets.ClientWidgetApi(widget, shim, driver);
+      return true;
+    })()`,
+    true,
+  );
+
+  // 3. claim ガード: 2 回目の claimWidgetTransport() は throw する。
+  const claimGuard = await win.webContents.executeJavaScript(
+    `(() => {
+      try {
+        window.selfmatrixNative.claimWidgetTransport();
+        return false;
+      } catch (error) {
+        return true;
+      }
+    })()`,
+    true,
+  );
+
+  // 4. URL 検証ゲート: 悪性 URL 2 種 (別オリジン / EC base 外の同一オリジン path) が
+  // openCallView() で reject され、call-view-url-rejected が main.cjs に記録され、実際には
+  // ロードされない (call view が生成すらされない) ことを確認する。
+  const maliciousUrls = {
+    crossOrigin: `https://evil.selfmatrix.invalid/public/element-call/index.html?widgetId=${WIDGET_ID}`,
+    sameOriginWrongPath: `${state.origin}/cinny/index.html?widgetId=${WIDGET_ID}`,
+  };
+  const urlValidationGate = {};
+  for (const [label, badUrl] of Object.entries(maliciousUrls)) {
+    const before = state.widgetMessages.length;
+    const outcome = await win.webContents.executeJavaScript(
+      `window.__selfmatrixShellSmoke.transport.openCallView(${JSON.stringify(badUrl)})
+        .then(() => ({ rejected: false }))
+        .catch((error) => ({ rejected: true, message: String(error && error.message ? error.message : error) }))`,
+      true,
+    );
+    // state.widgetMessages/navigationEvents は生の (未サニタイズの) 値を保持している
+    // (sanitizeEvidenceMessage() は evidence 書き出し時にだけ適用される) ので、ここでの照合も
+    // 生の badUrl と比較する。表示用の url フィールドだけ sanitizeEvidenceString() を通す。
+    const rejectionRecord = state.widgetMessages
+      .slice(before)
+      .find((message) => message.type === "call-view-url-rejected" && message.url === badUrl);
+    const navigatedToBadUrl = state.navigationEvents.some((event) => event.url === badUrl);
+    urlValidationGate[label] = {
+      url: sanitizeEvidenceString(badUrl),
+      rejectedByPromise: Boolean(outcome && outcome.rejected),
+      rejectionRecorded: Boolean(rejectionRecord),
+      navigatedToBadUrl,
+      callViewCreated: state.callView !== null,
+      pass:
+        Boolean(outcome && outcome.rejected) &&
+        Boolean(rejectionRecord) &&
+        !navigatedToBadUrl &&
+        state.callView === null,
+    };
+  }
+
+  // 5. 正当な EC URL: /public/element-call/ エイリアス経由で組み立てる (/ec/ ではなくこちらを
+  // 使うのは、エイリアス route を削除する変異にもこのテストが反応するようにするため — 実装要件の
+  // 変異耐性節参照)。openCallView() が resolve し、EC からの content_loaded (from-view) が main に
+  // 到達することを確認する。
+  const validUrl = buildLocalCallUrl({
+    ecPath: "/public/element-call/index.html",
+    parentPath: "/cinny/",
+  });
+  const validOpenOutcome = await win.webContents.executeJavaScript(
+    `window.__selfmatrixShellSmoke.transport.openCallView(${JSON.stringify(validUrl)})
+      .then(() => ({ resolved: true }))
+      .catch((error) => ({ resolved: false, message: String(error && error.message ? error.message : error) }))`,
+    true,
+  );
+  const sawContentLoaded = await waitForWidgetAction("content_loaded");
+  const validOpenCallView = {
+    resolved: Boolean(validOpenOutcome && validOpenOutcome.resolved),
+    sawContentLoaded,
+    pass: Boolean(validOpenOutcome && validOpenOutcome.resolved) && sawContentLoaded,
+  };
+
+  // 6. onCallControlState 配線: toggleTarget (ErrorView の CloseWidgetButton — step 2 の単体実証
+  // 用の action。call-control-preload.cjs 冒頭コメント参照。実 in-call コントロールが無いこの環境で
+  // 唯一実在する操作可能ターゲットなので、配線の実経路確認にそのまま流用する) を invoke し、
+  // call view preload の MutationObserver push が main を経由して shell 窓の onCallControlState
+  // リスナー (window.__selfmatrixShellSmoke.pushes) まで実際に届くことを確認する。
+  const pushesBefore = await win.webContents.executeJavaScript(
+    `window.__selfmatrixShellSmoke.pushes.length`,
+    true,
+  );
+  // 実測 (runSmoke() の callControl.statePushes[].t - content_loaded.t) では EC が
+  // ErrorView (Room not found) をマウントするまでに content_loaded から ~12.5 秒かかる
+  // (WIDGET_BASE_URL が解決不能な `matrix.example.invalid` のため、EC 内部のネットワーク
+  // タイムアウトを待つ形になっていると見られる)。runSmoke() ではこの前に detach/attach 等の
+  // 待機がいくつも挟まるため実質の猶予が足りていたが、ここでは content_loaded 直後から
+  // リトライを始めるため、確実に間に合うよう timeout を長めに確保する。
+  const invokeOutcome = await waitForCallControlInvoke(20000, () =>
+    win.webContents.executeJavaScript(
+      `window.__selfmatrixShellSmoke.transport.callControlInvoke("toggleTarget")`,
+      true,
+    ),
+  );
+  await wait(500);
+  const pushesAfter = await win.webContents.executeJavaScript(
+    `window.__selfmatrixShellSmoke.pushes.length`,
+    true,
+  );
+  const onCallControlStateWiring = {
+    invokeOk: Boolean(invokeOutcome.result && invokeOutcome.result.ok),
+    invokeError: invokeOutcome.error ? String(invokeOutcome.error.message || invokeOutcome.error) : null,
+    lastInvokeResult: invokeOutcome.result,
+    pushesBefore,
+    pushesAfter,
+    pass: Boolean(invokeOutcome.result && invokeOutcome.result.ok) && pushesAfter > pushesBefore,
+  };
+
+  // 7. (G3, 受け入れレビュー修正) NativeCallControlAction 7 語彙を全て実際に
+  // transport.callControlInvoke() で invoke する。このプロトタイプにはバックエンドが無く、
+  // EC は ErrorView (Room not found) しか描画しないため in-call UI (screenshare/spotlight/
+  // emphasis/reactions/settings/sound の実コントロール) は存在しない — そのため各 action は
+  // 例外を投げず `{ok:false, reason:"target_not_found"}` を返すのが正しい挙動。
+  // call-control-preload.cjs の switch 分岐からその action の case が抜け落ちると default 節
+  // (`{ok:false, reason:"unknown_action"}`) に落ちるため、reason が "unknown_action" になった
+  // 場合は語彙の欠落 (=cinny 側の契約を満たしていない) と判定して FAIL にする。例外/タイムアウト
+  // (invoke 自体が reject する) も FAIL にする。
+  // 実際にセレクタが実 in-call DOM (real screenshare/spotlight/... コントロール) と一致し
+  // ok:true になることの検証は、バックエンド接続後の実 EC UI を要する step 3c のスコープであり、
+  // ここでは「語彙 (action 文字列) の到達性」のみを保証する。
+  const vocabulary = {};
+  for (const action of CALL_CONTROL_VOCABULARY) {
+    let outcome;
+    try {
+      const invokeResult = await win.webContents.executeJavaScript(
+        `window.__selfmatrixShellSmoke.transport.callControlInvoke(${JSON.stringify(action)})`,
+        true,
+      );
+      outcome = { result: invokeResult, error: null };
+    } catch (error) {
+      outcome = { result: null, error: String(error && error.message ? error.message : error) };
+    }
+    const reason =
+      outcome.result && typeof outcome.result === "object" ? outcome.result.reason : undefined;
+    vocabulary[action] = {
+      result: outcome.result,
+      error: outcome.error,
+      pass:
+        outcome.error === null &&
+        Boolean(outcome.result) &&
+        outcome.result.ok === false &&
+        reason === "target_not_found",
+    };
+  }
+  const vocabularyPass = Object.values(vocabulary).every((entry) => entry.pass);
+
+  const result = {
+    pass:
+      bridgePresent &&
+      cinnyTopFrame &&
+      Boolean(claimGuard) &&
+      Object.values(urlValidationGate).every((check) => check.pass) &&
+      validOpenCallView.pass &&
+      onCallControlStateWiring.pass &&
+      vocabularyPass,
+    bridgePresent,
+    cinnyTopFrame,
+    claimGuard,
+    urlValidationGate: deepSanitizeEvidence(urlValidationGate),
+    validOpenCallView,
+    onCallControlStateWiring,
+    vocabulary,
+    callViewState: state.callViewState,
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+    preloadErrors: state.preloadErrors,
+    widgetMessages: deepSanitizeEvidence(state.widgetMessages),
+  };
+  fs.mkdirSync(evidenceDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(evidenceDir, "cinny-shell-result.json"),
+    `${JSON.stringify(result, null, 2)}\n`,
+    "utf8",
+  );
+
+  state.callWindow?.destroy();
+  state.mainWindow?.destroy();
+  state.server?.close();
+  app.exit(result.pass ? 0 : 1);
+}
+
 async function main() {
   await app.whenReady();
   if (!fs.existsSync(path.join(cinnyDist, "index.html"))) {
@@ -1042,13 +1489,20 @@ async function main() {
   createMainWindow();
   if (isSmoke) await runSmoke();
   if (isMemoryProbe) await runMemoryProbe();
+  if (isCinnyShellSmoke) await runCinnyShellSmoke();
+}
+
+function evidenceFileForMode() {
+  if (isCinnyShellSmoke) return "cinny-shell-result.json";
+  if (isMemoryProbe) return "memory-result.json";
+  return "smoke-result.json";
 }
 
 if (app) {
   main().catch((error) => {
     fs.mkdirSync(evidenceDir, { recursive: true });
     fs.writeFileSync(
-      path.join(evidenceDir, isMemoryProbe ? "memory-result.json" : "smoke-result.json"),
+      path.join(evidenceDir, evidenceFileForMode()),
       `${JSON.stringify({ pass: false, error: String(error && error.stack ? error.stack : error) }, null, 2)}\n`,
       "utf8",
     );

@@ -16,24 +16,25 @@
   "invokeError": null,
   "statePushes": [
     {
-      "t": 1783428424172,
+      "t": 1783435928931,
       "direction": "state-push",
       "reason": "mutation-observed",
+      "kind": "legacy-target",
       "selector": "[role=\"button\"][data-kind=\"primary\"]",
       "pressed": true
     }
   ],
   "callControlMessages": [
     {
-      "t": 1783428424170,
+      "t": 1783435928930,
       "direction": "to-view",
-      "correlationId": "call-control-1-1783428424170",
+      "correlationId": "call-control-1-1783435928930",
       "action": "toggleTarget"
     },
     {
-      "t": 1783428424171,
+      "t": 1783435928931,
       "direction": "from-view",
-      "correlationId": "call-control-1-1783428424170",
+      "correlationId": "call-control-1-1783435928930",
       "result": {
         "ok": true,
         "action": "toggleTarget",
@@ -44,9 +45,10 @@
       }
     },
     {
-      "t": 1783428424172,
+      "t": 1783435928931,
       "direction": "state-push",
       "reason": "mutation-observed",
+      "kind": "legacy-target",
       "selector": "[role=\"button\"][data-kind=\"primary\"]",
       "pressed": true
     }

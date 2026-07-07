@@ -43,9 +43,13 @@ step 2 (B 単体 = CallControl の DOM 移設。RPC + MutationObserver + registe
 step 3a (cinny 側 native/ 4 ファイル + ファクトリ分岐) も **2026-07-07 完了** — cinny fork の
 `spike/native-shell` ブランチ (6777ec0)、typecheck/build green、popout は native ではガード
 ([reviews/claude-review-m1-step3a-20260707.md](../reviews/claude-review-m1-step3a-20260707.md))。
-次は step 3b (シェル側を nativeBridge 契約に合わせて改修 — 要件は
-[design/native-widget-transport.md](../design/native-widget-transport.md) の「step 3b 実装要件」節)、
-その後 3c (実 dev スタック join + M1 受け入れ E2E)。
+step 3b (シェル側の契約適合: URL 検証ゲート / EC 配信エイリアス / cinny トップフレームモード /
+7 語彙 preload 実装 / state push 再同期) も **2026-07-07 完了** — cinny c97532f + workspace
+本コミット、変異 4 種全検知
+([reviews/claude-review-m1-step3b-20260707.md](../reviews/claude-review-m1-step3b-20260707.md))。
+**残るは step 3c**: Docker dev スタック (`pnpm backend`) で実ログイン → cinny-shell モードから
+実 LiveKit join → 配信 + 無再接続の窓往復 E2E + 7 語彙の実 in-call DOM 検証 + system audio +
+アプリ単位音声スパイク → **M1 受け入れ・案 B 正式 GO/NO-GO**。
 
 - **NativeWidgetTransport / NativeCallHost アダプタ**: cinny の ClientWidgetApi/CallWidgetDriver
   (iframe.contentWindow 前提) を WebContentsView に接続する層。設計分析の結果、
