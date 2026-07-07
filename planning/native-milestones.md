@@ -7,7 +7,7 @@
 
 進行の型 (確立済み): **GPT が実装 → Claude がレビュー + 独立再現テスト → 差し戻し or 反映 → 記録**。
 
-## M0: プロトタイプ堅牢化 (レビュー must-fix の消化) — 実装済み・レビュー待ち
+## M0: プロトタイプ堅牢化 (レビュー must-fix の消化) — **差し戻し中 (2026-07-07 レビュー)**
 
 [reviews/claude-review-native-prototype-20260707.md](../reviews/claude-review-native-prototype-20260707.md) の指摘対応。
 
@@ -20,10 +20,12 @@
 
 **受け入れ**: must-fix 5 件全消化。`npm test` が実装の回帰を実際に検知できることをレビュアーが確認。
 
-**GPT 実装状況 (2026-07-07)**: must-fix 5 件の実装対応済み。
-Widget protocol CLI は native-prototype の `main.cjs` 実装関数と preload 実ファイルを使う形へ変更し、
-origin/widgetId 検証、同一 origin assertion、call view `sandbox: true`、evidence JSON commit、M0 summary、
-memory probe を追加。受け入れ完了は Claude レビュー待ち。
+**GPT 実装状況 (2026-07-07)**: must-fix 5 件の実装対応済み → **受け入れレビューで差し戻し**
+([reviews/claude-review-m0-20260707.md](../reviews/claude-review-m0-20260707.md))。
+4/5 は実装確認済みで再作業不要。ただし受け入れ条件の変異テストで 2 種のすり抜けを実証
+(①応答内容を検証していない ②assert の実呼び出し経路がテストされていない)。
++ sourceIsSelf 未使用 / memory probe の pass 条件 / npm test 欠落 / 記載場所 2 件。
+再修正 → 再レビューで完了判定。
 
 ## M1: 通話コアの成立 (スパイク完了 → 正式 GO/NO-GO)
 

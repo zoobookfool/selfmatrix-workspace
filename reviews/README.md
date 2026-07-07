@@ -18,3 +18,4 @@
 - 対応済みにした場合は、修正 commit / 実装記録 / 本番反映日を「結論 / 状態」に追記する。
 - 古いレビュー本文は削除しない。判断の履歴として残す。
 - [claude-review-native-prototype-20260707.md](claude-review-native-prototype-20260707.md) — ネイティブ化スパイク実測 + prototype (f7d0e4b..beb7d85)。技術クレームは独立再現で確認 (案 B 成立)。must-fix 5 件 (widget-protocol CLI のトートロジー等)、対応待ち
+- [claude-review-m0-20260707.md](claude-review-m0-20260707.md) — M0 受け入れレビュー (9b45b6b)。**差し戻し**: 変異テストで 2 種のすり抜けを実証 (応答内容未検証・assert 実呼び出し未カバー)。4/5 は実装確認済み
