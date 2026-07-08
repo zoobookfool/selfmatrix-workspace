@@ -1,11 +1,13 @@
-# Backlog (2026-07-07)
+# Backlog (2026-07-08)
 
 **状態: 未完了・保留事項の正本。** [roadmap.md](roadmap.md) は履歴も含むため長い。次に着手する候補や判断ゲートはこの文書を優先する。
 
 | 優先 | 項目 | 状態 | 参照 | 完了条件 |
 | --- | --- | --- | --- | --- |
 | P0 | ネイティブ化 M1 (通話コアの技術成立) | **完了 (2026-07-08)**。実 join / 無再接続窓移動 3 往復 / 配信 / system audio / localStorage 契約すべて E2E PASS。matrix-widget-api 無改造 | [native-milestones.md](native-milestones.md), [native-widget-transport.md](../design/native-widget-transport.md), [reviews/README.md](../reviews/README.md) の claude-review-m1-* | dev スタックで 2 ユーザー通話 + 配信 + 無再接続の窓往復が E2E で PASS → 達成 |
-| P0 | 案 B 正式 GO/NO-GO・M2 着手・アプリ音声 LATER の承認 | **運用者承認待ち** | [native-milestones.md](native-milestones.md) M2, [web-native-parallel.md](web-native-parallel.md), [spikes/app-audio-capture-spike.md](../spikes/app-audio-capture-spike.md) | 運用者が GO と M2 (selfmatrix-desktop 新設) を承認する |
+| P0 | M2 製品化タスク一式 | **進行中 (2026-07-08 開始)**。案 B 正式 GO 承認済み・selfmatrix-desktop 新設済み・bounds 同期完了。残: web tree-shake / mainWindow 監査 / homeserver 選択制 / ソース選択 UI / トレイ / リリース CI + minisign | [native-milestones.md](native-milestones.md) M2, [web-native-parallel.md](web-native-parallel.md) | インストーラから接続して通話一式が動く + 自動更新実機確認 + Electron セキュリティ監査 PASS |
+| P1 | アプリ単位音声キャプチャ (OBS 相当) | 再調査済み (WASAPI プロセスループバック、工数中)。**M2 MUST にはせず M3 以降推奨** | [spikes/app-audio-capture-spike.md](../spikes/app-audio-capture-spike.md) | 特定アプリの音声を配信に載せられる (MS ApplicationLoopback ベースの napi 実装) |
+| P1 | ユーザーカスタム機構 (プラグイン/テーマ/フィルタ) | ドラフト (運用者回答反映済み・GPT レビュー待ち)。テーマ=トークン確定、プラグイン=サンドボックス型 | [user-customization.md](../design/user-customization.md) | 段階導入案の確定 → M いくつ相当に割り付け |
 | P0 | web ビルドの native 分岐無効化 (セキュリティ MUST) | **未対処** — 現行 web 本番は native 検出コードを含み、境界つきリスク (要: グローバル植込) | [web-native-parallel.md](web-native-parallel.md) R2, [native-milestones.md](native-milestones.md) M2 | web ビルドで `getSelfmatrixNativeBridge()` がビルド時無効化され tree-shake される |
 | P1 | 話者オーバーレイ右クリックからのユーザー単位音量調整 | 未実装 | [ui-design-notes.md](../design/ui-design-notes.md) | 配信上の話者ピル/オーバーレイから対象ユーザーのミュート・音量調整へ到達できる |
 | P1 | グリッド配信タイルのストリーム単体ポップアウト `🗗` | 保留 | [ui-design-notes.md](../design/ui-design-notes.md), [call-window-mode.md](../design/call-window-mode.md) | 視聴中配信タイルから再接続なしの単体ポップアウトを開ける |
