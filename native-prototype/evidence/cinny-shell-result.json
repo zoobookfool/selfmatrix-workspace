@@ -106,13 +106,26 @@
       "pass": true
     }
   },
+  "callViewPreloadRegistration": {
+    "registrationCount": 1,
+    "secondOpenResolved": true,
+    "pass": true
+  },
+  "mainWindowNavigationContainment": {
+    "crossOriginNavAttemptedUrl": "https://evil.selfmatrix.invalid/pwned.html",
+    "crossOriginNavBlocked": true,
+    "topFrameStillSameOrigin": true,
+    "topFrameNotAtMaliciousUrl": true,
+    "windowOpenBlocked": true,
+    "pass": true
+  },
   "callViewState": "attached",
   "electron": "43.0.0",
   "chrome": "150.0.7871.46",
   "preloadErrors": [],
   "widgetMessages": [
     {
-      "t": 1783447500167,
+      "t": 1783475788533,
       "type": "call-view-url-rejected",
       "url": "https://evil.selfmatrix.invalid/public/element-call/index.html?widgetId=selfmatrix-native-prototype-call",
       "validation": {
@@ -123,12 +136,16 @@
             "message": "Call view URL origin does not match the shell's own origin: https://evil.selfmatrix.invalid !== http://127.0.0.1:<local-port>",
             "expectedOrigin": "http://127.0.0.1:<local-port>",
             "actualOrigin": "https://evil.selfmatrix.invalid"
+          },
+          {
+            "code": "parent_url_missing",
+            "message": "Call view URL must include a non-empty parentUrl query parameter."
           }
         ]
       }
     },
     {
-      "t": 1783447500202,
+      "t": 1783475788543,
       "type": "call-view-url-rejected",
       "url": "http://127.0.0.1:<local-port>/cinny/index.html?widgetId=selfmatrix-native-prototype-call",
       "validation": {
@@ -142,17 +159,21 @@
               "/public/element-call/"
             ],
             "actualPathname": "/cinny/index.html"
+          },
+          {
+            "code": "parent_url_missing",
+            "message": "Call view URL must include a non-empty parentUrl query parameter."
           }
         ]
       }
     },
     {
-      "t": 1783447500414,
+      "t": 1783475788748,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500410",
+        "requestId": "widgetapi-1783475788743",
         "action": "supported_api_versions",
         "data": {}
       },
@@ -160,41 +181,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500415,
+      "t": 1783475788748,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500410",
-        "action": "supported_api_versions",
-        "data": {},
-        "response": {
-          "supported_versions": [
-            "0.0.1",
-            "0.0.2",
-            "org.matrix.msc2762",
-            "org.matrix.msc2762_update_state",
-            "org.matrix.msc2871",
-            "org.matrix.msc2873",
-            "org.matrix.msc2931",
-            "org.matrix.msc2974",
-            "org.matrix.msc2876",
-            "org.matrix.msc3819",
-            "town.robin.msc3846",
-            "org.matrix.msc3869",
-            "org.matrix.msc3973",
-            "org.matrix.msc4039"
-          ]
-        }
-      }
-    },
-    {
-      "t": 1783447500425,
-      "direction": "from-view",
-      "data": {
-        "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500410",
+        "requestId": "widgetapi-1783475788743",
         "action": "supported_api_versions",
         "data": {},
         "response": {
@@ -215,17 +207,46 @@
             "org.matrix.msc4039"
           ]
         }
+      }
+    },
+    {
+      "t": 1783475788761,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783475788743",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": [
+            "0.0.1",
+            "0.0.2",
+            "org.matrix.msc2762",
+            "org.matrix.msc2762_update_state",
+            "org.matrix.msc2871",
+            "org.matrix.msc2873",
+            "org.matrix.msc2931",
+            "org.matrix.msc2974",
+            "org.matrix.msc2876",
+            "org.matrix.msc3819",
+            "town.robin.msc3846",
+            "org.matrix.msc3869",
+            "org.matrix.msc3973",
+            "org.matrix.msc4039"
+          ]
+        }
       },
       "origin": "http://127.0.0.1:<local-port>",
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500425,
+      "t": 1783475788761,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500425",
+        "requestId": "widgetapi-1783475788761",
         "action": "content_loaded",
         "data": {}
       },
@@ -233,35 +254,35 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500425,
+      "t": 1783475788761,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500425",
+        "requestId": "widgetapi-1783475788761",
         "action": "content_loaded",
         "data": {},
         "response": {}
       }
     },
     {
-      "t": 1783447500425,
+      "t": 1783475788762,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500425",
+        "requestId": "widgetapi-1783475788762",
         "action": "capabilities",
         "data": {}
       }
     },
     {
-      "t": 1783447500441,
+      "t": 1783475788776,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500425",
+        "requestId": "widgetapi-1783475788761",
         "action": "content_loaded",
         "data": {},
         "response": {}
@@ -270,12 +291,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500448,
+      "t": 1783475788784,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500425",
+        "requestId": "widgetapi-1783475788762",
         "action": "capabilities",
         "data": {}
       },
@@ -283,12 +304,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500453,
+      "t": 1783475788786,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500425",
+        "requestId": "widgetapi-1783475788762",
         "action": "capabilities",
         "data": {},
         "response": {
@@ -353,12 +374,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500454,
+      "t": 1783475788787,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500454",
+        "requestId": "widgetapi-1783475788787",
         "action": "notify_capabilities",
         "data": {
           "requested": [
@@ -475,12 +496,12 @@
       }
     },
     {
-      "t": 1783447500454,
+      "t": 1783475788787,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500454",
+        "requestId": "widgetapi-1783475788787",
         "action": "notify_capabilities",
         "data": {
           "requested": [
@@ -599,12 +620,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500454,
+      "t": 1783475788787,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500454",
+        "requestId": "widgetapi-1783475788787",
         "action": "notify_capabilities",
         "data": {
           "requested": [
@@ -724,23 +745,23 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500455,
+      "t": 1783475788787,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500455",
+        "requestId": "widgetapi-1783475788787-0",
         "action": "supported_api_versions",
         "data": {}
       }
     },
     {
-      "t": 1783447500455,
+      "t": 1783475788787,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500455",
+        "requestId": "widgetapi-1783475788787-0",
         "action": "supported_api_versions",
         "data": {}
       },
@@ -748,12 +769,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500455,
+      "t": 1783475788787,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500455",
+        "requestId": "widgetapi-1783475788787-0",
         "action": "supported_api_versions",
         "data": {},
         "response": {
@@ -779,12 +800,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500455,
+      "t": 1783475788788,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500455",
+        "requestId": "widgetapi-1783475788788",
         "action": "update_state",
         "data": {
           "state": []
@@ -792,12 +813,12 @@
       }
     },
     {
-      "t": 1783447500455,
+      "t": 1783475788788,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500455",
+        "requestId": "widgetapi-1783475788788",
         "action": "update_state",
         "data": {
           "state": []
@@ -807,12 +828,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447500456,
+      "t": 1783475788789,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447500455",
+        "requestId": "widgetapi-1783475788788",
         "action": "update_state",
         "data": {
           "state": []
@@ -823,12 +844,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447501286,
+      "t": 1783475789736,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447501285",
+        "requestId": "widgetapi-1783475789735",
         "action": "io.element.device_mute",
         "data": {
           "audio_enabled": true,
@@ -839,12 +860,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447501286,
+      "t": 1783475789736,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447501285",
+        "requestId": "widgetapi-1783475789735",
         "action": "io.element.device_mute",
         "data": {
           "audio_enabled": true,
@@ -858,12 +879,12 @@
       }
     },
     {
-      "t": 1783447501287,
+      "t": 1783475789736,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447501285",
+        "requestId": "widgetapi-1783475789735",
         "action": "io.element.device_mute",
         "data": {
           "audio_enabled": true,
@@ -879,12 +900,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447501422,
+      "t": 1783475789751,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447501422",
+        "requestId": "widgetapi-1783475789752",
         "action": "io.element.close",
         "data": {}
       },
@@ -892,12 +913,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783447501422,
+      "t": 1783475789752,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447501422",
+        "requestId": "widgetapi-1783475789752",
         "action": "io.element.close",
         "data": {},
         "response": {
@@ -908,12 +929,12 @@
       }
     },
     {
-      "t": 1783447501422,
+      "t": 1783475789752,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783447501422",
+        "requestId": "widgetapi-1783475789752",
         "action": "io.element.close",
         "data": {},
         "response": {
@@ -921,6 +942,98 @@
             "message": "Unknown or unsupported action: io.element.close"
           }
         }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783475790446,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783475790443",
+        "action": "supported_api_versions",
+        "data": {}
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783475790451,
+      "type": "main-window-navigation-blocked",
+      "url": "https://evil.selfmatrix.invalid/pwned.html",
+      "via": "will-navigate"
+    },
+    {
+      "t": 1783475790451,
+      "direction": "to-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783475790443",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": [
+            "0.0.1",
+            "0.0.2",
+            "org.matrix.msc2762",
+            "org.matrix.msc2762_update_state",
+            "org.matrix.msc2871",
+            "org.matrix.msc2873",
+            "org.matrix.msc2931",
+            "org.matrix.msc2974",
+            "org.matrix.msc2876",
+            "org.matrix.msc3819",
+            "town.robin.msc3846",
+            "org.matrix.msc3869",
+            "org.matrix.msc3973",
+            "org.matrix.msc4039"
+          ]
+        }
+      }
+    },
+    {
+      "t": 1783475790457,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783475790443",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": [
+            "0.0.1",
+            "0.0.2",
+            "org.matrix.msc2762",
+            "org.matrix.msc2762_update_state",
+            "org.matrix.msc2871",
+            "org.matrix.msc2873",
+            "org.matrix.msc2931",
+            "org.matrix.msc2974",
+            "org.matrix.msc2876",
+            "org.matrix.msc3819",
+            "town.robin.msc3846",
+            "org.matrix.msc3869",
+            "org.matrix.msc3973",
+            "org.matrix.msc4039"
+          ]
+        }
+      },
+      "origin": "http://127.0.0.1:<local-port>",
+      "sourceIsSelf": true
+    },
+    {
+      "t": 1783475790457,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783475790457",
+        "action": "content_loaded",
+        "data": {}
       },
       "origin": "http://127.0.0.1:<local-port>",
       "sourceIsSelf": true

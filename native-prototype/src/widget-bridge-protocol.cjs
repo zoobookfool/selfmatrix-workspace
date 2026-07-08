@@ -122,19 +122,64 @@ function validateCallViewUrl(url, { expectedOrigin, basePaths = EC_BASE_PATHS } 
     });
   }
 
-  // M1 step 3c-1 受け入れレビュー修正 (allow-list): main.cjs はこの URL の widgetId クエリを
-  // その通話の照合期待値 (state.activeWidgetId) として採用するため、値そのものも既知の集合に
-  // 限定する。これが無いと「低信頼側が URL に書いた任意の値を、同じ低信頼側発メッセージの照合
-  // 期待値に使う」という設計上のトートロジーになる。既知の値: prototype 自身の WIDGET_ID と
-  // cinny CallEmbed の固定 widget id "call-embed"。
+  // M1 step 3c-1 受け入れレビュー修正 (allow-list) → C2 (GPT レビュー P1a + Fable レビュー #5 修正)
+  // で必須化: main.cjs はこの URL の widgetId クエリを、その通話中の from-view/to-view メッセージの
+  // 照合期待値 (state.activeWidgetId) として採用する。以前は widgetId が「有れば」allow-list と
+  // 照合していたが、欠落自体は許容していた (widgetId なしの URL でも base_path/origin さえ合えば
+  // 通っていた) — widgetId が無いまま通ると state.activeWidgetId が null 相当になり、以後の
+  // fail-closed 照合 (NO_ACTIVE_CALL_REJECTION) と衝突する未定義動作の余地があった。ここで widgetId
+  // 自体を必須にし、欠落は widget_id_missing として明示的に reject する。既知の値の allow-list
+  // (widget_id_not_allowed) はそのまま維持: これが無いと「低信頼側が URL に書いた任意の値を、同じ
+  // 低信頼側発メッセージの照合期待値に使う」という設計上のトートロジーになる。既知の値: prototype
+  // 自身の WIDGET_ID と cinny CallEmbed の固定 widget id "call-embed"。
   const widgetIdParam = parsed.searchParams.get("widgetId");
-  if (widgetIdParam !== null && !KNOWN_WIDGET_IDS.includes(widgetIdParam)) {
+  if (widgetIdParam === null || widgetIdParam === "") {
+    reasons.push({
+      code: "widget_id_missing",
+      message: "Call view URL must include a non-empty widgetId query parameter.",
+    });
+  } else if (!KNOWN_WIDGET_IDS.includes(widgetIdParam)) {
     reasons.push({
       code: "widget_id_not_allowed",
       message: `Call view URL widgetId is not in the known allow-list: ${widgetIdParam}`,
       allowedWidgetIds: KNOWN_WIDGET_IDS,
       actualWidgetId: widgetIdParam,
     });
+  }
+
+  // C2 (GPT レビュー P1a 修正): 従来 parentUrl は matrix-widget-api 自身のクエリパラメータとして
+  // URL に含まれるだけで、shell 側では一切検証していなかった。widget.getCompleteUrl() が組み立てる
+  // このパラメータは呼び出し元 (cinny の CallEmbed.getWidget()/prototype の buildWidgetUrl()) が
+  // 必ず設定する契約値であり、shell 自身の origin と一致するはずのもの — ここで欠落/別 origin を
+  // 拒否することで「call view に低信頼な parentUrl を無検証で渡さない」を widgetId と同じ強さで
+  // 保証する。
+  const parentUrlParam = parsed.searchParams.get("parentUrl");
+  if (parentUrlParam === null || parentUrlParam === "") {
+    reasons.push({
+      code: "parent_url_missing",
+      message: "Call view URL must include a non-empty parentUrl query parameter.",
+    });
+  } else if (expectedOrigin) {
+    let parentOrigin = null;
+    try {
+      parentOrigin = new URL(parentUrlParam).origin;
+    } catch (error) {
+      reasons.push({
+        code: "parent_url_missing",
+        message: `Call view URL parentUrl failed to parse: ${String(error && error.message ? error.message : error)}`,
+      });
+    }
+    if (parentOrigin !== null) {
+      const expected = new URL(expectedOrigin).origin;
+      if (parentOrigin !== expected) {
+        reasons.push({
+          code: "parent_url_origin_mismatch",
+          message: `Call view URL parentUrl origin does not match the shell's own origin: ${parentOrigin} !== ${expected}`,
+          expectedOrigin: expected,
+          actualOrigin: parentOrigin,
+        });
+      }
+    }
   }
 
   if (reasons.length > 0) return { ok: false, reasons };

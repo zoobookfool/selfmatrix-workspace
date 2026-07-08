@@ -1,0 +1,30 @@
+{
+  "scenario": "call-view-url-widget-id-missing",
+  "description": "validateCallViewUrl() rejects a URL with no widgetId query parameter (C2: widgetId is now mandatory).",
+  "widgetId": "selfmatrix-native-prototype-call",
+  "pass": true,
+  "events": [
+    {
+      "kind": "call-view-url-validation",
+      "url": "https://app.selfmatrix.test/ec/index.html?parentUrl=https%3A%2F%2Fapp.selfmatrix.test%2Fdesktop-shell.html",
+      "validation": {
+        "ok": false,
+        "reasons": [
+          {
+            "code": "widget_id_missing",
+            "message": "Call view URL must include a non-empty widgetId query parameter."
+          }
+        ]
+      }
+    }
+  ],
+  "failure": {
+    "ok": false,
+    "reasons": [
+      {
+        "code": "widget_id_missing",
+        "message": "Call view URL must include a non-empty widgetId query parameter."
+      }
+    ]
+  }
+}

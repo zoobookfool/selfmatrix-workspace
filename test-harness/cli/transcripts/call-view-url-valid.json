@@ -1,0 +1,16 @@
+{
+  "scenario": "call-view-url-valid",
+  "description": "validateCallViewUrl() accepts a URL with a known widgetId, a same-origin parentUrl, and a known EC base path.",
+  "widgetId": "selfmatrix-native-prototype-call",
+  "pass": true,
+  "events": [
+    {
+      "kind": "call-view-url-validation",
+      "url": "https://app.selfmatrix.test/ec/index.html?widgetId=selfmatrix-native-prototype-call&parentUrl=https%3A%2F%2Fapp.selfmatrix.test%2Fdesktop-shell.html",
+      "validation": {
+        "ok": true,
+        "reasons": []
+      }
+    }
+  ]
+}

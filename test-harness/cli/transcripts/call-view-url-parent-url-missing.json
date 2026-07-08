@@ -1,0 +1,30 @@
+{
+  "scenario": "call-view-url-parent-url-missing",
+  "description": "validateCallViewUrl() rejects a URL with no parentUrl query parameter (C2: parentUrl is now mandatory).",
+  "widgetId": "selfmatrix-native-prototype-call",
+  "pass": true,
+  "events": [
+    {
+      "kind": "call-view-url-validation",
+      "url": "https://app.selfmatrix.test/ec/index.html?widgetId=selfmatrix-native-prototype-call",
+      "validation": {
+        "ok": false,
+        "reasons": [
+          {
+            "code": "parent_url_missing",
+            "message": "Call view URL must include a non-empty parentUrl query parameter."
+          }
+        ]
+      }
+    }
+  ],
+  "failure": {
+    "ok": false,
+    "reasons": [
+      {
+        "code": "parent_url_missing",
+        "message": "Call view URL must include a non-empty parentUrl query parameter."
+      }
+    ]
+  }
+}

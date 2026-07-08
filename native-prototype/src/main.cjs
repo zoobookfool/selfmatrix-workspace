@@ -4,7 +4,7 @@ try {
 } catch (error) {
   if (require.main === module) throw error;
 }
-const { app, BrowserWindow, WebContentsView, desktopCapturer, ipcMain, session } = electron;
+const { app, BrowserWindow, WebContentsView, desktopCapturer, ipcMain, session, shell } = electron;
 const fs = require("node:fs");
 const http = require("node:http");
 const os = require("node:os");
@@ -56,6 +56,23 @@ let callControlInvokeSeq = 0;
 // WebContentsView 生成と、call-control-preload.cjs を 2 本目の preload として登録する
 // session.fromPartition() の両方から同じ文字列を参照する必要があるため定数化した。
 const CALL_VIEW_PARTITION = "persist:selfmatrix-native-prototype-call";
+
+// C1 (GPT レビュー P1b, 実バグ修正): session.fromPartition(...).registerPreloadScript() は
+// **session パーティション単位で累積登録される** (呼び出しごとに追加され、同じフレーム種別の
+// 登録を上書きも重複排除もしない)。createCallViewIfNeeded() 冒頭の早期 return (`if (state.callView)
+// return;`) は「同一の WebContentsView インスタンスが存命の間は呼んでも無駄」という意味でしかなく、
+// closeCallView() → 再度 openCallView() のように call view を作り直すたびに state.callView は null に
+// 戻るため、この早期 return を通過してまた登録処理に到達する。以前のコメント (「call view 1 個の
+// 寿命中に一度しか呼ばれないため登録も一度きりで良い」) は誤りで、実際には通話をまたいで累積し、
+// 2 本目の通話では call-control-preload.cjs が session に複数登録された状態になり、1 回の RPC に
+// 複数のリスナーが反応する (実測されたバグ例: screenshare トグルが「開始→即停止」になる)。
+// registerPreloadScript() 自体には「同じ内容ならスキップする」等の冪等性は無い (Electron の契約上、
+// 呼べば必ず 1 件追加される) ため、ここではモジュールレベルのフラグでプロセス全体を通して高々 1 回
+// しか registerPreloadScript() を呼ばないようにする (call view を何度作り直しても登録は増えない)。
+// callViewPreloadRegistrationCount は診断用 (cinny-shell-smoke の回帰検証、runCinnyShellSmoke() の
+// callViewPreloadRegistration ステップ参照) — このカウントが 1 を超えたら登録の累積が復活した証拠。
+let callViewPreloadRegistered = false;
+let callViewPreloadRegistrationCount = 0;
 
 // G3 (受け入れレビュー修正): cinny 側 NativeCallControlAction (cinny/src/app/plugins/call/native/
 // NativeCallControl.ts) が宣言する契約語彙 7 種のコピー。文字列そのものは cinny 側の enum の値と
@@ -406,6 +423,45 @@ function createMainWindow() {
   win.loadURL(isCinnyShell ? `${state.origin}/` : `${state.origin}/desktop-shell.html`);
   state.mainWindow = win;
   win.on("resize", updateCallViewBounds);
+
+  // C3 (Fable レビュー #2, セキュリティ修正): mainWindow は cinny (または harness) をホストし、
+  // 強力な window.selfmatrixNative bridge (shell-preload.cjs) を持つ。call view には G7
+  // (createCallViewIfNeeded() 参照) でナビゲーション封じ込めを付けていたが、mainWindow には
+  // 何も無かった — トップレベル遷移が起きると同じ preload が別オリジンのページに対しても
+  // 再注入され、bridge がそちらでも再露出し得る。
+  // cinny は SPA (React Router、pushState/hash によるルーティング) であり、Electron の仕様上
+  // "will-navigate"/"will-redirect" は in-page navigation では発火しない (ユーザー操作/ページ自身の
+  // window.location 変更/リンククリック/サーバリダイレクトなどのトップレベル遷移でのみ発火する) —
+  // そのため以下の制限は cinny の通常のルーティング動作を妨げない。
+  const isSameOriginAsShell = (url) => {
+    try {
+      return new URL(url).origin === state.origin;
+    } catch (error) {
+      return false;
+    }
+  };
+  win.webContents.on("will-navigate", (event, url) => {
+    if (!isSameOriginAsShell(url)) {
+      event.preventDefault();
+      state.widgetMessages.push({ t: Date.now(), type: "main-window-navigation-blocked", url, via: "will-navigate" });
+    }
+  });
+  win.webContents.on("will-redirect", (event, url) => {
+    if (!isSameOriginAsShell(url)) {
+      event.preventDefault();
+      state.widgetMessages.push({ t: Date.now(), type: "main-window-navigation-blocked", url, via: "will-redirect" });
+    }
+  });
+  // http(s) の外部リンク (メッセージ内リンク等) はシステムの既定ブラウザへ逃がし、Electron 側では
+  // 新規ウィンドウを常に deny する (bridge を持つ無防備な新規 BrowserWindow を生成させないため)。
+  // それ以外のスキーム (javascript: 等) は何もせず deny のみ。
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) {
+      shell.openExternal(url).catch(() => {});
+    }
+    return { action: "deny" };
+  });
+
   return win;
 }
 
@@ -471,12 +527,18 @@ function createCallViewIfNeeded() {
   // call-control-preload.cjs 冒頭のコメント参照 (sandbox 下の preload の require() は
   // "electron" 以外を解決できないことを実測で確認した)。session.registerPreloadScript() は
   // ファイルとしての分離を保ったまま、同じフレームに追加の preload を読み込ませられる。
-  // createCallViewIfNeeded() はこの関数の先頭の早期 return により call view 1 個の寿命中に
-  // 一度しか呼ばれないため、登録も一度きりで良い。
-  session.fromPartition(CALL_VIEW_PARTITION).registerPreloadScript({
-    filePath: path.join(__dirname, "call-control-preload.cjs"),
-    type: "frame",
-  });
+  // C1 (GPT レビュー P1b 修正): registerPreloadScript() は session パーティション単位で累積登録
+  // されるため (CALL_VIEW_PARTITION 定数の直後のコメント参照)、この関数自体は call view を
+  // 作り直すたびに再入し得る (早期 return は「同一インスタンス生存中の再入」しか防がない) —
+  // モジュールレベルのフラグ (callViewPreloadRegistered) でプロセス全体を通して高々 1 回だけ実行する。
+  if (!callViewPreloadRegistered) {
+    callViewPreloadRegistered = true;
+    callViewPreloadRegistrationCount += 1;
+    session.fromPartition(CALL_VIEW_PARTITION).registerPreloadScript({
+      filePath: path.join(__dirname, "call-control-preload.cjs"),
+      type: "frame",
+    });
+  }
 
   const view = new WebContentsView({
     webPreferences: {
@@ -604,9 +666,14 @@ async function openCallView(url, localStorageSnapshot) {
 
   // M1 step 3c-1: 検証済み URL から実際の widgetId を読み取り、from-view/to-view のバリデーション
   // (native:widget-from-view / native:widget-to-view の ipcMain ハンドラ) がこの通話中はこの値と
-  // 照合するようにする。URL に widgetId が無い (通常は起き得ない) 場合のみ固定 WIDGET_ID に
-  // フォールバックする。
-  state.activeWidgetId = new URL(url).searchParams.get("widgetId") || WIDGET_ID;
+  // 照合するようにする。
+  // C2 (GPT レビュー P1a + Fable レビュー #5 修正): validateCallViewUrl() が widgetId を必須化した
+  // ため (widget_id_missing で reject される)、ここに到達した時点で widgetId は検証済みかつ必ず
+  // 存在する。以前の `|| WIDGET_ID` は「URL に widgetId が無い (通常は起き得ない) 場合」への
+  // fail-open フォールバックだったが、検証を通過した URL に対してこの分岐が発火することはあり得ず、
+  // 万一検証がバイパスされた場合にも固定値へすり替えて処理を継続してしまう不要な安全網だったため
+  // 削除する。
+  state.activeWidgetId = new URL(url).searchParams.get("widgetId");
 
   // M1 step 3c-2: このロード (これから始まる loadURL) 用の localStorage スナップショットを
   // 置いておく。call-control-preload.cjs が dom-ready 前 (preload 実行時、EC バンドルの評価より
@@ -1368,6 +1435,14 @@ async function runSmoke() {
       state.callViewState === "attached" &&
       handshake.supportedVersionsIsReal.pass &&
       handshake.capabilitiesNegotiated.pass &&
+      // C4 (Fable test#4 修正、PARTIALLY→完了): analyzeHandshake() が算出する contentLoadedAcked
+      // (host の本物の ClientWidgetApi が content_loaded に実際に応答したか) は今まで evidence に
+      // 記録されるだけで pass 判定には使われていなかった。sawContentLoaded/上の
+      // "content_loaded" some() チェックはどちらも「content_loaded という action が出現したか」
+      // (要求の到達) しか見ておらず、host 側の応答生成自体が壊れても (=host が何も返さなくなっても)
+      // これらは true のままになり得る — contentLoadedAcked は「to-view 方向に実際に応答
+      // (response 付き) が流れたか」を見るため、応答生成の破壊を検知できる。
+      handshake.contentLoadedAcked &&
       acceptedWidgetMessages().some((message) => message.data?.action === "content_loaded") &&
       sawJoinRequest &&
       hardNavigationCount === 1 &&
@@ -1811,6 +1886,82 @@ async function runCinnyShellSmoke() {
   }
   const vocabularyPass = Object.values(vocabulary).every((entry) => entry.pass);
 
+  // 8. (C1, GPT レビュー P1b 修正の回帰検証) closeCallView() → 同じ URL で openCallView() を
+  // 再度呼び、通話を作り直しても call-control-preload.cjs の registerPreloadScript() 登録が
+  // プロセス全体で 1 回のままであることを確認する (createCallViewIfNeeded() 冒頭のコメント参照)。
+  // 修正前の実装 (早期 return 頼みだった版) では、この 2 回目の openCallView() で
+  // callViewPreloadRegistrationCount が 2 になる — 実際にモジュールレベルのフラグを外す変異を
+  // 当てて 2 になることを確認した (検証記録は完了報告参照)。main.cjs は runCinnyShellSmoke() と
+  // 同一プロセス・同一モジュールスコープで動くため、IPC 越しの計装を新設せずモジュールスコープ変数
+  // callViewPreloadRegistrationCount を直接読める。
+  await win.webContents.executeJavaScript(
+    `window.__selfmatrixShellSmoke.transport.closeCallView()`,
+    true,
+  );
+  const secondOpenOutcome = await win.webContents.executeJavaScript(
+    `window.__selfmatrixShellSmoke.transport.openCallView(${JSON.stringify(validUrl)})
+      .then(() => ({ resolved: true }))
+      .catch((error) => ({ resolved: false, message: String(error && error.message ? error.message : error) }))`,
+    true,
+  );
+  const callViewPreloadRegistration = {
+    registrationCount: callViewPreloadRegistrationCount,
+    secondOpenResolved: Boolean(secondOpenOutcome && secondOpenOutcome.resolved),
+    pass:
+      callViewPreloadRegistrationCount === 1 && Boolean(secondOpenOutcome && secondOpenOutcome.resolved),
+  };
+
+  // 9. (C3, Fable レビュー #2 修正の回帰検証) mainWindow のナビゲーション封じ込めが効いていること。
+  // webContents.loadURL() を main プロセスから直接呼ぶと (call view の G7 と同様) will-navigate 自体が
+  // 発火しないため、代わりにページ内スクリプトから window.location.href への直接代入を行う —
+  // これは「トップレベルページの遷移要求」としてブラウザ自身が起こすのと同じ経路であり、
+  // createMainWindow() の will-navigate ハンドラが実際に発火する。preventDefault() でブロックされて
+  // いれば別オリジンへは遷移しないはず。
+  // 注意 (実測で判明): cinny は SPA なので起動シーケンス中に pushState/replaceState で自分の
+  // ルートを書き換えることがあり、これは will-navigate の対象外 (このファイル冒頭のコメント参照)
+  // なので `topFrameUrl` (手順 1 で取得した初回 URL) 自体は同一オリジン内でも変化し得る —
+  // 「手順 1 の URL と完全一致し続けること」は cinny の正常な SPA ルーティングを偽陽性で
+  // fail させてしまうため誤った判定基準だった。ここでは「別オリジンへは実際に遷移していない
+  // (=同一オリジンのままである)」ことだけを見る。window.open() 側は setWindowOpenHandler が常に
+  // {action:"deny"} を返すため、レンダラ側の window.open() 呼び出しは null を返す (about:blank を
+  // 使い、http(s) 外部リンクの shell.openExternal() 分岐が実ブラウザを起動して smoke を
+  // 不安定にしないようにしてある)。
+  const crossOriginNavTarget = "https://evil.selfmatrix.invalid/pwned.html";
+  const navBefore = state.widgetMessages.length;
+  await win.webContents
+    .executeJavaScript(`window.location.href = ${JSON.stringify(crossOriginNavTarget)}`, true)
+    .catch(() => {});
+  await wait(300);
+  const navBlockedRecord = state.widgetMessages
+    .slice(navBefore)
+    .find((message) => message.type === "main-window-navigation-blocked" && message.url === crossOriginNavTarget);
+  const windowOpenOutcome = await win.webContents
+    .executeJavaScript(
+      `(() => ({ popupIsNull: window.open("about:blank", "_blank") === null }))()`,
+      true,
+    )
+    .catch((error) => ({ error: String(error && error.message ? error.message : error) }));
+  const urlAfterNavAttempt = win.webContents.getURL();
+  const topFrameStillSameOrigin = (() => {
+    try {
+      return new URL(urlAfterNavAttempt).origin === state.origin;
+    } catch (error) {
+      return false;
+    }
+  })();
+  const mainWindowNavigationContainment = {
+    crossOriginNavAttemptedUrl: sanitizeEvidenceString(crossOriginNavTarget),
+    crossOriginNavBlocked: Boolean(navBlockedRecord),
+    topFrameStillSameOrigin,
+    topFrameNotAtMaliciousUrl: urlAfterNavAttempt !== crossOriginNavTarget,
+    windowOpenBlocked: Boolean(windowOpenOutcome && windowOpenOutcome.popupIsNull === true),
+    pass:
+      Boolean(navBlockedRecord) &&
+      topFrameStillSameOrigin &&
+      urlAfterNavAttempt !== crossOriginNavTarget &&
+      Boolean(windowOpenOutcome && windowOpenOutcome.popupIsNull === true),
+  };
+
   const result = {
     pass:
       bridgePresent &&
@@ -1819,7 +1970,9 @@ async function runCinnyShellSmoke() {
       Object.values(urlValidationGate).every((check) => check.pass) &&
       validOpenCallView.pass &&
       onCallControlStateWiring.pass &&
-      vocabularyPass,
+      vocabularyPass &&
+      callViewPreloadRegistration.pass &&
+      mainWindowNavigationContainment.pass,
     bridgePresent,
     cinnyTopFrame,
     claimGuard,
@@ -1827,6 +1980,8 @@ async function runCinnyShellSmoke() {
     validOpenCallView,
     onCallControlStateWiring,
     vocabulary,
+    callViewPreloadRegistration,
+    mainWindowNavigationContainment,
     callViewState: state.callViewState,
     electron: process.versions.electron,
     chrome: process.versions.chrome,

@@ -1,0 +1,40 @@
+{
+  "scenario": "call-view-url-widget-id-not-allowed",
+  "description": "validateCallViewUrl() rejects a URL whose widgetId is present but absent from the KNOWN_WIDGET_IDS allow-list (previously zero test coverage per Fable review #5).",
+  "widgetId": "selfmatrix-native-prototype-call",
+  "pass": true,
+  "events": [
+    {
+      "kind": "call-view-url-validation",
+      "url": "https://app.selfmatrix.test/ec/index.html?widgetId=some-unknown-widget-id&parentUrl=https%3A%2F%2Fapp.selfmatrix.test%2Fdesktop-shell.html",
+      "validation": {
+        "ok": false,
+        "reasons": [
+          {
+            "code": "widget_id_not_allowed",
+            "message": "Call view URL widgetId is not in the known allow-list: some-unknown-widget-id",
+            "allowedWidgetIds": [
+              "selfmatrix-native-prototype-call",
+              "call-embed"
+            ],
+            "actualWidgetId": "some-unknown-widget-id"
+          }
+        ]
+      }
+    }
+  ],
+  "failure": {
+    "ok": false,
+    "reasons": [
+      {
+        "code": "widget_id_not_allowed",
+        "message": "Call view URL widgetId is not in the known allow-list: some-unknown-widget-id",
+        "allowedWidgetIds": [
+          "selfmatrix-native-prototype-call",
+          "call-embed"
+        ],
+        "actualWidgetId": "some-unknown-widget-id"
+      }
+    ]
+  }
+}

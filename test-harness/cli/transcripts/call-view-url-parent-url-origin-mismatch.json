@@ -1,0 +1,34 @@
+{
+  "scenario": "call-view-url-parent-url-origin-mismatch",
+  "description": "validateCallViewUrl() rejects a URL whose parentUrl origin does not match the shell's own origin.",
+  "widgetId": "selfmatrix-native-prototype-call",
+  "pass": true,
+  "events": [
+    {
+      "kind": "call-view-url-validation",
+      "url": "https://app.selfmatrix.test/ec/index.html?widgetId=selfmatrix-native-prototype-call&parentUrl=https%3A%2F%2Fevil.selfmatrix.test%2F",
+      "validation": {
+        "ok": false,
+        "reasons": [
+          {
+            "code": "parent_url_origin_mismatch",
+            "message": "Call view URL parentUrl origin does not match the shell's own origin: https://evil.selfmatrix.test !== https://app.selfmatrix.test",
+            "expectedOrigin": "https://app.selfmatrix.test",
+            "actualOrigin": "https://evil.selfmatrix.test"
+          }
+        ]
+      }
+    }
+  ],
+  "failure": {
+    "ok": false,
+    "reasons": [
+      {
+        "code": "parent_url_origin_mismatch",
+        "message": "Call view URL parentUrl origin does not match the shell's own origin: https://evil.selfmatrix.test !== https://app.selfmatrix.test",
+        "expectedOrigin": "https://app.selfmatrix.test",
+        "actualOrigin": "https://evil.selfmatrix.test"
+      }
+    ]
+  }
+}

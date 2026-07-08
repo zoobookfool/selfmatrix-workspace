@@ -42,6 +42,18 @@ function toWidget(action, data) {
   return { api: "toWidget", action, data };
 }
 
+// C2 (GPT レビュー P1a + Fable レビュー #5 修正): validateCallViewUrl() を main.cjs を経由せず
+// widget-bridge-protocol.cjs から直接叩くシナリオ用の URL 組み立てヘルパー。base path
+// (/ec/index.html) は widget-bridge-protocol.cjs の EC_BASE_PATHS 既定値と一致させてあるので、
+// widgetId/parentUrl 以外のフィールドは常に合格する形にしておき、各シナリオが意図した 1 つの
+// 失敗理由だけを切り出して検証できるようにしている。
+const CALL_VIEW_URL_BASE = `${CALL_ORIGIN}/ec/index.html`;
+function buildCallViewUrl(params) {
+  const url = new URL(CALL_VIEW_URL_BASE);
+  url.search = new URLSearchParams(params).toString();
+  return url.toString();
+}
+
 const scenarios = {
   "preload-voice-join": {
     description: "Widget boot, content_loaded, host join request, and device_mute update through native bridge code.",
@@ -134,6 +146,50 @@ const scenarios = {
       data: {},
     },
     expectedFailure: "widget_id_mismatch",
+  },
+  // C2 (GPT レビュー P1a + Fable レビュー #5 修正): validateCallViewUrl() を widget-bridge-protocol.cjs
+  // から直接叩くシナリオ群。以前は widgetId は「有れば」allow-list と照合するだけで欠落自体は許容
+  // しており、かつ未知の widgetId (allow-list 不一致) を実際に踏むケースは一件もテストされていなかった
+  // (Fable レビュー #5、ゼロカバレッジだった箇所)。parentUrl は今回の C2 で初めて検証対象になった。
+  "call-view-url-valid": {
+    description:
+      "validateCallViewUrl() accepts a URL with a known widgetId, a same-origin parentUrl, and a known EC base path.",
+    viaValidateCallViewUrl: true,
+    url: buildCallViewUrl({ widgetId: protocol.WIDGET_ID, parentUrl: `${CALL_ORIGIN}/desktop-shell.html` }),
+    expectedOrigin: CALL_ORIGIN,
+  },
+  "call-view-url-widget-id-missing": {
+    description:
+      "validateCallViewUrl() rejects a URL with no widgetId query parameter (C2: widgetId is now mandatory).",
+    viaValidateCallViewUrl: true,
+    url: buildCallViewUrl({ parentUrl: `${CALL_ORIGIN}/desktop-shell.html` }),
+    expectedOrigin: CALL_ORIGIN,
+    expectedFailure: "widget_id_missing",
+  },
+  "call-view-url-widget-id-not-allowed": {
+    description:
+      "validateCallViewUrl() rejects a URL whose widgetId is present but absent from the KNOWN_WIDGET_IDS " +
+      "allow-list (previously zero test coverage per Fable review #5).",
+    viaValidateCallViewUrl: true,
+    url: buildCallViewUrl({ widgetId: "some-unknown-widget-id", parentUrl: `${CALL_ORIGIN}/desktop-shell.html` }),
+    expectedOrigin: CALL_ORIGIN,
+    expectedFailure: "widget_id_not_allowed",
+  },
+  "call-view-url-parent-url-missing": {
+    description:
+      "validateCallViewUrl() rejects a URL with no parentUrl query parameter (C2: parentUrl is now mandatory).",
+    viaValidateCallViewUrl: true,
+    url: buildCallViewUrl({ widgetId: protocol.WIDGET_ID }),
+    expectedOrigin: CALL_ORIGIN,
+    expectedFailure: "parent_url_missing",
+  },
+  "call-view-url-parent-url-origin-mismatch": {
+    description:
+      "validateCallViewUrl() rejects a URL whose parentUrl origin does not match the shell's own origin.",
+    viaValidateCallViewUrl: true,
+    url: buildCallViewUrl({ widgetId: protocol.WIDGET_ID, parentUrl: "https://evil.selfmatrix.test/" }),
+    expectedOrigin: CALL_ORIGIN,
+    expectedFailure: "parent_url_origin_mismatch",
   },
 };
 
@@ -325,6 +381,30 @@ function runValidateToViewMessageScenario(scenario, transcript) {
   return transcript;
 }
 
+// C2 (GPT レビュー P1a + Fable レビュー #5 修正): purely-functional scenario runner for
+// validateCallViewUrl() — same pattern as runValidateToViewMessageScenario, but also supports the
+// "expect ok" case (scenario.expectedFailure omitted) for the positive "call-view-url-valid" scenario.
+function runValidateCallViewUrlScenario(scenario, transcript) {
+  const validation = protocol.validateCallViewUrl(scenario.url, { expectedOrigin: scenario.expectedOrigin });
+  transcript.events.push({ kind: "call-view-url-validation", url: scenario.url, validation });
+
+  if (!scenario.expectedFailure) {
+    transcript.pass = validation.ok === true;
+    if (!validation.ok) transcript.failure = validation;
+    return transcript;
+  }
+
+  if (validation.ok) {
+    transcript.failure = { code: "expected_rejection_but_passed" };
+    transcript.pass = false;
+    return transcript;
+  }
+
+  transcript.failure = validation;
+  transcript.pass = validation.reasons.some((reason) => reason.code === scenario.expectedFailure);
+  return transcript;
+}
+
 function runScenario(name) {
   const scenario = scenarios[name];
   if (!scenario) {
@@ -348,6 +428,9 @@ function runScenario(name) {
   }
   if (scenario.viaValidateToViewMessage) {
     return runValidateToViewMessageScenario(scenario, transcript);
+  }
+  if (scenario.viaValidateCallViewUrl) {
+    return runValidateCallViewUrlScenario(scenario, transcript);
   }
 
   const preload = createPreloadHarness(scenario.callOrigin);
