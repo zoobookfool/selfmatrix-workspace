@@ -29,8 +29,8 @@
 
 1. web ビルドの native 分岐 tree-shake **実装 + product 統合 完了** (cinny 661c7e06)。
    **web 本番は次回デプロイ (自宅 `docker compose pull cinny`) で反映**。
-2. mainWindow のナビゲーション封じ込めは **暫定対応済み** (desktop 0db93ed)。残る M2 監査項目は
-   shell の `sandbox:false` と常時公開の `getStatus/ensureCallView/detach/attach` の API 露出面整理。
+2. mainWindow のセキュリティ監査は**完了** (nav 封じ込め 0db93ed / API 露出面整理 +
+   sandbox:true 化 3346787。本番露出は claimWidgetTransport のみ、恒久回帰ゲート付き)。
 3. homeserver 選択制、画面共有ソース選択 UI + system audio トグル、トレイ常駐、About/AGPL。
 4. リリース CI (electron-builder → Releases) + minisign 更新検証 + SmartScreen 手順書。
 
