@@ -95,11 +95,16 @@
 
 ## 7. クライアント
 
-- 参加者全員が改修版クライアントを使う。他クライアントの互換性は考慮しない `MUST`
+- 参加者全員が改修版クライアント (SelfMatrix fork) を使う。他クライアントの互換性は考慮しない `MUST`
   - Matrix 側に求めるのはアカウント(認証と federation)のみ
   - (2026-07-07 補足) ネイティブ化に伴い「クライアントは配布物・接続先はユーザーが入力」に分離する。
     homeserver は選択制 (自サーバーは焼き込まず、候補提示は matrix.org のみ)。「全員同じクライアント」は
     配布物の統一で担保し、接続先の自由度とは独立
+  - (2026-07-08 改訂) 配布物は **web 版 / native 版の 2 系統**で、いずれも同一 fork
+    (`product/discord-style-shell`) 由来。「全員同じクライアント」は**同一コードベース由来の 2 ビルド**の
+    意味に緩める。機能パリティは capability ベースで差が出る (native 固有: 無再接続ポップアウト・
+    system audio・トレイ等)。運用ルールの正本は [web-native-parallel.md](web-native-parallel.md)。
+    web ビルドは native 分岐を無効化する `MUST` (同文書 R2、セキュリティ)
 - 第一候補は Cinny fork。採用可否はスパイク(roadmap Phase 2a)の判断ゲートで確定する
 - fork の改修対象:
   - Discord 風の UI / 文言 / テーマ(従来方針)

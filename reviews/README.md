@@ -4,7 +4,8 @@
 
 | 日付 | ファイル | 対象 | 結論 / 状態 |
 | --- | --- | --- | --- |
-| 2026-07-08 | [gpt-review-native-m1-20260708.md](gpt-review-native-m1-20260708.md) | Fable 更新後の native M1 全体レビュー | M1 技術成立性は強い。P1: `openCallView` URL 検証の必須項目不足、preload 重複登録リスク、正本ドキュメント追従漏れ。P2: 通話窓仕様の文書矛盾、CallControl DOM 監視の再マウント耐性 |
+| 2026-07-08 | [claude-review-m1-holistic-20260708.md](claude-review-m1-holistic-20260708.md) | M1 全体再レビュー (Fable、4 視点 + 敵対的検証) | 技術成立は維持、完成度主張を 2 点下方修正。critical 3 + major 3 を仕分け (今すぐ修正 / M2 格上げ)。GPT レビューと相補 |
+| 2026-07-08 | [gpt-review-native-m1-20260708.md](gpt-review-native-m1-20260708.md) | Fable 更新後の native M1 全体レビュー | M1 技術成立性は強い。P1: `openCallView` URL 検証の必須項目不足、preload 重複登録 (本物のバグ)、正本ドキュメント追従漏れ。P2: 通話窓仕様の文書矛盾、CallControl DOM 監視の再マウント耐性。C1/C2 で対応 |
 | 2026-07-08 | [claude-review-m1-step3c23-20260708.md](claude-review-m1-step3c23-20260708.md) | M1 step 3c-2/3 (2 ユーザー通話+配信+窓移動無再接続 E2E) | **M1 受け入れ条件成立**。major 3 件 (移動の積極的証拠/own-window 混入/localStorage live 化) を H1〜H6 即日修正して**受け入れ** |
 | 2026-07-08 | [claude-review-m1-step3c1-20260708.md](claude-review-m1-step3c1-20260708.md) | M1 step 3c-1 (実ログイン→実 LiveKit join E2E) | E2E 独立再実行 PASS。実バグ 4 件修正を確認、fail-closed 化等を適用して**受け入れ** |
 | 2026-07-07 | [claude-review-m1-step3b-20260707.md](claude-review-m1-step3b-20260707.md) | M1 step 3b (シェル契約適合 + cinny 契約拡張) | 変異 4 種全検知。ok 未検査 (critical、誤ミュート実害) 等 G1〜G7 即日修正して**受け入れ** |
