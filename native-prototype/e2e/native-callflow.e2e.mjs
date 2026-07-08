@@ -441,6 +441,166 @@ async function runCallControlVocabulary(aliceApp, alicePage) {
   return { vocabulary, pass };
 }
 
+// SelfMatrix M1 全体レビュー (Fable) test-critical #3 対応: runCallControlVocabulary() の 7 語彙
+// のうち 6 つ (screenshare を除く) は alice の claim 済み transport から
+// `__selfmatrixE2E.invokeCallControl()` (main 直叩きの E2E 専用窓口) で駆動しており、cinny 側の
+// 本番配線 (CallControls.tsx の onClick → NativeCallControl.toggleX() →
+// transport.callControlInvoke()) を一切経由していない -- 実クリックで検証済みなのは
+// verifyMidCallSettingsSync() の screenshare のみだった。
+//
+// この関数は残る対象 (spotlight/emphasis/settings/sound) を alicePage 上の cinny 自身の実ボタンへの
+// 実クリックで駆動し、call-control-preload.cjs 経由の実 DOM 到達と onCallControlState push による
+// cinny 自身の再同期 (aria-pressed の反転) の両方を実測する。screenshare は
+// verifyMidCallSettingsSync() で既に実クリック検証済みのため対象外。reactions は cinny 側
+// (CallControls.tsx) にボタン自体が存在しない (実コード確認済み -- toggleReactions は EC 側の
+// footer にボタンが無い既知ギャップとして runCallControlVocabulary() 側で扱っている) ため対象外。
+//
+// セレクタは CallControls.tsx/Controls.tsx の実コードを確認して選定した:
+//   - spotlight: `[data-testid="call_layout_toggle"]` (既存)
+//   - emphasis: `[data-testid="call_emphasis_toggle"]` (既存、spotlight=false のときのみ
+//     cinny 自身の DOM に存在 -- CallControls.tsx の `{!spotlight && (...)}` 参照)
+//   - settings: `[data-testid="call_menu"]` (既存、PopOut メニューを開く) →
+//     `[data-testid="call_menu_settings"]` (このコミットで cinny 側の MenuItem に追加 -- 元は
+//     testid が無く実クリックで安定して選択できなかった)
+//   - sound: `[data-testid="call_control_sound"]` (このコミットで cinny 側の SoundButton に追加 --
+//     元は testid が全く無かった)
+async function runRealClickVocabulary(aliceApp, alicePage) {
+  const vocabulary = {};
+
+  // 1. emphasis -- spotlight=false の間 (このセクション開始時点、runCallControlVocabulary() が
+  //    grid モードへ戻して終わっている) に先に検証する必要がある。spotlight=true になると
+  //    emphasis ボタン自体が cinny の DOM から消える。
+  {
+    const before = await getDomAriaPressed(alicePage, "call_emphasis_toggle");
+    const t0 = Date.now();
+    await alicePage.locator('[data-testid="call_emphasis_toggle"]').click();
+    await wait(1000);
+    const push = await latestStatePush(aliceApp, t0);
+    const after = await getDomAriaPressed(alicePage, "call_emphasis_toggle");
+    const stateConfirmed =
+      Boolean(push && push.emphasis === true) && after === "true" && after !== before;
+    vocabulary.emphasis = {
+      clicked: true,
+      before,
+      after,
+      statePush: push,
+      stateConfirmed,
+      pass: stateConfirmed,
+    };
+  }
+
+  // 2. spotlight -- grid → spotlight → grid の往復で実クリックする (レイアウトを汚さない)。
+  //    NativeCallControl.toggleSpotlight() は spotlight=true にする際 emphasis を強制的に
+  //    false へ落とす実装 (NativeCallControl.ts 参照) なので、この往復の終わりには emphasis も
+  //    false に戻る (前段の emphasis テストで true にした分もここで自然にクリーンアップされる)。
+  {
+    const beforeOn = await getDomAriaPressed(alicePage, "call_layout_toggle");
+    const t0 = Date.now();
+    await alicePage.locator('[data-testid="call_layout_toggle"]').click();
+    await wait(1000);
+    const pushOn = await latestStatePush(aliceApp, t0);
+    const afterOn = await getDomAriaPressed(alicePage, "call_layout_toggle");
+
+    const t1 = Date.now();
+    await alicePage.locator('[data-testid="call_layout_toggle"]').click();
+    await wait(1000);
+    const pushBack = await latestStatePush(aliceApp, t1);
+    const afterBack = await getDomAriaPressed(alicePage, "call_layout_toggle");
+
+    const stateConfirmed =
+      Boolean(pushOn && pushOn.spotlight === true) &&
+      afterOn === "true" &&
+      afterOn !== beforeOn &&
+      Boolean(pushBack && pushBack.spotlight === false) &&
+      afterBack === "false";
+    vocabulary.spotlight = {
+      clicked: true,
+      beforeOn,
+      afterOn,
+      afterBack,
+      statePushOn: pushOn,
+      statePushBack: pushBack,
+      stateConfirmed,
+      pass: stateConfirmed,
+    };
+  }
+
+  // 3. settings -- cinny 側の call_menu → call_menu_settings の実クリックで EC 側の設定
+  //    ダイアログを開き、call view 側の [role="dialog"] 出現を実測してから Escape で閉じる。
+  //    settings は CallControlState に対応フィールドが無く push を伴わない元実装のままなので
+  //    (runCallControlVocabulary() のコメント参照)、判定は state push ではなく実 DOM
+  //    ([role="dialog"]) の出現/消失で行う。
+  {
+    await alicePage.locator('[data-testid="call_menu"]').click();
+    await alicePage.locator('[data-testid="call_menu_settings"]').click();
+    await wait(800);
+    const dialogOpened = await evalInCallView(
+      aliceApp,
+      `document.querySelector('[role="dialog"]') !== null`,
+    );
+    await evalInCallView(
+      aliceApp,
+      `document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }))`,
+    );
+    await wait(500);
+    const dialogClosed = await evalInCallView(
+      aliceApp,
+      `document.querySelector('[role="dialog"]') === null`,
+    );
+    const stateConfirmed =
+      Boolean(dialogOpened.ok && dialogOpened.value === true) &&
+      Boolean(dialogClosed.ok && dialogClosed.value === true);
+    vocabulary.settings = {
+      clicked: true,
+      dialogOpened,
+      dialogClosed,
+      stateConfirmed,
+      pass: stateConfirmed,
+    };
+  }
+
+  // 4. sound -- 2 ユーザー通話中なので bob の <audio> 要素が call view にあるはず。無ければ
+  //    computeSoundState() (call-control-preload.cjs) が undefined を返し push に sound
+  //    フィールド自体が乗らない -- その場合は理由を記録して判定から除外する (pass:true のまま
+  //    skipped:true で明示する)。
+  {
+    const audioProbe = await evalInCallView(aliceApp, `document.querySelectorAll('audio').length`);
+    const audioCount = audioProbe.ok && typeof audioProbe.value === 'number' ? audioProbe.value : 0;
+    if (audioCount === 0) {
+      vocabulary.sound = {
+        clicked: false,
+        skipped: true,
+        skipReason: 'no_audio_element_in_call_view',
+        pass: true,
+      };
+    } else {
+      const t0 = Date.now();
+      await alicePage.locator('[data-testid="call_control_sound"]').click();
+      await wait(1000);
+      const pushOff = await latestStatePush(aliceApp, t0);
+
+      const t1 = Date.now();
+      await alicePage.locator('[data-testid="call_control_sound"]').click();
+      await wait(1000);
+      const pushOn = await latestStatePush(aliceApp, t1);
+
+      const stateConfirmed =
+        Boolean(pushOff && pushOff.sound === false) && Boolean(pushOn && pushOn.sound === true);
+      vocabulary.sound = {
+        clicked: true,
+        audioCount,
+        statePushOff: pushOff,
+        statePushOn: pushOn,
+        stateConfirmed,
+        pass: stateConfirmed,
+      };
+    }
+  }
+
+  const pass = Object.values(vocabulary).every((entry) => entry.pass);
+  return { vocabulary, pass };
+}
+
 // M1 step 3c-2 (実機で発覚、対応): この EC ビルドは SelfMatrix の「視聴オプトイン」仕様
 // (element-call/src/room/WatchableStreamsBar.tsx, UI 設計合意 v1.4) により、配信 (screenshare)
 // は他参加者が明示的に「視聴」ボタン (`data-testid="watch_stream"`) を押すまで購読/描画されない
@@ -734,6 +894,160 @@ async function verifyMidCallSettingsSync(alicePage, aliceApp) {
   };
 }
 
+// SelfMatrix GPT レビュー P1b 回帰確認: 通話跨ぎ (join → hangup → 再 join)。
+// C1 (このワークスペースの M1 全体レビュー即時修正、main.cjs の callViewPreloadRegistrationCount
+// コメント参照) は「session.fromPartition(...).registerPreloadScript() はプロセス全体を通して
+// 高々 1 回しか呼ばない」という不変条件を実装で固定したが、これまで E2E からは main プロセス内部の
+// モジュールスコープ変数を直接読む手段が無く (getSnapshot() に露出していなかった -- このコミットで
+// 追加した)、実際に 1 通話終えて同じプロセスで再度参加した後もこの不変条件が保たれているかを
+// E2E レベルで確認していなかった。
+//
+// この関数は alice が cinny 自身の切断ボタン (`[data-testid="call_hangup"]`、実クリック -- この
+// コミットで CallControls.tsx に追加。元は testid が無かった) で通話を退出し、同じ Electron
+// プロセスで再度参加するところまでを実際に駆動し、以下を実測する。再 join は cinny 自身の
+// "参加" ボタンへの実クリックである点は native-join.e2e.mjs/openVoiceLoungeAndJoin() と同じだが、
+// alice は退出後も同じ room を表示したままなので、そのヘルパーが行うサイドバー room 項目の
+// 再クリックは行わない (実機確認で判明したつまずき -- 下のコード内コメント参照)。
+//   1. 退出後、実際に main 側の call view が破棄される (state.callViewState === "none")。
+//   2. 同じプロセスで再度 "参加" を押して実 in-call 状態まで到達できる -- これ自体が
+//      getOrClaimWidgetTransport() のキャッシュ (nativeBridge.ts の G2 修正コメント参照) が
+//      2 通話目でも claim-once ガードに例外を投げられていないことの証明になる (例外が起きれば
+//      NativeCallEmbed のコンストラクタが同期的に throw し、"参加" クリック自体が in-call まで
+//      到達しない)。
+//   3. callViewPreloadRegistrationCount が通話をまたいでも 1 のまま (C1 の E2E レベル回帰確認)。
+//   4. 再 join 後、cinny 自身の screenshare ボタンを実クリック 1 セット (アイコン → 画質/FPS
+//      ピッカー → 配信を開始) で操作すると、実際に 1 回だけ反転する。call-control-preload.cjs が
+//      call view の同一フレームに二重登録されていた場合、1 回の RPC 往復で実クリックが 2 回発生し
+//      「開始→即停止」になる (aria-pressed が反転しない/action-toggleScreenshare の state push が
+//      2 件になる) -- before/after の aria-pressed と push 件数の両方で判定する。
+async function runCallRespawn(aliceApp, alicePage) {
+  const registrationBeforeSnapshot = await getMainProcessSnapshot(aliceApp);
+  const registrationCountBeforeHangup =
+    registrationBeforeSnapshot?.callViewPreloadRegistrationCount ?? null;
+
+  // 1. alice 自身の切断ボタン (実クリック) で退出する。
+  await alicePage.locator('[data-testid="call_hangup"]').click();
+
+  const callViewClosed = await waitForCondition(
+    "callRespawn.callViewClosed",
+    async () => {
+      const snapshot = await getMainProcessSnapshot(aliceApp);
+      return { ok: snapshot?.callViewState === "none" };
+    },
+    20000,
+    { log },
+  );
+
+  const backToPrescreen = await waitForCondition(
+    "callRespawn.backToPrescreen",
+    async () => {
+      const visible = await alicePage
+        .getByRole("button", { name: "参加", exact: true })
+        .isVisible()
+        .catch(() => false);
+      return { ok: visible };
+    },
+    20000,
+    { log },
+  );
+
+  // つまずき (実機確認、2 回再現): hangup 直後は "参加" ボタンが可視状態のまま長時間 disabled の
+  // ままになることがあった。当初 openVoiceLoungeAndJoin() をそのまま再利用していたが、そのヘルパーは
+  // 「サイドバーの "Voice Lounge" 項目を毎回クリックしてから join ボタンを探す」実装になっている
+  // (元々 alice/bob が別の画面から room を開いて初めて join するケース向け)。実機確認したところ、
+  // 一度 in-call まで到達済みで **既にその room を表示したまま**の alice に対してこの
+  // サイドバー再クリックを行うと、`isEnabled()` の事前チェックが一時的に true を観測した直後でも
+  // (`callRespawn.joinButtonEnabled: OK` のログの直後に) join ボタンの click() 自体が
+  // 45000ms 経っても "not enabled" のまま失敗し続けた -- サイドバー再クリックのたびに
+  // canJoin の再計算 (もしくは室再選択に伴う一時的な disabled 状態) がリセットされていたと見られる。
+  // alice は退出後も同じ room を表示したままなので、そもそもサイドバーの再クリックは不要 --
+  // 直接 "参加" ボタンだけを待って実クリックする (openVoiceLoungeAndJoin() は変更していない --
+  // alice/bob の初回 join は今までどおりそちらを使う)。
+  const joinButton = alicePage.getByRole("button", { name: "参加", exact: true });
+  const joinButtonEnabled = await waitForCondition(
+    "callRespawn.joinButtonEnabled",
+    async () => {
+      const enabled = await joinButton.isEnabled().catch(() => false);
+      return { ok: enabled };
+    },
+    45000,
+    { log },
+  );
+
+  // 2. 同じプロセスで再度参加する (サイドバー再クリックを挟まず、join ボタンだけを直接クリックする
+  //    -- 上のつまずきコメント参照)。
+  let rejoinOutcome;
+  if (!joinButtonEnabled.ok) {
+    rejoinOutcome = { clickedJoin: false, reason: "join_button_never_enabled" };
+  } else {
+    try {
+      await joinButton.click({ timeout: 45000 });
+      rejoinOutcome = { clickedJoin: true, reason: null };
+    } catch (error) {
+      rejoinOutcome = { clickedJoin: false, reason: String(error && error.message ? error.message : error) };
+    }
+  }
+  const rejoinInCall = rejoinOutcome.clickedJoin
+    ? await waitForInCall(aliceApp, "alice-respawn")
+    : { pass: false, reason: "rejoin_join_button_not_clicked" };
+
+  // 3. 登録カウントが通話をまたいでも 1 のまま。
+  const registrationAfterSnapshot = await getMainProcessSnapshot(aliceApp);
+  const registrationCountAfterRejoin =
+    registrationAfterSnapshot?.callViewPreloadRegistrationCount ?? null;
+  const registrationStable =
+    registrationCountBeforeHangup === 1 && registrationCountAfterRejoin === 1;
+
+  // 4. screenshare が実クリックで 1 回だけ反転する (二重リスナー回帰の検知)。
+  let screenshareSingleToggle = { pass: false, reason: "not_in_call" };
+  if (rejoinInCall.pass) {
+    const before = await getDomAriaPressed(alicePage, "call_control_screenshare");
+    const t0 = Date.now();
+    await alicePage.locator('[data-testid="call_control_screenshare"]').click();
+    await alicePage.locator('[data-testid="ssq_720"]').click();
+    await alicePage.locator('[data-testid="ssf_30"]').click();
+    await alicePage.locator('[data-testid="ss_start"]').click();
+    await wait(1500);
+    const after = await getDomAriaPressed(alicePage, "call_control_screenshare");
+    const snapshot = await getMainProcessSnapshot(aliceApp);
+    const pushesSinceClick = (snapshot?.callControlMessages ?? []).filter(
+      (m) =>
+        m.direction === "state-push" &&
+        m.kind === "call-control" &&
+        m.reason === "action-toggleScreenshare" &&
+        m.t >= t0,
+    );
+    screenshareSingleToggle = {
+      before,
+      after,
+      pushCount: pushesSinceClick.length,
+      pushes: pushesSinceClick,
+      pass: before !== after && after === "true" && pushesSinceClick.length === 1,
+    };
+  }
+
+  const pass =
+    callViewClosed.ok &&
+    backToPrescreen.ok &&
+    Boolean(rejoinOutcome.clickedJoin) &&
+    rejoinInCall.pass &&
+    registrationStable &&
+    screenshareSingleToggle.pass;
+
+  return {
+    registrationCountBeforeHangup,
+    registrationCountAfterRejoin,
+    registrationStable,
+    callViewClosed: callViewClosed.ok,
+    backToPrescreen: backToPrescreen.ok,
+    joinButtonEnabled: joinButtonEnabled.ok,
+    rejoinOutcome,
+    rejoinInCall,
+    screenshareSingleToggle,
+    pass,
+  };
+}
+
 async function main() {
   await checkBackendReachable({ log, failFast });
   const alicePassword = requireEnv("SELFMATRIX_E2E_PASSWORD_ALICE", { failFast });
@@ -840,6 +1154,13 @@ async function main() {
     result.passConditions.callControlVocabulary = callControlResult;
     log(`callControlVocabulary.pass=${callControlResult.pass}`);
 
+    // ---- 5.5 M1 全体レビュー test-critical #3: spotlight/emphasis/settings/sound を cinny 自身の
+    //          実 UI クリックで駆動する (screenshare は下の H3 ステップで、reactions は cinny 側に
+    //          ボタンが無いため対象外)。-------------------------------------------------------
+    const realClickResult = await runRealClickVocabulary(aliceApp, alicePage);
+    result.passConditions.realClickVocabulary = realClickResult;
+    log(`realClickVocabulary.pass=${realClickResult.pass}`);
+
     // ---- 6. H3: 通話中の画質/FPS 設定変更が call view の localStorage に「共有再開のたびに」
     //         反映される live 契約の実機確認 (cinny 自身の実 UI クリック経由)。screenshare は
     //         上のステップ 5 で ON のまま -- ここで off→on し直す (bob の視聴 opt-in はこの後、
@@ -863,17 +1184,8 @@ async function main() {
         `allRoundTripsActuallyMoved=${windowMove.allRoundTripsActuallyMoved}`,
     );
 
-    result.pass =
-      result.passConditions.alice.pass &&
-      result.passConditions.bob.pass &&
-      result.passConditions.twoUserCallEstablished.pass &&
-      result.passConditions.localStorageContract.pass &&
-      result.passConditions.callControlVocabulary.pass &&
-      result.passConditions.midCallSettingsSync.pass &&
-      result.passConditions.bobWatchOptIn.ok &&
-      result.passConditions.windowMoveReparenting.pass;
-
-    // ---- 9. 証跡スクリーンショット ------------------------------------------------------------
+    // ---- 9. 証跡スクリーンショット (2 ユーザー + 配信 + 窓移動の「本来の」通話状態を、次の
+    //         callRespawn ステップで alice が退出する前に残しておく) ---------------------------
     const finalSnapshot = await getMainProcessSnapshot(aliceApp);
     capturedOrigin = finalSnapshot?.origin ?? null;
 
@@ -905,6 +1217,29 @@ async function main() {
     result.screenshots.aliceDetachedMidMove = await captureCallView(aliceApp, "native-callflow-alice-detached.png");
     await aliceApp.evaluate(() => global.__selfmatrixE2E.attachCallView());
     await wait(REPARENT_SETTLE_MS);
+
+    // ---- 10. GPT レビュー P1b 回帰確認: 通話跨ぎ (alice が実クリックで退出 → 同じプロセスで
+    //          再度参加)。証跡スクリーンショットを撮り終えた後に行う (この後 alice の通話は
+    //          一旦終わり、call view が破棄・再生成される) -----------------------------------
+    const callRespawn = await runCallRespawn(aliceApp, alicePage);
+    result.passConditions.callRespawn = callRespawn;
+    log(
+      `callRespawn: callViewClosed=${callRespawn.callViewClosed} registrationStable=${callRespawn.registrationStable} ` +
+        `(before=${callRespawn.registrationCountBeforeHangup}, after=${callRespawn.registrationCountAfterRejoin}) ` +
+        `screenshareSingleToggle=${callRespawn.screenshareSingleToggle.pass}`,
+    );
+
+    result.pass =
+      result.passConditions.alice.pass &&
+      result.passConditions.bob.pass &&
+      result.passConditions.twoUserCallEstablished.pass &&
+      result.passConditions.localStorageContract.pass &&
+      result.passConditions.callControlVocabulary.pass &&
+      result.passConditions.realClickVocabulary.pass &&
+      result.passConditions.midCallSettingsSync.pass &&
+      result.passConditions.bobWatchOptIn.ok &&
+      result.passConditions.windowMoveReparenting.pass &&
+      result.passConditions.callRespawn.pass;
   } catch (error) {
     result.error = String(error && error.message ? error.message : error);
     log(`ERROR: ${result.error}`);

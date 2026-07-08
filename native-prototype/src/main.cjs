@@ -2028,6 +2028,13 @@ function setupE2EIntrospection() {
       // M1 step 3c-2: localStorage 契約ブリッジの実測記録 (call-control-preload.cjs が実際に
       // どのキーを primed したかの ack)。
       localStorageBridgeEvents: state.localStorageBridgeEvents,
+      // M1 全体レビュー test-critical #3 対応 (通話跨ぎ回帰、native-callflow.e2e.mjs の
+      // runCallRespawn()): C1 (GPT レビュー P1b) が固定した
+      // 「registerPreloadScript() はプロセス全体を通して高々 1 回」という不変条件を、
+      // 実際に 1 回通話が終わって再度参加した後も E2E から直接確認できるようにする。
+      // cinny-shell-smoke は自分自身の内部 result オブジェクトでこれを見ているだけで
+      // __selfmatrixE2E からは読めなかった (このコミットまでのギャップ)。
+      callViewPreloadRegistrationCount,
     }),
     // call view (EC) の main world で任意の式を評価する。call view が無ければ ok:false を
     // 返すだけで例外にはしない (e2e スクリプト側のポーリングループが単純になる)。

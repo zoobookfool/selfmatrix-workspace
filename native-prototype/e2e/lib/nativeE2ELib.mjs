@@ -203,6 +203,14 @@ export async function dismissBlockingModals(page, { log }) {
 // Voice Lounge を (既存なら再利用、無ければ作成して) 開き、cinny 自身のプリスクリーンで
 // 「参加」を押すところまで進める。戻り値の `clickedJoin` が false の場合、EC 側の実 join は
 // 検証できていない (evidence に理由を残し、後続の pass 条件はすべて false になる)。
+//
+// 注意 (native-callflow.e2e.mjs の runCallRespawn() で実機確認): このヘルパーは「別画面から
+// room を開いて初めて join する」ケース向けで、サイドバーの room 項目を毎回クリックしてから
+// join ボタンを探す。**既にその room を表示したまま**の状態 (例: 通話跨ぎで hangup 直後、
+// 同じ room の prescreen に戻ったところ) でこれを再利用すると、サイドバー再クリックのたびに
+// join ボタンが (画面奥の canJoin 再計算待ちと見られる理由で) 一時的に disabled へ戻り続け、
+// クリックが安定しないことがあった -- そのケースでは本ヘルパーを使わず、join ボタンだけを
+// 直接待ってクリックすること (runCallRespawn() 参照)。
 export async function openVoiceLoungeAndJoin(page, { log }, roomName = ROOM_NAME) {
   const existingRoom = page.getByText(roomName, { exact: true }).first();
   const alreadyExists = await existingRoom
