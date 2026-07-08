@@ -8,7 +8,7 @@
 | P0 | M2 製品化タスク一式 | **進行中 (2026-07-08 開始)**。案 B 正式 GO 承認済み・selfmatrix-desktop 新設済み・bounds 同期完了。残: web tree-shake / mainWindow 監査 / homeserver 選択制 / ソース選択 UI / トレイ / リリース CI + minisign | [native-milestones.md](native-milestones.md) M2, [web-native-parallel.md](web-native-parallel.md) | インストーラから接続して通話一式が動く + 自動更新実機確認 + Electron セキュリティ監査 PASS |
 | P1 | アプリ単位音声キャプチャ (OBS 相当) | 再調査済み (WASAPI プロセスループバック、工数中)。**M2 MUST にはせず M3 以降推奨** | [spikes/app-audio-capture-spike.md](../spikes/app-audio-capture-spike.md) | 特定アプリの音声を配信に載せられる (MS ApplicationLoopback ベースの napi 実装) |
 | P1 | ユーザーカスタム機構 (プラグイン/テーマ/フィルタ) | ドラフト (運用者回答反映済み・GPT レビュー待ち)。テーマ=トークン確定、プラグイン=サンドボックス型 | [user-customization.md](../design/user-customization.md) | 段階導入案の確定 → M いくつ相当に割り付け |
-| P0 | web ビルドの native 分岐無効化 (セキュリティ MUST) | **未対処** — 現行 web 本番は native 検出コードを含み、境界つきリスク (要: グローバル植込) | [web-native-parallel.md](web-native-parallel.md) R2, [native-milestones.md](native-milestones.md) M2 | web ビルドで `getSelfmatrixNativeBridge()` がビルド時無効化され tree-shake される |
+| ~~P0~~ | ~~web ビルドの native 分岐無効化~~ | **実装完了 (2026-07-08、cinny 0439af23)** — web dist から native 識別子消失を grep 実測。**本番反映は spike→product 統合 + デプロイ時** (M2 の統合項目に含む) | [native-milestones.md](native-milestones.md) M2 | — |
 | P1 | 話者オーバーレイ右クリックからのユーザー単位音量調整 | 未実装 | [ui-design-notes.md](../design/ui-design-notes.md) | 配信上の話者ピル/オーバーレイから対象ユーザーのミュート・音量調整へ到達できる |
 | P1 | グリッド配信タイルのストリーム単体ポップアウト `🗗` | 保留 | [ui-design-notes.md](../design/ui-design-notes.md), [call-window-mode.md](../design/call-window-mode.md) | 視聴中配信タイルから再接続なしの単体ポップアウトを開ける |
 | P1 | SFU 切断時の自動再参加 | 未実施 | [roadmap.md](roadmap.md) Phase 8 | LiveKit ルーム消失後、手動再参加なしで通話へ戻れる、または明確な再参加導線が出る |

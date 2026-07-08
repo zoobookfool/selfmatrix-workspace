@@ -27,7 +27,8 @@
 
 ## 次にやること (M2 の製品化タスク。native-milestones.md M2 節が正本)
 
-1. **[MUST] web ビルドの native 分岐無効化 (tree-shake)** — 併走の安全性の要。web 本番は現状未対処。
+1. web ビルドの native 分岐 tree-shake は**実装完了** (cinny 0439af23、web dist から native
+   識別子消失を実測)。**本番反映は spike/native-shell → product 統合 + デプロイ時**。
 2. mainWindow のナビゲーション封じ込めは **暫定対応済み** (desktop 0db93ed)。残る M2 監査項目は
    shell の `sandbox:false` と常時公開の `getStatus/ensureCallView/detach/attach` の API 露出面整理。
 3. homeserver 選択制、画面共有ソース選択 UI + system audio トグル、トレイ常駐、About/AGPL。
