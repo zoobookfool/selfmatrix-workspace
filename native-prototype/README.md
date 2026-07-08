@@ -1,5 +1,12 @@
 # SelfMatrix Native Prototype
 
+> **アーカイブ (2026-07-08)**: この prototype は M2 で製品リポジトリ
+> **[selfmatrix-desktop](https://github.com/zoobookfool/selfmatrix-desktop)** へ卒業しました。
+> 以後の開発・修正はそちらで行います (ローカル: `DiscordSub/selfmatrix-desktop`、
+> 成果物は sibling の `../cinny/dist` / `../element-call/dist` を参照)。
+> このディレクトリは M0〜M1 の検証履歴・evidence の保存用として残します —
+> コードはこの時点で凍結し、今後は更新しません。
+
 Electron 版 SelfMatrix の最小 prototype です。
 production 実装ではなく、`native-client-rethink.md` の案 A/B を小さく動かすための足場です。
 

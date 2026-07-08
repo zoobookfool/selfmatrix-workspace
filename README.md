@@ -22,7 +22,7 @@
 | `reviews/` | AI レビューの記録 |
 | `fixes/` | 個別修正の記録とパッチ |
 | `test-harness/` | ネイティブ版前段の Web UI / Widget protocol / Electron smoke 検証入口 |
-| `native-prototype/` | Electron 版 SelfMatrix の小型 prototype。将来 `selfmatrix-desktop` へ切り出す候補 |
+| `native-prototype/` | (アーカイブ 2026-07-08) M0〜M1 の検証履歴。開発は [selfmatrix-desktop](https://github.com/zoobookfool/selfmatrix-desktop) へ卒業 |
 
 ## 文書の読み方
 
