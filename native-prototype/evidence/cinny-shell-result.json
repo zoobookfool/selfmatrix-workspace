@@ -125,7 +125,7 @@
   "preloadErrors": [],
   "widgetMessages": [
     {
-      "t": 1783477647756,
+      "t": 1783501731503,
       "type": "call-view-url-rejected",
       "url": "https://evil.selfmatrix.invalid/public/element-call/index.html?widgetId=selfmatrix-native-prototype-call",
       "validation": {
@@ -145,7 +145,7 @@
       }
     },
     {
-      "t": 1783477647768,
+      "t": 1783501731514,
       "type": "call-view-url-rejected",
       "url": "http://127.0.0.1:<local-port>/cinny/index.html?widgetId=selfmatrix-native-prototype-call",
       "validation": {
@@ -168,12 +168,12 @@
       }
     },
     {
-      "t": 1783477648019,
+      "t": 1783501731739,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648015",
+        "requestId": "widgetapi-1783501731736",
         "action": "supported_api_versions",
         "data": {}
       },
@@ -181,41 +181,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648020,
+      "t": 1783501731740,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648015",
-        "action": "supported_api_versions",
-        "data": {},
-        "response": {
-          "supported_versions": [
-            "0.0.1",
-            "0.0.2",
-            "org.matrix.msc2762",
-            "org.matrix.msc2762_update_state",
-            "org.matrix.msc2871",
-            "org.matrix.msc2873",
-            "org.matrix.msc2931",
-            "org.matrix.msc2974",
-            "org.matrix.msc2876",
-            "org.matrix.msc3819",
-            "town.robin.msc3846",
-            "org.matrix.msc3869",
-            "org.matrix.msc3973",
-            "org.matrix.msc4039"
-          ]
-        }
-      }
-    },
-    {
-      "t": 1783477648033,
-      "direction": "from-view",
-      "data": {
-        "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648015",
+        "requestId": "widgetapi-1783501731736",
         "action": "supported_api_versions",
         "data": {},
         "response": {
@@ -236,17 +207,46 @@
             "org.matrix.msc4039"
           ]
         }
+      }
+    },
+    {
+      "t": 1783501731750,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783501731736",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": [
+            "0.0.1",
+            "0.0.2",
+            "org.matrix.msc2762",
+            "org.matrix.msc2762_update_state",
+            "org.matrix.msc2871",
+            "org.matrix.msc2873",
+            "org.matrix.msc2931",
+            "org.matrix.msc2974",
+            "org.matrix.msc2876",
+            "org.matrix.msc3819",
+            "town.robin.msc3846",
+            "org.matrix.msc3869",
+            "org.matrix.msc3973",
+            "org.matrix.msc4039"
+          ]
+        }
       },
       "origin": "http://127.0.0.1:<local-port>",
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648033,
+      "t": 1783501731750,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648033",
+        "requestId": "widgetapi-1783501731751",
         "action": "content_loaded",
         "data": {}
       },
@@ -254,35 +254,35 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648034,
+      "t": 1783501731751,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648033",
+        "requestId": "widgetapi-1783501731751",
         "action": "content_loaded",
         "data": {},
         "response": {}
       }
     },
     {
-      "t": 1783477648034,
+      "t": 1783501731751,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648034",
+        "requestId": "widgetapi-1783501731752",
         "action": "capabilities",
         "data": {}
       }
     },
     {
-      "t": 1783477648053,
+      "t": 1783501731767,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648033",
+        "requestId": "widgetapi-1783501731751",
         "action": "content_loaded",
         "data": {},
         "response": {}
@@ -291,12 +291,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648062,
+      "t": 1783501731776,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648034",
+        "requestId": "widgetapi-1783501731752",
         "action": "capabilities",
         "data": {}
       },
@@ -304,12 +304,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648064,
+      "t": 1783501731777,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648034",
+        "requestId": "widgetapi-1783501731752",
         "action": "capabilities",
         "data": {},
         "response": {
@@ -374,12 +374,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648065,
+      "t": 1783501731778,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648065",
+        "requestId": "widgetapi-1783501731779",
         "action": "notify_capabilities",
         "data": {
           "requested": [
@@ -496,12 +496,12 @@
       }
     },
     {
-      "t": 1783477648066,
+      "t": 1783501731778,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648065",
+        "requestId": "widgetapi-1783501731779",
         "action": "notify_capabilities",
         "data": {
           "requested": [
@@ -620,12 +620,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648066,
+      "t": 1783501731779,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648065",
+        "requestId": "widgetapi-1783501731779",
         "action": "notify_capabilities",
         "data": {
           "requested": [
@@ -745,23 +745,23 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648066,
+      "t": 1783501731779,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648066",
+        "requestId": "widgetapi-1783501731780",
         "action": "supported_api_versions",
         "data": {}
       }
     },
     {
-      "t": 1783477648066,
+      "t": 1783501731779,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648066",
+        "requestId": "widgetapi-1783501731780",
         "action": "supported_api_versions",
         "data": {}
       },
@@ -769,12 +769,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648066,
+      "t": 1783501731779,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648066",
+        "requestId": "widgetapi-1783501731780",
         "action": "supported_api_versions",
         "data": {},
         "response": {
@@ -800,12 +800,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648066,
+      "t": 1783501731780,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648067",
+        "requestId": "widgetapi-1783501731780",
         "action": "update_state",
         "data": {
           "state": []
@@ -813,12 +813,12 @@
       }
     },
     {
-      "t": 1783477648067,
+      "t": 1783501731780,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648067",
+        "requestId": "widgetapi-1783501731780",
         "action": "update_state",
         "data": {
           "state": []
@@ -828,12 +828,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648068,
+      "t": 1783501731781,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648067",
+        "requestId": "widgetapi-1783501731780",
         "action": "update_state",
         "data": {
           "state": []
@@ -844,12 +844,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648737,
+      "t": 1783501732734,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648736",
+        "requestId": "widgetapi-1783501732735",
         "action": "io.element.device_mute",
         "data": {
           "audio_enabled": true,
@@ -860,12 +860,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477648738,
+      "t": 1783501732735,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648736",
+        "requestId": "widgetapi-1783501732735",
         "action": "io.element.device_mute",
         "data": {
           "audio_enabled": true,
@@ -879,12 +879,12 @@
       }
     },
     {
-      "t": 1783477648739,
+      "t": 1783501732735,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477648736",
+        "requestId": "widgetapi-1783501732735",
         "action": "io.element.device_mute",
         "data": {
           "audio_enabled": true,
@@ -900,12 +900,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477649026,
+      "t": 1783501732746,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477649026",
+        "requestId": "widgetapi-1783501732747",
         "action": "io.element.close",
         "data": {}
       },
@@ -913,12 +913,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477649026,
+      "t": 1783501732746,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477649026",
+        "requestId": "widgetapi-1783501732747",
         "action": "io.element.close",
         "data": {},
         "response": {
@@ -929,12 +929,12 @@
       }
     },
     {
-      "t": 1783477649026,
+      "t": 1783501732747,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477649026",
+        "requestId": "widgetapi-1783501732747",
         "action": "io.element.close",
         "data": {},
         "response": {
@@ -947,12 +947,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477649764,
+      "t": 1783501733461,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477649761",
+        "requestId": "widgetapi-1783501733457",
         "action": "supported_api_versions",
         "data": {}
       },
@@ -960,18 +960,47 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783477649767,
+      "t": 1783501733461,
+      "direction": "to-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783501733457",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": [
+            "0.0.1",
+            "0.0.2",
+            "org.matrix.msc2762",
+            "org.matrix.msc2762_update_state",
+            "org.matrix.msc2871",
+            "org.matrix.msc2873",
+            "org.matrix.msc2931",
+            "org.matrix.msc2974",
+            "org.matrix.msc2876",
+            "org.matrix.msc3819",
+            "town.robin.msc3846",
+            "org.matrix.msc3869",
+            "org.matrix.msc3973",
+            "org.matrix.msc4039"
+          ]
+        }
+      }
+    },
+    {
+      "t": 1783501733465,
       "type": "main-window-navigation-blocked",
       "url": "https://evil.selfmatrix.invalid/pwned.html",
       "via": "will-navigate"
     },
     {
-      "t": 1783477649768,
-      "direction": "to-view",
+      "t": 1783501733475,
+      "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477649761",
+        "requestId": "widgetapi-1783501733457",
         "action": "supported_api_versions",
         "data": {},
         "response": {
@@ -992,48 +1021,19 @@
             "org.matrix.msc4039"
           ]
         }
-      }
-    },
-    {
-      "t": 1783477649777,
-      "direction": "from-view",
-      "data": {
-        "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477649776",
-        "action": "content_loaded",
-        "data": {}
       },
       "origin": "http://127.0.0.1:<local-port>",
       "sourceIsSelf": true
     },
     {
-      "t": 1783477649787,
+      "t": 1783501733475,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783477649761",
-        "action": "supported_api_versions",
-        "data": {},
-        "response": {
-          "supported_versions": [
-            "0.0.1",
-            "0.0.2",
-            "org.matrix.msc2762",
-            "org.matrix.msc2762_update_state",
-            "org.matrix.msc2871",
-            "org.matrix.msc2873",
-            "org.matrix.msc2931",
-            "org.matrix.msc2974",
-            "org.matrix.msc2876",
-            "org.matrix.msc3819",
-            "town.robin.msc3846",
-            "org.matrix.msc3869",
-            "org.matrix.msc3973",
-            "org.matrix.msc4039"
-          ]
-        }
+        "requestId": "widgetapi-1783501733473",
+        "action": "content_loaded",
+        "data": {}
       },
       "origin": "http://127.0.0.1:<local-port>",
       "sourceIsSelf": true

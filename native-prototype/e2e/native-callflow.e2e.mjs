@@ -1048,6 +1048,157 @@ async function runCallRespawn(aliceApp, alicePage) {
   };
 }
 
+// ---- M2 bounds sync (Fable 全体レビュー arch-major 解消) の実機検証 ---------------------------
+//
+// 背景: web 版では useCallEmbedPlacementSync (cinny/src/app/hooks/useCallEmbed.ts) が CallView 内の
+// 実レイアウト座標を毎フレーム計算し、CallEmbedProvider の position:fixed div
+// (data-call-embed-container、iframe 実体入り) に反映する。native では実描画が別プロセスの
+// WebContentsView (main.cjs の state.callView) にあり、この座標を渡すチャンネルが存在しなかった
+// (main.cjs の updateCallViewBounds() はハーネス専用の固定式のまま) -- 実 cinny UI 上でビデオが
+// 正しい位置/サイズに出ることは一度も検証されていなかった。この節はそれを実機で検証する。
+//
+// 検証対象:
+//   1. join 後: cinny 自身が計算した実 rect (data-call-embed-container の
+//      getBoundingClientRect()) と、main.cjs が実際に state.callView へ適用した bounds
+//      (__selfmatrixE2E.getSnapshot().callViewActualBounds -- state 変数ではなく Electron の
+//      View.getBounds() を直接読んだ値、H1 と同じ「実体から逆算した積極的証拠」の方針) が
+//      許容誤差 (±3px) で一致すること。
+//   2. レイアウト変化への追従: ウィンドウリサイズ (__selfmatrixE2E.resizeMainWindow()) と、
+//      cinny 自身の実 UI 操作 (チャットパネル開閉 -- Controls.tsx の ChatButton
+//      [data-testid="call_control_chat"]、features/room/Room.tsx の
+//      `{callView && chat && (<CallChatView/>)}` が CallView と横並びで追加されコンテナ幅が
+//      実際に縮む、実在する操作であることをソースで確認済み) の両方で再一致すること。
+//   3. detach (別窓) 中は追従判定をスキップする (nativeBridge.ts の setCallViewBounds() 契約:
+//      popout 自体を native ではまだ提供していないため cinny は detach 中このメソッドを呼ばないが、
+//      念のため main.cjs 側は callViewState!=="attached" を無視する防御を持つ -- ここではその
+//      防御が実際に効いていること (callViewBoundsApplyLog に reason:"not-attached" が記録される
+//      こと) を確認する)。attach 復帰後に再一致することを確認する。
+
+const BOUNDS_TOLERANCE_PX = 3;
+const BOUNDS_POLL_TIMEOUT_MS = 10000;
+const BOUNDS_POLL_INTERVAL_MS = 200;
+
+// cinny 自身が実際に計算した「call view を表示すべき領域」を読む。data-call-embed-container div は
+// (web/native 問わず) useCallEmbedPlacementSync が毎フレーム同期しているので、この div の実測
+// getBoundingClientRect() が「cinny が実際に計算した値」の一次証跡になる (native シェルへ push
+// される値と同じ計算元 -- CallView.tsx の callContainerRef の rect)。visibility:hidden でも
+// レイアウトには参加する (display:none ではない) ため、callVisible の真偽によらず読める。
+async function readCinnyCallContainerRect(alicePage) {
+  return alicePage.evaluate(() => {
+    const el = document.querySelector("[data-call-embed-container]");
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { top: r.top, left: r.left, width: r.width, height: r.height };
+  });
+}
+
+function boundsClose(cinnyRect, shellBounds, tolerancePx) {
+  if (!cinnyRect || !shellBounds) return false;
+  return (
+    Math.abs(cinnyRect.left - shellBounds.x) <= tolerancePx &&
+    Math.abs(cinnyRect.top - shellBounds.y) <= tolerancePx &&
+    Math.abs(cinnyRect.width - shellBounds.width) <= tolerancePx &&
+    Math.abs(cinnyRect.height - shellBounds.height) <= tolerancePx
+  );
+}
+
+// cinny 側 (data-call-embed-container の実測矩形) と shell 側 (main.cjs が実際に state.callView へ
+// 適用した getBounds()、callViewVisible が実際に true) を、requestAnimationFrame/IPC の伝搬猶予を
+// 見込んでポーリング比較する。
+async function waitForBoundsMatch(aliceApp, alicePage, label) {
+  const started = Date.now();
+  let last = { cinnyRect: null, shellBounds: null, shellVisible: null };
+  while (Date.now() - started < BOUNDS_POLL_TIMEOUT_MS) {
+    const cinnyRect = await readCinnyCallContainerRect(alicePage);
+    const snapshot = await getMainProcessSnapshot(aliceApp);
+    const shellBounds = snapshot?.callViewActualBounds ?? null;
+    const shellVisible = snapshot?.callViewVisible ?? null;
+    last = { cinnyRect, shellBounds, shellVisible };
+    if (shellVisible === true && boundsClose(cinnyRect, shellBounds, BOUNDS_TOLERANCE_PX)) {
+      log(`boundsSync.${label}: matched (cinnyRect=${JSON.stringify(cinnyRect)}, shellBounds=${JSON.stringify(shellBounds)}).`);
+      return { ok: true, ...last };
+    }
+    await wait(BOUNDS_POLL_INTERVAL_MS);
+  }
+  log(
+    `boundsSync.${label}: NOT matched within ${BOUNDS_POLL_TIMEOUT_MS}ms ` +
+      `(cinnyRect=${JSON.stringify(last.cinnyRect)}, shellBounds=${JSON.stringify(last.shellBounds)}, ` +
+      `shellVisible=${last.shellVisible}).`,
+  );
+  return { ok: false, ...last };
+}
+
+async function runBoundsSync(aliceApp, alicePage) {
+  const boundsSync = {};
+
+  // 1. join 後の初期一致。
+  boundsSync.initial = await waitForBoundsMatch(aliceApp, alicePage, "initial");
+
+  // 2. ウィンドウリサイズへの追従 (mainWindow の content サイズを直接変える --
+  //    __selfmatrixE2E.resizeMainWindow()、main.cjs 参照。実ユーザーのウィンドウリサイズと同じ
+  //    実イベント経路 -- setContentSize() は OS ネイティブの枠を除いた実描画領域を直接指定する)。
+  const resizeOutcome = await aliceApp.evaluate(() => global.__selfmatrixE2E.resizeMainWindow(1150, 700));
+  boundsSync.resizeInvoked = resizeOutcome;
+  await wait(500);
+  boundsSync.afterWindowResize = await waitForBoundsMatch(aliceApp, alicePage, "afterWindowResize");
+
+  // 3. cinny 側 UI でレイアウトが変わる操作 (チャットパネル開閉、実クリック)。
+  await alicePage.locator('[data-testid="call_control_chat"]').click();
+  await wait(500);
+  boundsSync.afterChatOpen = await waitForBoundsMatch(aliceApp, alicePage, "afterChatOpen");
+  // 後始末: 他のステップ (localStorageContract 等) に影響しないよう閉じておく。
+  await alicePage.locator('[data-testid="call_control_chat"]').click();
+  await wait(500);
+  boundsSync.afterChatClose = await waitForBoundsMatch(aliceApp, alicePage, "afterChatClose");
+
+  // 4. detach (別窓) 中に実際に push させ、shell 側が「attached でない」として無視することを
+  //    確認する。detach/attach は shell 内部の WebContentsView 再親子付けにのみ影響し、cinny
+  //    自身の描画 (mainWindow の top frame そのもの) には一切影響しない (attach/detach 自体は
+  //    cinny の DOM から不可視) -- そのため cinny の ResizeObserver は「reattach したこと」
+  //    単体では再発火せず、cinny は reattach のタイミングで自発的に再 push しない。この現状の
+  //    アーキテクチャの下で意味のある形で「attach 復帰後の再一致」を検証するため、detach 中は
+  //    チャットパネルを開いてから (実レイアウト変化 → push → shell 側で無視される) 同じ操作で
+  //    再び閉じ (detach 前と正味同じレイアウトに戻す) てから reattach する。popout 自体は M3
+  //    スコープで native はまだ提供していない (useCallPopout の hasSelfmatrixNativeBridge
+  //    ガード参照) ため、「detach 中にウィンドウサイズを変えたまま reattach した瞬間に正しい
+  //    位置へ飛ぶ」までは現時点のスコープ外 (nativeBridge.ts の setCallViewBounds() 契約コメント
+  //    「detached 中の別窓のレイアウトは callWindow 側の責務」参照)。
+  const beforeDetachLogLen = (await getMainProcessSnapshot(aliceApp))?.callViewBoundsApplyLog?.length ?? 0;
+  await aliceApp.evaluate(() => global.__selfmatrixE2E.detachCallView());
+  await wait(REPARENT_SETTLE_MS);
+  await alicePage.locator('[data-testid="call_control_chat"]').click(); // open, while detached
+  await wait(500);
+  await alicePage.locator('[data-testid="call_control_chat"]').click(); // close again, while detached
+  await wait(500);
+  const duringDetachSnapshot = await getMainProcessSnapshot(aliceApp);
+  const duringDetachLog = (duringDetachSnapshot?.callViewBoundsApplyLog ?? []).slice(beforeDetachLogLen);
+  const ignoredWhileDetached = duringDetachLog.some((entry) => entry.applied === false && entry.reason === "not-attached");
+  boundsSync.duringDetach = { ignoredWhileDetached, entriesSinceDetach: duringDetachLog };
+
+  // 5. attach 復帰後、再一致することを確認する (detach 前と正味同じレイアウトに戻してあるので、
+  //    reattach 自体が cinny 側の再 push を伴わなくても、shell 側が保持している最後の適用値は
+  //    detach 前のまま正しい)。
+  await aliceApp.evaluate(() => global.__selfmatrixE2E.attachCallView());
+  await wait(REPARENT_SETTLE_MS);
+  boundsSync.afterReattach = await waitForBoundsMatch(aliceApp, alicePage, "afterReattach");
+
+  // 6. ウィンドウサイズを元に戻す (後続ステップ/証跡スクリーンショットへの影響を避ける)。
+  await aliceApp.evaluate(() => global.__selfmatrixE2E.resizeMainWindow(1400, 860));
+  await wait(500);
+  boundsSync.afterWindowRestore = await waitForBoundsMatch(aliceApp, alicePage, "afterWindowRestore");
+
+  const pass =
+    boundsSync.initial.ok &&
+    boundsSync.afterWindowResize.ok &&
+    boundsSync.afterChatOpen.ok &&
+    boundsSync.afterChatClose.ok &&
+    boundsSync.duringDetach.ignoredWhileDetached &&
+    boundsSync.afterReattach.ok &&
+    boundsSync.afterWindowRestore.ok;
+
+  return { ...boundsSync, pass };
+}
+
 async function main() {
   await checkBackendReachable({ log, failFast });
   const alicePassword = requireEnv("SELFMATRIX_E2E_PASSWORD_ALICE", { failFast });
@@ -1144,6 +1295,17 @@ async function main() {
       throw new Error(`two-user call was not established: ${JSON.stringify(twoUserCallEstablished)}`);
     }
 
+    // ---- 3.5 M2 bounds sync (Fable 全体レビュー arch-major 解消) の実機確認。screenshare や
+    //          window-move の前、通話成立直後のまっさらな状態 (chat 閉/既定ウィンドウサイズ) で
+    //          行う -- 終了時にウィンドウサイズ/chat 状態を元に戻すので以降のステップに影響しない。
+    const boundsSync = await runBoundsSync(aliceApp, alicePage);
+    result.passConditions.boundsSync = boundsSync;
+    log(
+      `boundsSync: initial=${boundsSync.initial.ok} afterWindowResize=${boundsSync.afterWindowResize.ok} ` +
+        `afterChatOpen=${boundsSync.afterChatOpen.ok} afterChatClose=${boundsSync.afterChatClose.ok} ` +
+        `duringDetach.ignored=${boundsSync.duringDetach.ignoredWhileDetached} afterReattach=${boundsSync.afterReattach.ok}`,
+    );
+
     // ---- 4. localStorage 契約の実機確認 (screenshare 開始前に検証しておく) --------------------
     const localStorageContract = await verifyLocalStorageContract(aliceApp);
     result.passConditions.localStorageContract = localStorageContract;
@@ -1233,6 +1395,7 @@ async function main() {
       result.passConditions.alice.pass &&
       result.passConditions.bob.pass &&
       result.passConditions.twoUserCallEstablished.pass &&
+      result.passConditions.boundsSync.pass &&
       result.passConditions.localStorageContract.pass &&
       result.passConditions.callControlVocabulary.pass &&
       result.passConditions.realClickVocabulary.pass &&

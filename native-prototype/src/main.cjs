@@ -213,7 +213,18 @@ const state = {
   pendingLocalStorageSnapshot: {},
   // 診断用: 上記スナップショットが実際に call view 側へ配達された記録 (evidence 用)。
   localStorageBridgeEvents: [],
+  // M2 bounds sync (Fable 全体レビュー arch-major 解消): cinny の NativeCallEmbed.setPlacement()
+  // (nativeBridge.ts の setCallViewBounds() 契約) から最後に届いた有効な値。null は「隠すべき」の
+  // 意味 (applyCallViewBoundsFromCinny() 参照)。未受信時は undefined のまま。
+  callViewBoundsFromCinny: undefined,
+  // 適用履歴 (E2E/診断用、__selfmatrixE2E snapshot に載せる)。無制限に増え続けないよう
+  // applyCallViewBoundsFromCinny() 側で上限を設けてトリムする。
+  callViewBoundsApplyLog: [],
 };
+
+// M2 bounds sync: state.callViewBoundsApplyLog の保持上限 (evidence/メモリの肥大化防止。
+// E2E のリサイズ連打でも十分な履歴が残る件数)。
+const CALL_VIEW_BOUNDS_LOG_LIMIT = 200;
 
 if (app) {
   app.on("window-all-closed", () => {
@@ -749,6 +760,18 @@ async function closeCallView() {
 
 function updateCallViewBounds() {
   if (!state.callView) return;
+  // M2 bounds sync (Fable 全体レビュー arch-major 解消、タスクの発端となった指摘そのもの):
+  // --cinny-shell モードは mainWindow が cinny 本体を直接トップフレームでロードする本番同様の
+  // topology (createMainWindow() の isCinnyShell 分岐) であり、cinny 実 UI の実レイアウト座標
+  // だけが「実際に call view を表示すべき領域」を知っている。この関数の下のハーネス固定式
+  // (x=max(380,width*0.52) 等) は desktop-shell.html (ハーネス、既定/--smoke/--memory-probe) 向けの
+  // 近似値に過ぎず、cinny-shell モードでこれを使うと実際の cinny レイアウト (サイドバー幅・チャット
+  // 開閉等) とズレる。cinny-shell モードでは何もしない — 実適用は
+  // applyCallViewBoundsFromCinny() ("native:set-call-view-bounds" ハンドラ) 経由の cinny からの
+  // push だけが担う (win.on("resize", updateCallViewBounds) からの呼び出しも含め、この関数の
+  // 他の呼び出し元はすべて素通りする)。ハーネスモード (--smoke 等) は影響を受けず従来どおり。
+  if (isCinnyShell) return;
+
   const owner = state.callViewState === "detached" ? state.callWindow : state.mainWindow;
   if (!owner || owner.isDestroyed()) return;
   const [width, height] = owner.getContentSize();
@@ -758,6 +781,101 @@ function updateCallViewBounds() {
     const x = Math.max(380, Math.floor(width * 0.52));
     state.callView.setBounds({ x, y: 118, width: Math.max(360, width - x - 18), height: Math.max(260, height - 136) });
   }
+}
+
+// M2 bounds sync: plain object かどうか (配列/null を除く) の判定。
+function isPlainObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+// M2 bounds sync: cinny (レンダラ、相対的に低信頼) から届く bounds の入力検証。
+// plain object / 有限数値 / 非負サイズ、null は許容 (「隠す」の意味、nativeBridge.ts の
+// setCallViewBounds() 契約参照)。不正な値は無視して安全側に倒す (main プロセスを落とさない)。
+function validateCallViewBounds(rawBounds) {
+  if (rawBounds === null) return { ok: true, bounds: null };
+  if (!isPlainObject(rawBounds)) return { ok: false, reason: "not-a-plain-object" };
+  const { x, y, width, height } = rawBounds;
+  const isFiniteNumber = (n) => typeof n === "number" && Number.isFinite(n);
+  if (!isFiniteNumber(x) || !isFiniteNumber(y) || !isFiniteNumber(width) || !isFiniteNumber(height)) {
+    return { ok: false, reason: "non-finite-number" };
+  }
+  if (width < 0 || height < 0) return { ok: false, reason: "negative-size" };
+  return { ok: true, bounds: { x, y, width, height } };
+}
+
+function boundsEqual(a, b) {
+  if (!a || !b) return false;
+  return a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
+}
+
+function pushCallViewBoundsLog(entry) {
+  state.callViewBoundsApplyLog.push(entry);
+  if (state.callViewBoundsApplyLog.length > CALL_VIEW_BOUNDS_LOG_LIMIT) {
+    state.callViewBoundsApplyLog.splice(0, state.callViewBoundsApplyLog.length - CALL_VIEW_BOUNDS_LOG_LIMIT);
+  }
+}
+
+// M2 bounds sync (Fable 全体レビュー arch-major 解消): claim 済みトランスポートの
+// setCallViewBounds() (nativeBridge.ts 契約) の main 側実体。cinny の
+// NativeCallEmbed.setPlacement() が useCallEmbedPlacementSync 経由で push してくる実レイアウト
+// 座標を、実際の WebContentsView (state.callView) へ適用する。
+//
+// 適用条件 (タスク要件どおり): state.callViewState === "attached" のときだけ実際に
+// setBounds()/setVisible() を呼ぶ。detached (別窓 popout) 中は無視する -- 別窓のレイアウトは
+// callWindow 側の責務 (M3 スコープ、nativeBridge.ts の setCallViewBounds() 契約コメント参照)。
+// null 受信時は setVisible(false) で隠す (setBounds(0 サイズ) ではなく明示的な可視性 API を使う --
+// Electron の View.setBounds() のドキュメント上の注意 (「border の cutout 部分はクリックを奪う」)
+// を踏まえ、0 サイズでも境界の扱いが実装依存になりうる可視性の抜け穴を避けるため)。
+//
+// 過剰送信の抑制は主に送信元 (cinny の NativeCallEmbed.setPlacement()、同値スキップ +
+// requestAnimationFrame まとめ) が担うが、ここでも実際の View.getBounds() (state 変数ではなく
+// Electron 自身が保持する実値) と比較し、同値なら setBounds() 自体を呼ばない防御を二重に持たせる
+// (View.setBounds() は同じ値を渡しても内部で再レイアウト/repaint が走り得るため、送信元側の
+// 抑制をすり抜けた場合の保険)。
+function applyCallViewBoundsFromCinny(rawBounds) {
+  const validation = validateCallViewBounds(rawBounds);
+  const entry = { t: Date.now(), received: rawBounds };
+
+  if (!validation.ok) {
+    entry.applied = false;
+    entry.reason = validation.reason;
+    pushCallViewBoundsLog(entry);
+    return;
+  }
+
+  state.callViewBoundsFromCinny = validation.bounds;
+
+  if (state.callViewState !== "attached" || !state.callView) {
+    entry.applied = false;
+    entry.reason = state.callViewState !== "attached" ? "not-attached" : "no-call-view";
+    pushCallViewBoundsLog(entry);
+    return;
+  }
+
+  if (validation.bounds === null) {
+    state.callView.setVisible(false);
+    entry.applied = true;
+    entry.action = "hide";
+    pushCallViewBoundsLog(entry);
+    return;
+  }
+
+  if (!state.callView.getVisible()) {
+    state.callView.setVisible(true);
+  }
+
+  const current = state.callView.getBounds();
+  if (boundsEqual(current, validation.bounds)) {
+    entry.applied = false;
+    entry.reason = "same-as-current-shell-side-dedup";
+    pushCallViewBoundsLog(entry);
+    return;
+  }
+
+  state.callView.setBounds(validation.bounds);
+  entry.applied = true;
+  entry.action = "setBounds";
+  pushCallViewBoundsLog(entry);
 }
 
 async function detachCallView() {
@@ -1027,6 +1145,14 @@ function setupIpc() {
   // ここではどのキーが対象になったかを記録するだけ。
   ipcMain.on("native:localstorage-primed", (_event, payload) => {
     state.localStorageBridgeEvents.push({ t: Date.now(), ...payload });
+  });
+
+  // M2 bounds sync (Fable 全体レビュー arch-major 解消): claim 済みトランスポートの
+  // setCallViewBounds() (nativeBridge.ts 契約) の main 側入口。fire-and-forget なので ipcMain.on
+  // (invoke ではない、shell-preload.cjs の ipcRenderer.send と対で使う)。入力検証・適用条件・
+  // 同値スキップはすべて applyCallViewBoundsFromCinny() 側の責務。
+  ipcMain.on("native:set-call-view-bounds", (_event, bounds) => {
+    applyCallViewBoundsFromCinny(bounds);
   });
 
   // callView → shell 方向。call view の未信頼な (EC/widget) コンテキストから来るメッセージなので
@@ -2035,6 +2161,20 @@ function setupE2EIntrospection() {
       // cinny-shell-smoke は自分自身の内部 result オブジェクトでこれを見ているだけで
       // __selfmatrixE2E からは読めなかった (このコミットまでのギャップ)。
       callViewPreloadRegistrationCount,
+      // M2 bounds sync (Fable 全体レビュー arch-major 解消): cinny から最後に届いた bounds
+      // (適用の成否によらず、受理した生の値)、と適用履歴 (applyCallViewBoundsFromCinny() 参照)。
+      callViewBoundsFromCinny: state.callViewBoundsFromCinny ?? null,
+      callViewBoundsApplyLog: state.callViewBoundsApplyLog,
+      // H1 と同じ方針 (state 文字列ではなく実体から逆算した積極的証拠): state.callView の
+      // 実際の Electron View.getBounds()/getVisible() を直接読む。native-callflow.e2e.mjs の
+      // boundsSync 検証はこれと cinny 自身の [data-call-embed-container] の
+      // getBoundingClientRect() を突き合わせる (どちらも「シェルが実際に適用した値」/
+      // 「cinny が実際に計算した値」であり、内部の state.callViewBoundsFromCinny だけを見ると
+      // 「記録したが実際には setBounds() を呼んでいない」回帰を見逃す)。
+      callViewActualBounds:
+        state.callView && !state.callView.webContents.isDestroyed() ? state.callView.getBounds() : null,
+      callViewVisible:
+        state.callView && !state.callView.webContents.isDestroyed() ? state.callView.getVisible() : null,
     }),
     // call view (EC) の main world で任意の式を評価する。call view が無ければ ok:false を
     // 返すだけで例外にはしない (e2e スクリプト側のポーリングループが単純になる)。
@@ -2087,6 +2227,18 @@ function setupE2EIntrospection() {
     attachCallView: async () => {
       await attachCallView();
       return { ok: true, callViewState: state.callViewState };
+    },
+    // M2 bounds sync (native-callflow.e2e.mjs の runBoundsSync() 用): mainWindow の content
+    // サイズを直接変える。ウィンドウリサイズへの追従 (cinny の ResizeObserver → setPlacement() →
+    // このプロセスの native:set-call-view-bounds) を実測するための駆動源。setContentSize() は
+    // OS ネイティブのウィンドウ枠を除いた実描画領域を直接指定するため、電子window.resize と同じ
+    // 実イベントが cinny のレンダラ側で発火する (実ユーザーのウィンドウリサイズと等価)。
+    resizeMainWindow: (width, height) => {
+      if (!state.mainWindow || state.mainWindow.isDestroyed()) {
+        return { ok: false, reason: "no_main_window" };
+      }
+      state.mainWindow.setContentSize(width, height);
+      return { ok: true };
     },
   };
 }

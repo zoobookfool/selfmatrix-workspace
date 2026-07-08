@@ -120,6 +120,12 @@ function claimWidgetTransport() {
         callControlStateListeners.delete(listener);
       };
     },
+    // M2 (Fable 全体レビュー arch-major 解消、bounds 同期): cinny の NativeCallEmbed.setPlacement()
+    // が計算した call view の実際の表示領域を main へ push する。fire-and-forget (nativeBridge.ts の
+    // setCallViewBounds() 契約どおり、戻り値なし) なので ipcRenderer.send (invoke ではない) を使う。
+    // main 側の実体は applyCallViewBoundsFromCinny() (main.cjs の "native:set-call-view-bounds"
+    // ハンドラ) — 入力検証・callViewState==="attached" ゲート・同値スキップはすべてそちら側の責務。
+    setCallViewBounds: (bounds) => ipcRenderer.send("native:set-call-view-bounds", bounds),
   };
 }
 

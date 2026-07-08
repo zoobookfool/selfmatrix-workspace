@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-07-08T02:29:39.649Z",
+  "startedAt": "2026-07-08T09:08:54.478Z",
   "pass": true,
   "room": "Voice Lounge",
   "steps": {
@@ -33,20 +33,171 @@
       "participantTileCount": 2,
       "participantTileCountPass": true,
       "statsT0": {
-        "audioBytesReceived": 16382,
+        "audioBytesReceived": 22136,
         "videoBytesReceived": 0,
         "videoBytesSent": 0,
-        "audioBytesSent": 284847,
+        "audioBytesSent": 328186,
         "pcCount": 2
       },
       "statsT1": {
-        "audioBytesReceived": 115662,
+        "audioBytesReceived": 130872,
         "videoBytesReceived": 0,
         "videoBytesSent": 0,
-        "audioBytesSent": 315345,
+        "audioBytesSent": 370228,
         "pcCount": 2
       },
       "audioIncreasing": true,
+      "pass": true
+    },
+    "boundsSync": {
+      "initial": {
+        "ok": true,
+        "cinnyRect": {
+          "top": 54,
+          "left": 322.66668701171875,
+          "width": 1063.3333740234375,
+          "height": 608.6666870117188
+        },
+        "shellBounds": {
+          "x": 323,
+          "y": 54,
+          "width": 1063,
+          "height": 609
+        },
+        "shellVisible": true
+      },
+      "resizeInvoked": {
+        "ok": true
+      },
+      "afterWindowResize": {
+        "ok": true,
+        "cinnyRect": {
+          "top": 54,
+          "left": 322.66668701171875,
+          "width": 827.3333740234375,
+          "height": 511.3333435058594
+        },
+        "shellBounds": {
+          "x": 323,
+          "y": 54,
+          "width": 827,
+          "height": 511
+        },
+        "shellVisible": true
+      },
+      "afterChatOpen": {
+        "ok": true,
+        "cinnyRect": {
+          "top": 54,
+          "left": 322.66668701171875,
+          "width": 370.66668701171875,
+          "height": 455.3333435058594
+        },
+        "shellBounds": {
+          "x": 323,
+          "y": 54,
+          "width": 371,
+          "height": 455
+        },
+        "shellVisible": true
+      },
+      "afterChatClose": {
+        "ok": true,
+        "cinnyRect": {
+          "top": 54,
+          "left": 322.66668701171875,
+          "width": 827.3333740234375,
+          "height": 511.3333435058594
+        },
+        "shellBounds": {
+          "x": 323,
+          "y": 54,
+          "width": 827,
+          "height": 511
+        },
+        "shellVisible": true
+      },
+      "duringDetach": {
+        "ignoredWhileDetached": true,
+        "entriesSinceDetach": [
+          {
+            "t": 1783501762014,
+            "received": {
+              "x": 323,
+              "y": 54,
+              "width": 371,
+              "height": 511
+            },
+            "applied": false,
+            "reason": "not-attached"
+          },
+          {
+            "t": 1783501762030,
+            "received": {
+              "x": 323,
+              "y": 54,
+              "width": 371,
+              "height": 455
+            },
+            "applied": false,
+            "reason": "not-attached"
+          },
+          {
+            "t": 1783501762563,
+            "received": {
+              "x": 323,
+              "y": 54,
+              "width": 827,
+              "height": 455
+            },
+            "applied": false,
+            "reason": "not-attached"
+          },
+          {
+            "t": 1783501762579,
+            "received": {
+              "x": 323,
+              "y": 54,
+              "width": 827,
+              "height": 511
+            },
+            "applied": false,
+            "reason": "not-attached"
+          }
+        ]
+      },
+      "afterReattach": {
+        "ok": true,
+        "cinnyRect": {
+          "top": 54,
+          "left": 322.66668701171875,
+          "width": 827.3333740234375,
+          "height": 511.3333435058594
+        },
+        "shellBounds": {
+          "x": 323,
+          "y": 54,
+          "width": 827,
+          "height": 511
+        },
+        "shellVisible": true
+      },
+      "afterWindowRestore": {
+        "ok": true,
+        "cinnyRect": {
+          "top": 54,
+          "left": 322.66668701171875,
+          "width": 1077.3333740234375,
+          "height": 671.3333740234375
+        },
+        "shellBounds": {
+          "x": 323,
+          "y": 54,
+          "width": 1077,
+          "height": 671
+        },
+        "shellVisible": true
+      },
       "pass": true
     },
     "localStorageContract": {
@@ -63,12 +214,12 @@
       },
       "bridgeEvents": [
         {
-          "t": 1783477788853,
+          "t": 1783501743698,
           "keys": [],
           "source": "pending-snapshot"
         },
         {
-          "t": 1783477788857,
+          "t": 1783501743704,
           "keys": [
             "matrix-setting-screen-share-quality",
             "matrix-setting-screen-share-fps"
@@ -96,7 +247,7 @@
           "before": "false",
           "after": "true",
           "statePush": {
-            "t": 1783477804600,
+            "t": 1783501764740,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -118,7 +269,7 @@
           "before": "false",
           "after": "true",
           "statePush": {
-            "t": 1783477805570,
+            "t": 1783501765950,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -147,7 +298,7 @@
           "afterOn": "true",
           "afterBack": "false",
           "statePushOn": {
-            "t": 1783477806656,
+            "t": 1783501767039,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -157,7 +308,7 @@
             "sound": true
           },
           "statePushBack": {
-            "t": 1783477807741,
+            "t": 1783501768134,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -210,7 +361,7 @@
             }
           },
           "statePush": {
-            "t": 1783477810338,
+            "t": 1783501770734,
             "direction": "state-push",
             "reason": "action-setSoundOff",
             "kind": "call-control",
@@ -231,7 +382,7 @@
             }
           },
           "statePush": {
-            "t": 1783477811437,
+            "t": 1783501771842,
             "direction": "state-push",
             "reason": "action-setSoundOn",
             "kind": "call-control",
@@ -252,7 +403,7 @@
           "before": "false",
           "after": "true",
           "statePush": {
-            "t": 1783477812529,
+            "t": 1783501772972,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -270,7 +421,7 @@
           "afterOn": "true",
           "afterBack": "false",
           "statePushOn": {
-            "t": 1783477813618,
+            "t": 1783501774094,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -280,7 +431,7 @@
             "sound": true
           },
           "statePushBack": {
-            "t": 1783477814703,
+            "t": 1783501775194,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -309,7 +460,7 @@
           "clicked": true,
           "audioCount": 1,
           "statePushOff": {
-            "t": 1783477817157,
+            "t": 1783501777683,
             "direction": "state-push",
             "reason": "action-setSoundOff",
             "kind": "call-control",
@@ -319,7 +470,7 @@
             "sound": false
           },
           "statePushOn": {
-            "t": 1783477818258,
+            "t": 1783501778800,
             "direction": "state-push",
             "reason": "action-setSoundOn",
             "kind": "call-control",
@@ -443,28 +594,22 @@
           }
         ],
         "statsBefore": {
-          "audioBytesReceived": 717437,
+          "audioBytesReceived": 790705,
           "videoBytesReceived": 0,
-          "videoBytesSent": 62345,
-          "audioBytesSent": 1385435,
+          "videoBytesSent": 70795,
+          "audioBytesSent": 1504556,
           "pcCount": 2
         },
         "statsAfter": {
-          "audioBytesReceived": 837135,
+          "audioBytesReceived": 980490,
           "videoBytesReceived": 0,
-          "videoBytesSent": 324787,
-          "audioBytesSent": 1624415,
+          "videoBytesSent": 334250,
+          "audioBytesSent": 1750834,
           "pcCount": 2
         },
         "bobPcsBefore": [
           {
             "id": 1,
-            "connectionState": "new",
-            "iceConnectionState": "new",
-            "reachedConnected": false
-          },
-          {
-            "id": 2,
             "connectionState": "connected",
             "iceConnectionState": "connected",
             "reachedConnected": true
@@ -473,12 +618,6 @@
         "bobPcsAfter": [
           {
             "id": 1,
-            "connectionState": "new",
-            "iceConnectionState": "new",
-            "reachedConnected": false
-          },
-          {
-            "id": 2,
             "connectionState": "connected",
             "iceConnectionState": "connected",
             "reachedConnected": true
@@ -516,7 +655,7 @@
         "pushCount": 1,
         "pushes": [
           {
-            "t": 1783477835195,
+            "t": 1783501795871,
             "direction": "state-push",
             "reason": "action-toggleScreenshare",
             "kind": "call-control",
@@ -537,5 +676,5 @@
     "bobCallView": true,
     "aliceDetachedMidMove": true
   },
-  "finishedAt": "2026-07-08T02:30:37.309Z"
+  "finishedAt": "2026-07-08T09:09:57.976Z"
 }
