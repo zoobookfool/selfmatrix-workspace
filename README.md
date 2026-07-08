@@ -10,6 +10,7 @@
 | [selfmatrix-cinny](https://github.com/zoobookfool/selfmatrix-cinny) | クライアント fork (Cinny) |
 | [selfmatrix-element-call](https://github.com/zoobookfool/selfmatrix-element-call) | 通話 UI fork (Element Call) |
 | [selfmatrix-hires](https://github.com/zoobookfool/selfmatrix-hires) | ハイレゾ音声の拡張オプション |
+| [selfmatrix-desktop](https://github.com/zoobookfool/selfmatrix-desktop) | Electron デスクトップシェル (2026-07-08 新設、native-prototype の卒業先) |
 | **selfmatrix-workspace** (ここ) | 計画・設計・スパイク・レビュー・モック |
 
 ## フォルダ構成 (2026-07-07 整理)
