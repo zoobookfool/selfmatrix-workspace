@@ -71,7 +71,7 @@
     "mutationPushCount": 1,
     "statePushes": [
       {
-        "t": 1783501726676,
+        "t": 1783502564057,
         "direction": "state-push",
         "reason": "mutation-observed",
         "kind": "legacy-target",
@@ -86,12 +86,12 @@
   "preloadErrors": [],
   "widgetMessages": [
     {
-      "t": 1783501714268,
+      "t": 1783502551633,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714264",
+        "requestId": "widgetapi-1783502551629",
         "action": "supported_api_versions",
         "data": {}
       },
@@ -99,41 +99,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714269,
+      "t": 1783502551634,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714264",
-        "action": "supported_api_versions",
-        "data": {},
-        "response": {
-          "supported_versions": [
-            "0.0.1",
-            "0.0.2",
-            "org.matrix.msc2762",
-            "org.matrix.msc2762_update_state",
-            "org.matrix.msc2871",
-            "org.matrix.msc2873",
-            "org.matrix.msc2931",
-            "org.matrix.msc2974",
-            "org.matrix.msc2876",
-            "org.matrix.msc3819",
-            "town.robin.msc3846",
-            "org.matrix.msc3869",
-            "org.matrix.msc3973",
-            "org.matrix.msc4039"
-          ]
-        }
-      }
-    },
-    {
-      "t": 1783501714284,
-      "direction": "from-view",
-      "data": {
-        "api": "fromWidget",
-        "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714264",
+        "requestId": "widgetapi-1783502551629",
         "action": "supported_api_versions",
         "data": {},
         "response": {
@@ -154,17 +125,46 @@
             "org.matrix.msc4039"
           ]
         }
+      }
+    },
+    {
+      "t": 1783502551649,
+      "direction": "from-view",
+      "data": {
+        "api": "fromWidget",
+        "widgetId": "selfmatrix-native-prototype-call",
+        "requestId": "widgetapi-1783502551629",
+        "action": "supported_api_versions",
+        "data": {},
+        "response": {
+          "supported_versions": [
+            "0.0.1",
+            "0.0.2",
+            "org.matrix.msc2762",
+            "org.matrix.msc2762_update_state",
+            "org.matrix.msc2871",
+            "org.matrix.msc2873",
+            "org.matrix.msc2931",
+            "org.matrix.msc2974",
+            "org.matrix.msc2876",
+            "org.matrix.msc3819",
+            "town.robin.msc3846",
+            "org.matrix.msc3869",
+            "org.matrix.msc3973",
+            "org.matrix.msc4039"
+          ]
+        }
       },
       "origin": "http://127.0.0.1:<local-port>",
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714284,
+      "t": 1783502551650,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714284",
+        "requestId": "widgetapi-1783502551650",
         "action": "content_loaded",
         "data": {}
       },
@@ -172,35 +172,35 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714285,
+      "t": 1783502551651,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714284",
+        "requestId": "widgetapi-1783502551650",
         "action": "content_loaded",
         "data": {},
         "response": {}
       }
     },
     {
-      "t": 1783501714285,
+      "t": 1783502551651,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714285",
+        "requestId": "widgetapi-1783502551651",
         "action": "capabilities",
         "data": {}
       }
     },
     {
-      "t": 1783501714326,
+      "t": 1783502551676,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714284",
+        "requestId": "widgetapi-1783502551650",
         "action": "content_loaded",
         "data": {},
         "response": {}
@@ -209,12 +209,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714335,
+      "t": 1783502551686,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714285",
+        "requestId": "widgetapi-1783502551651",
         "action": "capabilities",
         "data": {}
       },
@@ -222,12 +222,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714336,
+      "t": 1783502551687,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714285",
+        "requestId": "widgetapi-1783502551651",
         "action": "capabilities",
         "data": {},
         "response": {
@@ -292,12 +292,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714337,
+      "t": 1783502551689,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714337",
+        "requestId": "widgetapi-1783502551689",
         "action": "notify_capabilities",
         "data": {
           "requested": [
@@ -414,12 +414,12 @@
       }
     },
     {
-      "t": 1783501714338,
+      "t": 1783502551689,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714337",
+        "requestId": "widgetapi-1783502551689",
         "action": "notify_capabilities",
         "data": {
           "requested": [
@@ -538,12 +538,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714338,
+      "t": 1783502551689,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714337",
+        "requestId": "widgetapi-1783502551689",
         "action": "notify_capabilities",
         "data": {
           "requested": [
@@ -663,23 +663,23 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714338,
+      "t": 1783502551689,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714338",
+        "requestId": "widgetapi-1783502551690",
         "action": "supported_api_versions",
         "data": {}
       }
     },
     {
-      "t": 1783501714338,
+      "t": 1783502551690,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714338",
+        "requestId": "widgetapi-1783502551690",
         "action": "supported_api_versions",
         "data": {}
       },
@@ -687,12 +687,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714338,
+      "t": 1783502551690,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714338",
+        "requestId": "widgetapi-1783502551690",
         "action": "supported_api_versions",
         "data": {},
         "response": {
@@ -718,12 +718,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714338,
+      "t": 1783502551690,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714339",
+        "requestId": "widgetapi-1783502551690",
         "action": "update_state",
         "data": {
           "state": []
@@ -731,12 +731,12 @@
       }
     },
     {
-      "t": 1783501714339,
+      "t": 1783502551690,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714339",
+        "requestId": "widgetapi-1783502551690",
         "action": "update_state",
         "data": {
           "state": []
@@ -746,12 +746,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714340,
+      "t": 1783502551692,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714339",
+        "requestId": "widgetapi-1783502551690",
         "action": "update_state",
         "data": {
           "state": []
@@ -762,12 +762,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714735,
+      "t": 1783502552739,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714735",
+        "requestId": "widgetapi-1783502552738",
         "action": "io.element.device_mute",
         "data": {
           "audio_enabled": true,
@@ -778,12 +778,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501714736,
+      "t": 1783502552740,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714735",
+        "requestId": "widgetapi-1783502552738",
         "action": "io.element.device_mute",
         "data": {
           "audio_enabled": true,
@@ -797,12 +797,12 @@
       }
     },
     {
-      "t": 1783501714736,
+      "t": 1783502552741,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501714735",
+        "requestId": "widgetapi-1783502552738",
         "action": "io.element.device_mute",
         "data": {
           "audio_enabled": true,
@@ -818,12 +818,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501716073,
+      "t": 1783502553451,
       "direction": "to-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501716073",
+        "requestId": "widgetapi-1783502553451",
         "action": "io.element.join",
         "data": {
           "audioInput": null,
@@ -832,12 +832,12 @@
       }
     },
     {
-      "t": 1783501716073,
+      "t": 1783502553451,
       "direction": "from-view",
       "data": {
         "api": "toWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501716073",
+        "requestId": "widgetapi-1783502553451",
         "action": "io.element.join",
         "data": {
           "audioInput": null,
@@ -848,7 +848,7 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501726574,
+      "t": 1783502563954,
       "type": "widget-message-rejected",
       "direction": "from-view",
       "validation": {
@@ -871,12 +871,12 @@
       }
     },
     {
-      "t": 1783501726676,
+      "t": 1783502564057,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501726676",
+        "requestId": "widgetapi-1783502564057",
         "action": "io.element.close",
         "data": {}
       },
@@ -884,12 +884,12 @@
       "sourceIsSelf": true
     },
     {
-      "t": 1783501726676,
+      "t": 1783502564057,
       "direction": "to-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501726676",
+        "requestId": "widgetapi-1783502564057",
         "action": "io.element.close",
         "data": {},
         "response": {
@@ -900,12 +900,12 @@
       }
     },
     {
-      "t": 1783501726676,
+      "t": 1783502564057,
       "direction": "from-view",
       "data": {
         "api": "fromWidget",
         "widgetId": "selfmatrix-native-prototype-call",
-        "requestId": "widgetapi-1783501726676",
+        "requestId": "widgetapi-1783502564057",
         "action": "io.element.close",
         "data": {},
         "response": {
@@ -920,15 +920,15 @@
   ],
   "callControlMessages": [
     {
-      "t": 1783501726674,
+      "t": 1783502564055,
       "direction": "to-view",
-      "correlationId": "call-control-1-1783501726674",
+      "correlationId": "call-control-1-1783502564055",
       "action": "toggleTarget"
     },
     {
-      "t": 1783501726676,
+      "t": 1783502564057,
       "direction": "from-view",
-      "correlationId": "call-control-1-1783501726674",
+      "correlationId": "call-control-1-1783502564055",
       "result": {
         "ok": true,
         "action": "toggleTarget",
@@ -939,7 +939,7 @@
       }
     },
     {
-      "t": 1783501726676,
+      "t": 1783502564057,
       "direction": "state-push",
       "reason": "mutation-observed",
       "kind": "legacy-target",
@@ -949,13 +949,13 @@
   ],
   "navigationEvents": [
     {
-      "t": 1783501714019,
+      "t": 1783502551380,
       "url": "http://127.0.0.1:<local-port>/ec/index.html?widgetId=selfmatrix-native-prototype-call&parentUrl=http%3A%2F%2F127.0.0.1%3A%3Clocal-port%3E%2Fdesktop-shell.html&roomId=%21prototype%3Aselfmatrix.test&userId=%40prototype%3Aselfmatrix.test&deviceId=NATIVEPROTOTYPE&baseUrl=https%3A%2F%2Fmatrix.example.invalid&intent=join_existing_voice&preload=true&skipLobby=true&disableVideo=true&hideVideoButton=true&theme=dark",
       "isInPlace": false,
       "isMainFrame": true
     },
     {
-      "t": 1783501714275,
+      "t": 1783502551641,
       "url": "http://127.0.0.1:<local-port>/ec/index.html?widgetId=selfmatrix-native-prototype-call&parentUrl=http%3A%2F%2F127.0.0.1%3A%3Clocal-port%3E%2Fdesktop-shell.html&roomId=%21prototype%3Aselfmatrix.test&userId=%40prototype%3Aselfmatrix.test&deviceId=NATIVEPROTOTYPE&baseUrl=https%3A%2F%2Fmatrix.example.invalid&intent=join_existing_voice&preload=true&skipLobby=true&disableVideo=true&hideVideoButton=true&theme=dark",
       "isInPlace": true,
       "isMainFrame": true

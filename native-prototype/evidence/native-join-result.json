@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-07-07T17:46:20.999Z",
+  "startedAt": "2026-07-08T09:15:16.750Z",
   "pass": true,
   "room": "Voice Lounge",
   "steps": {
@@ -37,12 +37,12 @@
     "preloadErrorCount": 0,
     "recentWidgetMessages": [
       {
-        "t": 1783446390640,
+        "t": 1783502126483,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390496",
+          "requestId": "widgetapi-1783502126356",
           "action": "io.element.device_mute",
           "data": {
             "audio_enabled": true,
@@ -58,12 +58,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390655,
+        "t": 1783502126539,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390537",
+          "requestId": "widgetapi-1783502126392",
           "action": "io.element.join",
           "data": {},
           "response": {
@@ -76,12 +76,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390674,
+        "t": 1783502126562,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390538",
+          "requestId": "widgetapi-1783502126393",
           "action": "set_always_on_screen",
           "data": {
             "value": true
@@ -96,12 +96,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390675,
+        "t": 1783502126564,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390674",
+          "requestId": "widgetapi-1783502126564",
           "action": "get_openid",
           "data": {}
         },
@@ -109,12 +109,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390689,
+        "t": 1783502126580,
         "direction": "to-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390674",
+          "requestId": "widgetapi-1783502126564",
           "action": "get_openid",
           "data": {},
           "response": {
@@ -127,12 +127,12 @@
         }
       },
       {
-        "t": 1783446390690,
+        "t": 1783502126582,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390674",
+          "requestId": "widgetapi-1783502126564",
           "action": "get_openid",
           "data": {},
           "response": {
@@ -147,17 +147,17 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390764,
+        "t": 1783502126656,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390763",
+          "requestId": "widgetapi-1783502126656",
           "action": "send_event",
           "data": {
             "type": "org.matrix.msc3401.call.member",
             "content": {},
-            "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+            "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
             "delay": 18000
           }
@@ -166,56 +166,56 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390780,
+        "t": 1783502126670,
         "direction": "to-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390763",
+          "requestId": "widgetapi-1783502126656",
           "action": "send_event",
           "data": {
             "type": "org.matrix.msc3401.call.member",
             "content": {},
-            "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+            "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
             "delay": 18000
           },
           "response": {
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
-            "delay_id": "syd_PYHMQWNpdmALQHXiMjsg"
+            "delay_id": "syd_JiMObxkBHTBMhxteLJXa"
           }
         }
       },
       {
-        "t": 1783446390780,
+        "t": 1783502126671,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390763",
+          "requestId": "widgetapi-1783502126656",
           "action": "send_event",
           "data": {
             "type": "org.matrix.msc3401.call.member",
             "content": {},
-            "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+            "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
             "delay": 18000
           },
           "response": {
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
-            "delay_id": "syd_PYHMQWNpdmALQHXiMjsg"
+            "delay_id": "syd_JiMObxkBHTBMhxteLJXa"
           }
         },
         "origin": "http://127.0.0.1:<local-port>",
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390781,
+        "t": 1783502126671,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390781",
+          "requestId": "widgetapi-1783502126672",
           "action": "send_event",
           "data": {
             "type": "org.matrix.msc3401.call.member",
@@ -223,8 +223,8 @@
               "application": "m.call",
               "call_id": "",
               "scope": "m.room",
-              "device_id": "LNWUYHQDMF",
-              "membershipID": "@alice:synapse.m.localhost:LNWUYHQDMF",
+              "device_id": "AQMRJMJMTF",
+              "membershipID": "@alice:synapse.m.localhost:AQMRJMJMTF",
               "expires": 14400000,
               "m.call.intent": "audio",
               "focus_active": {
@@ -239,7 +239,7 @@
                 }
               ]
             },
-            "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+            "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
           }
         },
@@ -247,12 +247,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390930,
+        "t": 1783502126915,
         "direction": "to-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390781",
+          "requestId": "widgetapi-1783502126672",
           "action": "send_event",
           "data": {
             "type": "org.matrix.msc3401.call.member",
@@ -260,8 +260,8 @@
               "application": "m.call",
               "call_id": "",
               "scope": "m.room",
-              "device_id": "LNWUYHQDMF",
-              "membershipID": "@alice:synapse.m.localhost:LNWUYHQDMF",
+              "device_id": "AQMRJMJMTF",
+              "membershipID": "@alice:synapse.m.localhost:AQMRJMJMTF",
               "expires": 14400000,
               "m.call.intent": "audio",
               "focus_active": {
@@ -276,22 +276,22 @@
                 }
               ]
             },
-            "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+            "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
           },
           "response": {
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
-            "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk"
+            "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ"
           }
         }
       },
       {
-        "t": 1783446390930,
+        "t": 1783502126915,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390781",
+          "requestId": "widgetapi-1783502126672",
           "action": "send_event",
           "data": {
             "type": "org.matrix.msc3401.call.member",
@@ -299,8 +299,8 @@
               "application": "m.call",
               "call_id": "",
               "scope": "m.room",
-              "device_id": "LNWUYHQDMF",
-              "membershipID": "@alice:synapse.m.localhost:LNWUYHQDMF",
+              "device_id": "AQMRJMJMTF",
+              "membershipID": "@alice:synapse.m.localhost:AQMRJMJMTF",
               "expires": 14400000,
               "m.call.intent": "audio",
               "focus_active": {
@@ -315,27 +315,27 @@
                 }
               ]
             },
-            "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+            "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
           },
           "response": {
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
-            "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk"
+            "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ"
           }
         },
         "origin": "http://127.0.0.1:<local-port>",
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390931,
+        "t": 1783502126917,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390931",
+          "requestId": "widgetapi-1783502126917",
           "action": "org.matrix.msc4157.update_delayed_event",
           "data": {
-            "delay_id": "syd_PYHMQWNpdmALQHXiMjsg",
+            "delay_id": "syd_JiMObxkBHTBMhxteLJXa",
             "action": "restart"
           }
         },
@@ -343,30 +343,30 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390964,
+        "t": 1783502126989,
         "direction": "to-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390931",
+          "requestId": "widgetapi-1783502126917",
           "action": "org.matrix.msc4157.update_delayed_event",
           "data": {
-            "delay_id": "syd_PYHMQWNpdmALQHXiMjsg",
+            "delay_id": "syd_JiMObxkBHTBMhxteLJXa",
             "action": "restart"
           },
           "response": {}
         }
       },
       {
-        "t": 1783446390964,
+        "t": 1783502126989,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390931",
+          "requestId": "widgetapi-1783502126917",
           "action": "org.matrix.msc4157.update_delayed_event",
           "data": {
-            "delay_id": "syd_PYHMQWNpdmALQHXiMjsg",
+            "delay_id": "syd_JiMObxkBHTBMhxteLJXa",
             "action": "restart"
           },
           "response": {}
@@ -375,23 +375,23 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446390977,
+        "t": 1783502127002,
         "direction": "to-view",
         "data": {
           "api": "toWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390977",
+          "requestId": "widgetapi-1783502127003",
           "action": "update_state",
           "data": {
             "state": [
               {
                 "unsigned": {
-                  "age": 160
+                  "age": 262
                 },
                 "content": {
                   "application": "m.call",
                   "call_id": "",
-                  "device_id": "LNWUYHQDMF",
+                  "device_id": "AQMRJMJMTF",
                   "expires": 14400000,
                   "foci_preferred": [
                     {
@@ -405,14 +405,14 @@
                     "type": "livekit"
                   },
                   "m.call.intent": "audio",
-                  "membershipID": "@alice:synapse.m.localhost:LNWUYHQDMF",
+                  "membershipID": "@alice:synapse.m.localhost:AQMRJMJMTF",
                   "scope": "m.room"
                 },
-                "origin_server_ts": 1783446390813,
+                "origin_server_ts": 1783502126736,
                 "sender": "@alice:synapse.m.localhost",
-                "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+                "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
                 "type": "org.matrix.msc3401.call.member",
-                "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk",
+                "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ",
                 "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
               }
             ]
@@ -420,22 +420,69 @@
         }
       },
       {
-        "t": 1783446390978,
+        "t": 1783502127002,
+        "direction": "from-view",
+        "data": {
+          "api": "toWidget",
+          "widgetId": "call-embed",
+          "requestId": "widgetapi-1783502127003",
+          "action": "update_state",
+          "data": {
+            "state": [
+              {
+                "unsigned": {
+                  "age": 262
+                },
+                "content": {
+                  "application": "m.call",
+                  "call_id": "",
+                  "device_id": "AQMRJMJMTF",
+                  "expires": 14400000,
+                  "foci_preferred": [
+                    {
+                      "livekit_alias": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
+                      "livekit_service_url": "https://matrix-rtc.m.localhost/livekit/jwt",
+                      "type": "livekit"
+                    }
+                  ],
+                  "focus_active": {
+                    "focus_selection": "oldest_membership",
+                    "type": "livekit"
+                  },
+                  "m.call.intent": "audio",
+                  "membershipID": "@alice:synapse.m.localhost:AQMRJMJMTF",
+                  "scope": "m.room"
+                },
+                "origin_server_ts": 1783502126736,
+                "sender": "@alice:synapse.m.localhost",
+                "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
+                "type": "org.matrix.msc3401.call.member",
+                "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ",
+                "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
+              }
+            ]
+          }
+        },
+        "origin": "http://127.0.0.1:<local-port>",
+        "sourceIsSelf": true
+      },
+      {
+        "t": 1783502127003,
         "direction": "to-view",
         "data": {
           "api": "toWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390978",
+          "requestId": "widgetapi-1783502127003-0",
           "action": "send_event",
           "data": {
             "unsigned": {
-              "age": 160,
+              "age": 262,
               "membership": "join"
             },
             "content": {
               "application": "m.call",
               "call_id": "",
-              "device_id": "LNWUYHQDMF",
+              "device_id": "AQMRJMJMTF",
               "expires": 14400000,
               "foci_preferred": [
                 {
@@ -449,36 +496,36 @@
                 "type": "livekit"
               },
               "m.call.intent": "audio",
-              "membershipID": "@alice:synapse.m.localhost:LNWUYHQDMF",
+              "membershipID": "@alice:synapse.m.localhost:AQMRJMJMTF",
               "scope": "m.room"
             },
-            "origin_server_ts": 1783446390813,
+            "origin_server_ts": 1783502126736,
             "sender": "@alice:synapse.m.localhost",
-            "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+            "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
             "type": "org.matrix.msc3401.call.member",
-            "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk",
+            "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ",
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
           }
         }
       },
       {
-        "t": 1783446390978,
+        "t": 1783502127036,
         "direction": "from-view",
         "data": {
           "api": "toWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390977",
+          "requestId": "widgetapi-1783502127003",
           "action": "update_state",
           "data": {
             "state": [
               {
                 "unsigned": {
-                  "age": 160
+                  "age": 262
                 },
                 "content": {
                   "application": "m.call",
                   "call_id": "",
-                  "device_id": "LNWUYHQDMF",
+                  "device_id": "AQMRJMJMTF",
                   "expires": 14400000,
                   "foci_preferred": [
                     {
@@ -492,61 +539,14 @@
                     "type": "livekit"
                   },
                   "m.call.intent": "audio",
-                  "membershipID": "@alice:synapse.m.localhost:LNWUYHQDMF",
+                  "membershipID": "@alice:synapse.m.localhost:AQMRJMJMTF",
                   "scope": "m.room"
                 },
-                "origin_server_ts": 1783446390813,
+                "origin_server_ts": 1783502126736,
                 "sender": "@alice:synapse.m.localhost",
-                "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+                "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
                 "type": "org.matrix.msc3401.call.member",
-                "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk",
-                "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
-              }
-            ]
-          }
-        },
-        "origin": "http://127.0.0.1:<local-port>",
-        "sourceIsSelf": true
-      },
-      {
-        "t": 1783446391008,
-        "direction": "from-view",
-        "data": {
-          "api": "toWidget",
-          "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390977",
-          "action": "update_state",
-          "data": {
-            "state": [
-              {
-                "unsigned": {
-                  "age": 160
-                },
-                "content": {
-                  "application": "m.call",
-                  "call_id": "",
-                  "device_id": "LNWUYHQDMF",
-                  "expires": 14400000,
-                  "foci_preferred": [
-                    {
-                      "livekit_alias": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
-                      "livekit_service_url": "https://matrix-rtc.m.localhost/livekit/jwt",
-                      "type": "livekit"
-                    }
-                  ],
-                  "focus_active": {
-                    "focus_selection": "oldest_membership",
-                    "type": "livekit"
-                  },
-                  "m.call.intent": "audio",
-                  "membershipID": "@alice:synapse.m.localhost:LNWUYHQDMF",
-                  "scope": "m.room"
-                },
-                "origin_server_ts": 1783446390813,
-                "sender": "@alice:synapse.m.localhost",
-                "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
-                "type": "org.matrix.msc3401.call.member",
-                "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk",
+                "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ",
                 "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
               }
             ]
@@ -557,12 +557,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446391008,
+        "t": 1783502127036,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390981",
+          "requestId": "widgetapi-1783502127007",
           "action": "get_openid",
           "data": {}
         },
@@ -570,12 +570,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446391008,
+        "t": 1783502127036,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390984",
+          "requestId": "widgetapi-1783502127010",
           "action": "get_openid",
           "data": {}
         },
@@ -583,12 +583,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446391008,
+        "t": 1783502127036,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390988",
+          "requestId": "widgetapi-1783502127013",
           "action": "send_event",
           "data": {
             "type": "org.matrix.msc4075.rtc.notification",
@@ -599,10 +599,10 @@
               },
               "notification_type": "notification",
               "m.relates_to": {
-                "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk",
+                "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ",
                 "rel_type": "m.reference"
               },
-              "sender_ts": 1783446390987,
+              "sender_ts": 1783502127012,
               "lifetime": 30000,
               "m.call.intent": "audio"
             },
@@ -613,22 +613,22 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446391009,
+        "t": 1783502127036,
         "direction": "from-view",
         "data": {
           "api": "toWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390978",
+          "requestId": "widgetapi-1783502127003-0",
           "action": "send_event",
           "data": {
             "unsigned": {
-              "age": 160,
+              "age": 262,
               "membership": "join"
             },
             "content": {
               "application": "m.call",
               "call_id": "",
-              "device_id": "LNWUYHQDMF",
+              "device_id": "AQMRJMJMTF",
               "expires": 14400000,
               "foci_preferred": [
                 {
@@ -642,14 +642,14 @@
                 "type": "livekit"
               },
               "m.call.intent": "audio",
-              "membershipID": "@alice:synapse.m.localhost:LNWUYHQDMF",
+              "membershipID": "@alice:synapse.m.localhost:AQMRJMJMTF",
               "scope": "m.room"
             },
-            "origin_server_ts": 1783446390813,
+            "origin_server_ts": 1783502126736,
             "sender": "@alice:synapse.m.localhost",
-            "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+            "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
             "type": "org.matrix.msc3401.call.member",
-            "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk",
+            "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ",
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
           }
         },
@@ -657,22 +657,22 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446391011,
+        "t": 1783502127038,
         "direction": "from-view",
         "data": {
           "api": "toWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390978",
+          "requestId": "widgetapi-1783502127003-0",
           "action": "send_event",
           "data": {
             "unsigned": {
-              "age": 160,
+              "age": 262,
               "membership": "join"
             },
             "content": {
               "application": "m.call",
               "call_id": "",
-              "device_id": "LNWUYHQDMF",
+              "device_id": "AQMRJMJMTF",
               "expires": 14400000,
               "foci_preferred": [
                 {
@@ -686,14 +686,14 @@
                 "type": "livekit"
               },
               "m.call.intent": "audio",
-              "membershipID": "@alice:synapse.m.localhost:LNWUYHQDMF",
+              "membershipID": "@alice:synapse.m.localhost:AQMRJMJMTF",
               "scope": "m.room"
             },
-            "origin_server_ts": 1783446390813,
+            "origin_server_ts": 1783502126736,
             "sender": "@alice:synapse.m.localhost",
-            "state_key": "_@alice:synapse.m.localhost_LNWUYHQDMF_m.call",
+            "state_key": "_@alice:synapse.m.localhost_AQMRJMJMTF_m.call",
             "type": "org.matrix.msc3401.call.member",
-            "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk",
+            "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ",
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost"
           },
           "response": {}
@@ -702,12 +702,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446391022,
+        "t": 1783502127048,
         "direction": "to-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390981",
+          "requestId": "widgetapi-1783502127007",
           "action": "get_openid",
           "data": {},
           "response": {
@@ -720,12 +720,12 @@
         }
       },
       {
-        "t": 1783446391022,
+        "t": 1783502127050,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390981",
+          "requestId": "widgetapi-1783502127007",
           "action": "get_openid",
           "data": {},
           "response": {
@@ -740,12 +740,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446391027,
+        "t": 1783502127055,
         "direction": "to-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390984",
+          "requestId": "widgetapi-1783502127010",
           "action": "get_openid",
           "data": {},
           "response": {
@@ -758,12 +758,12 @@
         }
       },
       {
-        "t": 1783446391027,
+        "t": 1783502127056,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390984",
+          "requestId": "widgetapi-1783502127010",
           "action": "get_openid",
           "data": {},
           "response": {
@@ -778,12 +778,12 @@
         "sourceIsSelf": true
       },
       {
-        "t": 1783446391191,
+        "t": 1783502127247,
         "direction": "to-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390988",
+          "requestId": "widgetapi-1783502127013",
           "action": "send_event",
           "data": {
             "type": "org.matrix.msc4075.rtc.notification",
@@ -794,10 +794,10 @@
               },
               "notification_type": "notification",
               "m.relates_to": {
-                "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk",
+                "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ",
                 "rel_type": "m.reference"
               },
-              "sender_ts": 1783446390987,
+              "sender_ts": 1783502127012,
               "lifetime": 30000,
               "m.call.intent": "audio"
             },
@@ -805,17 +805,17 @@
           },
           "response": {
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
-            "event_id": "$fs7rc_vdua_NHlMma1NKJeUigJbD2NEkxb44InNusdw"
+            "event_id": "$7Fn0xvWHR4opLXcwGqcI8OcSesdvBHA_DL_e8TJ_2Ww"
           }
         }
       },
       {
-        "t": 1783446391199,
+        "t": 1783502127248,
         "direction": "from-view",
         "data": {
           "api": "fromWidget",
           "widgetId": "call-embed",
-          "requestId": "widgetapi-1783446390988",
+          "requestId": "widgetapi-1783502127013",
           "action": "send_event",
           "data": {
             "type": "org.matrix.msc4075.rtc.notification",
@@ -826,10 +826,10 @@
               },
               "notification_type": "notification",
               "m.relates_to": {
-                "event_id": "$_lo0VXfREcZaAeJCXUXmVSvoH5nS9OKxUb3h-u1Yvdk",
+                "event_id": "$L3crJbWe3dnsDoXFX8ZH1IteUaWHHYuATIThSd70aTQ",
                 "rel_type": "m.reference"
               },
-              "sender_ts": 1783446390987,
+              "sender_ts": 1783502127012,
               "lifetime": 30000,
               "m.call.intent": "audio"
             },
@@ -837,7 +837,7 @@
           },
           "response": {
             "room_id": "!wCaFNMqnVpmKDhIaur:synapse.m.localhost",
-            "event_id": "$fs7rc_vdua_NHlMma1NKJeUigJbD2NEkxb44InNusdw"
+            "event_id": "$7Fn0xvWHR4opLXcwGqcI8OcSesdvBHA_DL_e8TJ_2Ww"
           }
         },
         "origin": "http://127.0.0.1:<local-port>",
@@ -847,5 +847,5 @@
   },
   "callViewScreenshotTaken": true,
   "screenshotTaken": true,
-  "finishedAt": "2026-07-07T17:46:31.984Z"
+  "finishedAt": "2026-07-08T09:15:27.921Z"
 }

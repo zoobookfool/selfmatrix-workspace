@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-07-08T09:08:54.478Z",
+  "startedAt": "2026-07-08T09:16:55.666Z",
   "pass": true,
   "room": "Voice Lounge",
   "steps": {
@@ -33,18 +33,18 @@
       "participantTileCount": 2,
       "participantTileCountPass": true,
       "statsT0": {
-        "audioBytesReceived": 22136,
+        "audioBytesReceived": 19256,
         "videoBytesReceived": 0,
         "videoBytesSent": 0,
-        "audioBytesSent": 328186,
-        "pcCount": 2
+        "audioBytesSent": 359271,
+        "pcCount": 1
       },
       "statsT1": {
-        "audioBytesReceived": 130872,
+        "audioBytesReceived": 139810,
         "videoBytesReceived": 0,
         "videoBytesSent": 0,
-        "audioBytesSent": 370228,
-        "pcCount": 2
+        "audioBytesSent": 416607,
+        "pcCount": 1
       },
       "audioIncreasing": true,
       "pass": true
@@ -74,14 +74,14 @@
         "cinnyRect": {
           "top": 54,
           "left": 322.66668701171875,
-          "width": 827.3333740234375,
-          "height": 511.3333435058594
+          "width": 841.3333740234375,
+          "height": 549.3333740234375
         },
         "shellBounds": {
           "x": 323,
           "y": 54,
-          "width": 827,
-          "height": 511
+          "width": 841,
+          "height": 549
         },
         "shellVisible": true
       },
@@ -90,14 +90,14 @@
         "cinnyRect": {
           "top": 54,
           "left": 322.66668701171875,
-          "width": 370.66668701171875,
-          "height": 455.3333435058594
+          "width": 384.66668701171875,
+          "height": 493.3333435058594
         },
         "shellBounds": {
           "x": 323,
           "y": 54,
-          "width": 371,
-          "height": 455
+          "width": 385,
+          "height": 493
         },
         "shellVisible": true
       },
@@ -106,14 +106,14 @@
         "cinnyRect": {
           "top": 54,
           "left": 322.66668701171875,
-          "width": 827.3333740234375,
-          "height": 511.3333435058594
+          "width": 841.3333740234375,
+          "height": 549.3333740234375
         },
         "shellBounds": {
           "x": 323,
           "y": 54,
-          "width": 827,
-          "height": 511
+          "width": 841,
+          "height": 549
         },
         "shellVisible": true
       },
@@ -121,45 +121,45 @@
         "ignoredWhileDetached": true,
         "entriesSinceDetach": [
           {
-            "t": 1783501762014,
+            "t": 1783502243157,
             "received": {
               "x": 323,
               "y": 54,
-              "width": 371,
-              "height": 511
+              "width": 385,
+              "height": 549
             },
             "applied": false,
             "reason": "not-attached"
           },
           {
-            "t": 1783501762030,
+            "t": 1783502243173,
             "received": {
               "x": 323,
               "y": 54,
-              "width": 371,
-              "height": 455
+              "width": 385,
+              "height": 493
             },
             "applied": false,
             "reason": "not-attached"
           },
           {
-            "t": 1783501762563,
+            "t": 1783502243706,
             "received": {
               "x": 323,
               "y": 54,
-              "width": 827,
-              "height": 455
+              "width": 841,
+              "height": 493
             },
             "applied": false,
             "reason": "not-attached"
           },
           {
-            "t": 1783501762579,
+            "t": 1783502243722,
             "received": {
               "x": 323,
               "y": 54,
-              "width": 827,
-              "height": 511
+              "width": 841,
+              "height": 549
             },
             "applied": false,
             "reason": "not-attached"
@@ -171,14 +171,14 @@
         "cinnyRect": {
           "top": 54,
           "left": 322.66668701171875,
-          "width": 827.3333740234375,
-          "height": 511.3333435058594
+          "width": 841.3333740234375,
+          "height": 549.3333740234375
         },
         "shellBounds": {
           "x": 323,
           "y": 54,
-          "width": 827,
-          "height": 511
+          "width": 841,
+          "height": 549
         },
         "shellVisible": true
       },
@@ -187,14 +187,14 @@
         "cinnyRect": {
           "top": 54,
           "left": 322.66668701171875,
-          "width": 1077.3333740234375,
-          "height": 671.3333740234375
+          "width": 1091.3333740234375,
+          "height": 709.3333740234375
         },
         "shellBounds": {
           "x": 323,
           "y": 54,
-          "width": 1077,
-          "height": 671
+          "width": 1091,
+          "height": 709
         },
         "shellVisible": true
       },
@@ -214,12 +214,12 @@
       },
       "bridgeEvents": [
         {
-          "t": 1783501743698,
+          "t": 1783502224862,
           "keys": [],
           "source": "pending-snapshot"
         },
         {
-          "t": 1783501743704,
+          "t": 1783502224867,
           "keys": [
             "matrix-setting-screen-share-quality",
             "matrix-setting-screen-share-fps"
@@ -247,7 +247,7 @@
           "before": "false",
           "after": "true",
           "statePush": {
-            "t": 1783501764740,
+            "t": 1783502245885,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -269,7 +269,7 @@
           "before": "false",
           "after": "true",
           "statePush": {
-            "t": 1783501765950,
+            "t": 1783502247106,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -298,7 +298,7 @@
           "afterOn": "true",
           "afterBack": "false",
           "statePushOn": {
-            "t": 1783501767039,
+            "t": 1783502248227,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -308,7 +308,7 @@
             "sound": true
           },
           "statePushBack": {
-            "t": 1783501768134,
+            "t": 1783502249338,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -361,7 +361,7 @@
             }
           },
           "statePush": {
-            "t": 1783501770734,
+            "t": 1783502251963,
             "direction": "state-push",
             "reason": "action-setSoundOff",
             "kind": "call-control",
@@ -382,7 +382,7 @@
             }
           },
           "statePush": {
-            "t": 1783501771842,
+            "t": 1783502253077,
             "direction": "state-push",
             "reason": "action-setSoundOn",
             "kind": "call-control",
@@ -403,7 +403,7 @@
           "before": "false",
           "after": "true",
           "statePush": {
-            "t": 1783501772972,
+            "t": 1783502254182,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -421,7 +421,7 @@
           "afterOn": "true",
           "afterBack": "false",
           "statePushOn": {
-            "t": 1783501774094,
+            "t": 1783502255288,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -431,7 +431,7 @@
             "sound": true
           },
           "statePushBack": {
-            "t": 1783501775194,
+            "t": 1783502256405,
             "direction": "state-push",
             "reason": "mutation-observed",
             "kind": "call-control",
@@ -460,7 +460,7 @@
           "clicked": true,
           "audioCount": 1,
           "statePushOff": {
-            "t": 1783501777683,
+            "t": 1783502258928,
             "direction": "state-push",
             "reason": "action-setSoundOff",
             "kind": "call-control",
@@ -470,7 +470,7 @@
             "sound": false
           },
           "statePushOn": {
-            "t": 1783501778800,
+            "t": 1783502260027,
             "direction": "state-push",
             "reason": "action-setSoundOn",
             "kind": "call-control",
@@ -568,12 +568,6 @@
         "pcsBefore": [
           {
             "id": 1,
-            "connectionState": "new",
-            "iceConnectionState": "new",
-            "reachedConnected": false
-          },
-          {
-            "id": 2,
             "connectionState": "connected",
             "iceConnectionState": "connected",
             "reachedConnected": true
@@ -582,6 +576,28 @@
         "pcsAfter": [
           {
             "id": 1,
+            "connectionState": "connected",
+            "iceConnectionState": "connected",
+            "reachedConnected": true
+          }
+        ],
+        "statsBefore": {
+          "audioBytesReceived": 772391,
+          "videoBytesReceived": 0,
+          "videoBytesSent": 75657,
+          "audioBytesSent": 1659798,
+          "pcCount": 1
+        },
+        "statsAfter": {
+          "audioBytesReceived": 969322,
+          "videoBytesReceived": 0,
+          "videoBytesSent": 345452,
+          "audioBytesSent": 1961162,
+          "pcCount": 1
+        },
+        "bobPcsBefore": [
+          {
+            "id": 1,
             "connectionState": "new",
             "iceConnectionState": "new",
             "reachedConnected": false
@@ -593,31 +609,15 @@
             "reachedConnected": true
           }
         ],
-        "statsBefore": {
-          "audioBytesReceived": 790705,
-          "videoBytesReceived": 0,
-          "videoBytesSent": 70795,
-          "audioBytesSent": 1504556,
-          "pcCount": 2
-        },
-        "statsAfter": {
-          "audioBytesReceived": 980490,
-          "videoBytesReceived": 0,
-          "videoBytesSent": 334250,
-          "audioBytesSent": 1750834,
-          "pcCount": 2
-        },
-        "bobPcsBefore": [
-          {
-            "id": 1,
-            "connectionState": "connected",
-            "iceConnectionState": "connected",
-            "reachedConnected": true
-          }
-        ],
         "bobPcsAfter": [
           {
             "id": 1,
+            "connectionState": "new",
+            "iceConnectionState": "new",
+            "reachedConnected": false
+          },
+          {
+            "id": 2,
             "connectionState": "connected",
             "iceConnectionState": "connected",
             "reachedConnected": true
@@ -655,7 +655,7 @@
         "pushCount": 1,
         "pushes": [
           {
-            "t": 1783501795871,
+            "t": 1783502277199,
             "direction": "state-push",
             "reason": "action-toggleScreenshare",
             "kind": "call-control",
@@ -676,5 +676,5 @@
     "bobCallView": true,
     "aliceDetachedMidMove": true
   },
-  "finishedAt": "2026-07-08T09:09:57.976Z"
+  "finishedAt": "2026-07-08T09:17:59.305Z"
 }

@@ -127,6 +127,36 @@ if (isE2ERealJoin && app) {
   app.commandLine.appendSwitch("host-resolver-rules", "MAP *.m.localhost 127.0.0.1");
 }
 
+// 運用者指示 (2026-07-08「テストはできれば画面に出ないで欲しい」): E2E (--e2e-real-join) 実行中は
+// mainWindow/callWindow を「実ウィンドウのまま画面外座標」に開く。
+//
+// 最小化 (win.minimize())/show:false/オフスクリーンレンダリング (webPreferences.offscreen) は
+// どれも「コンポジタが実際にフレームを描画しない」状態を作ってしまう。このワークスペースの
+// E2E は配信系 (画面共有/WebRTC) の実挙動を検証するものが多く、
+// registerDisplayMediaHandler() のコメントにある通り WGC (Windows Graphics Capture) ベースの
+// キャプチャやエンコーダの差分検出はどれも「実際に画面へ描画され続けていること」に依存する —
+// 上記のいずれかで代替すると、実際は正常に動いているのに配信系のアサーション (bytesSent の増加
+// など) だけが偽 FAIL する。「実ウィンドウとして show:true のまま、画面外の座標に配置する」が
+// 唯一安全な方法: DWM は通常のマルチモニタ構成と同様に画面外のウィンドウも変わらず合成し続ける
+// ため、WGC/desktopCapturer/webContents.capturePage() はいずれも影響を受けない。
+//
+// x は大きな負値にして、マルチモニタ構成 (2 台目・3 台目のモニタがどれだけ左右に並んでいても)
+// 実モニタの workArea と重ならないようにする。y は 0 以上にしておく (負の y は一部の OS の
+// ウィンドウ管理 — タスクバー/スナップ挙動等 — で異常な扱いを受けることがあるため避ける)。
+// dev/E2E/memory-probe 専用 -- 通常起動/smoke には一切影響しない。
+const E2E_OFFSCREEN_WINDOW_POSITION = Object.freeze({ x: -4000, y: 100 });
+
+// createMainWindow()/createCallWindow() の両方から呼ぶ、テスト実行時専用の位置指定
+// BrowserWindow オプション片。対象外のモードでは空オブジェクト (= Electron の既定の中央配置)。
+// memory-probe も対象 (2026-07-08 運用者指示「テストは画面に出ないで欲しい」への追随):
+// memory-probe の mainWindow は歴史的に show 条件 (!isSmoke && !isCinnyShellSmoke) から漏れて
+// 可視のままだった。show:false での非表示化はコンポジタ挙動が変わりメモリ計測の意味がズレるため、
+// E2E と同じ「実ウィンドウのまま画面外」で揃える。
+function e2eOffscreenBrowserWindowOptions() {
+  if (!isE2ERealJoin && !isMemoryProbe) return {};
+  return { x: E2E_OFFSCREEN_WINDOW_POSITION.x, y: E2E_OFFSCREEN_WINDOW_POSITION.y };
+}
+
 // M1 step 3c-1: call view (EC) の main world へ dom-ready 時に注入する RTCPeerConnection
 // ラッパ。実 LiveKit 接続が確立したことを、main プロセス外 (e2e スクリプト) から
 // electronApp.evaluate() 経由で観測できるようにするための計装。window.RTCPeerConnection を
@@ -410,11 +440,20 @@ function createMainWindow() {
     width: 1400,
     height: 860,
     show: !isSmoke && !isCinnyShellSmoke,
+    // E2E (--e2e-real-join) 専用: 画面外座標に開く (E2E_OFFSCREEN_WINDOW_POSITION のコメント参照)。
+    // isE2ERealJoin でなければ e2eOffscreenBrowserWindowOptions() は {} を返すので無影響。
+    ...e2eOffscreenBrowserWindowOptions(),
     webPreferences: {
       preload: path.join(__dirname, "shell-preload.cjs"),
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
+      // Chromium は非表示/最小化/occluded 判定したウィンドウの timer/requestAnimationFrame を
+      // 間引く (Electron の既定は間引く=true)。この画面外配置 (E2E) や将来のユーザーによる最小化/
+      // タブ切り替え中でも、通話中の keep-alive 描画や WebRTC 関連タイマーは止めたくないため、
+      // E2E 限定にせず常時無効化しておく (害としては非表示時の消費電力がわずかに増える程度で、
+      // 通話アプリとしては妥当なトレードオフ)。
+      backgroundThrottling: false,
     },
   });
   // M1 step 3b 実装要件 5: --cinny-shell (/--cinny-shell-smoke) はトップフレームモード —
@@ -482,10 +521,15 @@ function createCallWindow() {
     width: 960,
     height: 640,
     show: !isSmoke,
+    // E2E (--e2e-real-join) 専用: mainWindow と同じ理由で画面外座標に開く (detach/popout 検証
+    // (windowMoveReparenting) 中もこの別窓が画面内に現れないようにするため)。
+    ...e2eOffscreenBrowserWindowOptions(),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
+      // createMainWindow() と同じ理由 (上のコメント参照) で常時無効化する。
+      backgroundThrottling: false,
     },
   });
   win.on("resize", updateCallViewBounds);
