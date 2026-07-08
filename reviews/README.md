@@ -4,6 +4,7 @@
 
 | 日付 | ファイル | 対象 | 結論 / 状態 |
 | --- | --- | --- | --- |
+| 2026-07-08 | [gpt-review-desktop-m2-readiness-followup-20260708.md](gpt-review-desktop-m2-readiness-followup-20260708.md) | selfmatrix-workspace `c57da2c` / selfmatrix-desktop `0db93ed` | GPT M2 readiness 対応後レビュー。実装 P1/P2 は概ね解消。残 P2: current-status/native-milestones に「対応中」「要運用者承認」「未対処」「更新予定」の古い表現が残る |
 | 2026-07-08 | [gpt-review-desktop-m2-readiness-20260708.md](gpt-review-desktop-m2-readiness-20260708.md) | selfmatrix-workspace `c47d857` / selfmatrix-desktop `be1e9aa` | M2 製品化前レビュー。P1: desktop 通常起動が harness / 正本 docs が承認待ちのまま / mainWindow navigation が origin のみ。P2: M1 注記 stale / prototype 名残り。**全対応済み (2026-07-08)**: docs は workspace aad8a72、desktop コードは 0db93ed (起動既定反転 / nav 厳格化 + smoke 回帰検証 / 改名。E2E 全 green で受け入れ)。GPT 指摘 D の前提「cinny が prototype WIDGET_ID を参照」は誤認と判明 (cinny は call-embed 固定) |
 | 2026-07-08 | [claude-review-m1-holistic-20260708.md](claude-review-m1-holistic-20260708.md) | M1 全体再レビュー (Fable、4 視点 + 敵対的検証) | 技術成立は維持、完成度主張を 2 点下方修正。critical 3 + major 3 を仕分け (今すぐ修正 / M2 格上げ)。GPT レビューと相補 |
 | 2026-07-08 | [gpt-review-native-m1-20260708.md](gpt-review-native-m1-20260708.md) | Fable 更新後の native M1 全体レビュー | M1 技術成立性は強い。P1: `openCallView` URL 検証の必須項目不足、preload 重複登録 (本物のバグ)、正本ドキュメント追従漏れ。P2: 通話窓仕様の文書矛盾、CallControl DOM 監視の再マウント耐性。C1/C2 で対応 |
