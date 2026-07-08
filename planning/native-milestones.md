@@ -64,13 +64,15 @@ API リフレクション実測 + 文書で確認し、WASAPI プロセスルー
 **推奨 LATER** ([spikes/app-audio-capture-spike.md](../spikes/app-audio-capture-spike.md)、
 運用者判断待ち)。
 
-### M1 完了 (2026-07-08) — 案 B 正式 GO を推奨
+### M1 完了 (2026-07-08) — 案 B 正式 GO (2026-07-08 運用者承認)
 
 受け入れ条件「dev スタックで 2 ユーザー通話 + 配信 + 無再接続の窓往復が E2E で PASS」は
 **成立** (レビュアー独立再実行込み)。技術面の裏付け: matrix-widget-api 無改造の iframe シム /
 CallWidgetDriver 無改造 / cinny 差分は native/ 4 ファイル + 最小接続 / 配信中の窓移動 3 往復
 無再接続 (実 contentView 遷移の積極的証拠つき) / localStorage 契約の live 化 / system audio 実測。
-**GO/NO-GO の正式判断と、アプリ単位音声の LATER 化は運用者の承認事項**。GO なら次は M2
+**案 B は 2026-07-08 に運用者が正式 GO を承認**。アプリ単位音声は LATER 化ではなく
+**OBS (Application Audio Capture = WASAPI プロセスループバック) を参考にした再調査を運用者が指示**
+(2026-07-08) — spikes/app-audio-capture-spike.md を更新予定。次は M2
 (selfmatrix-desktop リポジトリ新設 — 要運用者承認)。
 
 - **NativeWidgetTransport / NativeCallHost アダプタ**: cinny の ClientWidgetApi/CallWidgetDriver
