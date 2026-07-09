@@ -2,7 +2,7 @@
 
 **状態: 現在地の正本。** 長い履歴は [roadmap.md](roadmap.md) に残し、今どこまで進んだか・次に何を見るかをここにまとめる。
 
-## 最新 (2026-07-08): ネイティブ化 M1 完了・案 B 正式 GO・M2 開始
+## 最新 (2026-07-09): ネイティブ化 M2 実装完了 (残: 運用者の鍵生成 + 初回リリース)
 
 - **M1 (通話コアの技術成立) 完了**。cinny fork `spike/native-shell` + workspace `native-prototype` で、
   実 dev バックエンドに対し **2 ユーザー通話 + 配信 + 無再接続の窓移動 3 往復** の E2E が PASS
@@ -12,8 +12,11 @@
 - **案 B (WebContentsView 再親子付け) は 2026-07-08 に運用者が正式 GO を承認**。
 - **web/native 併走を決定** (2026-07-08)。web は撤収せず 2 系統で定常運用。運用ルールの正本は
   [web-native-parallel.md](web-native-parallel.md) (1 コードベース 2 ビルド、新機能は共通コードに置けば両方に乗る)。
-- **M2 開始済み**: 製品リポジトリ [selfmatrix-desktop](https://github.com/zoobookfool/selfmatrix-desktop) を新設し
-  native-prototype から卒業 (workspace の native-prototype はアーカイブ = コード凍結)。
+- **M2 実装完了 (2026-07-09)**: 製品リポジトリ [selfmatrix-desktop](https://github.com/zoobookfool/selfmatrix-desktop)。
+  homeserver 選択制 / 画面共有ソース選択ピッカー + system audio / About+AGPL / トレイ常駐 /
+  通知・自動起動 / electron-builder パッケージング (NSIS 実ビルド) / minisign 更新検証 / リリース CI
+  まで実装・検証済み。**残るは運用者のオフライン作業のみ** (minisign 鍵生成 → 実公開鍵埋込 →
+  初回タグ push で CI 実走 → 手元署名 → publish → インストーラ実機確認)。詳細は native-milestones M2。
 
 ## 現在の到達点
 
