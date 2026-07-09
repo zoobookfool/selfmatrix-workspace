@@ -57,6 +57,7 @@
 | [call-window-mode.md](design/call-window-mode.md) | 履歴 (web 版フォールバック専用) | ネイティブ版は Discord 準拠へ方針変更 (2026-07-07)。正本は native-milestones M3 |
 | [native-widget-transport.md](design/native-widget-transport.md) | 正本 (M1 設計) | ネイティブ版アダプタ設計。iframe シム + 素通しルータ / CallControl の RPC 移設 |
 | [user-customization.md](design/user-customization.md) | ドラフト | OBS 風カスタム機構 (プラグイン/テーマ/フィルタ) の検討。セキュリティ最優先、GPT レビュー待ち |
+| [release-pipeline.md](design/release-pipeline.md) | ドラフト | M2 のリリース CI + 自動更新 + minisign 自前署名の実装計画。鍵生成は運用者オフライン作業 |
 | [native-client-rethink.md](design/native-client-rethink.md) | ドラフト | クライアントのネイティブアプリ化。小型 prototype 着手可、最終 LiveKit join 待ち |
 | [test-harness.md](design/test-harness.md) | ドラフト | ネイティブ版の前段として Web UI / Widget protocol CLI / Electron smoke の検証入口を整理。最小実装あり |
 | [ec-tile-ui-plan.md](design/ec-tile-ui-plan.md) | 履歴 | EC タイル UI の実装計画と進捗 |
