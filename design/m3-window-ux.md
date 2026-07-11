@@ -10,11 +10,12 @@ step 0 スパイクで実証してから確定する。
 M3 はその上に UX を載せる: ⧉ ポップアウト導線 / 別窓 close = メイン復帰 (通話継続) /
 別窓に EC フッター表示 / 窓サイズ・位置記憶。
 
-**最大の未検証リスク (step 0 で先に潰す)**: 別窓 (callWindow) を**ユーザーが直接閉じた**とき、
-Electron が子の WebContentsView (= 生きた RTCPeerConnection) まで巻き込んで破棄するか。
-破棄されると「閉じる=無再接続でメイン復帰」が原理的に成立しない。現行の `createCallWindow()` は
-`"closed"` (破棄後・キャンセル不可) で `attachCallView()` を呼ぶが、これは実 close 操作で
-一度も検証されていない (E2E は `__selfmatrixE2E.detachCallView/attachCallView` を直接呼ぶだけ)。
+**最大の未検証リスクだった項目 → step 0 で GO 確定 (2026-07-09、desktop 1356638)**:
+別窓を実際に閉じた時、子 WebContentsView (生きた RTCPeerConnection) が無再接続でメイン復帰できるかを
+自己ループバック PC で実測。**採用 = `close-preserve` 方式** (`"close"` で preventDefault →
+attachCallView 退避 → win.destroy)。webContents.id 不変 / connected 維持 / loadCount 不変 /
+callViewState≠"none" を確認。※実測で判明: Electron 43 は親 BrowserWindow 破棄で子 WebContentsView を
+巻き込み破棄しない (legacy "closed" 方式でも生存) が、未文書化挙動に依存しない close-preserve を採用。
 
 ## 1. 現状 (流用できるもの / ギャップ)
 
