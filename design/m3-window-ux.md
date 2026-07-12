@@ -82,6 +82,8 @@ callViewState≠"none" を確認。※実測で判明: Electron 43 は親 Browse
 - bob (別ユーザー) 無影響
 - Discord 実機録画 (2026-07-07 取得、運用者ローカル) との挙動突き合わせ 4 点: 映像/音声継続 /
   別窓での操作がフッターだけで完結 / 閉じてメイン側状態が正しく復元 / 窓切り替えの体感
+  - **(2026-07-12 運用者判断で格下げ)**: 突き合わせは受け入れ条件ではなく**参考程度**。
+    基本は Discord を正とするが、UI 等は作者の好みで変更するため厳密一致は求めない
 
 ## 4b. M3 完了 (2026-07-12)
 
@@ -90,11 +92,13 @@ callViewState≠"none" を確認。※実測で判明: Electron 43 は親 Browse
 - window-move 10 往復で RTCPeerConnection id 不変・connected 維持
 - 実 ⧉ ボタンクリックでの popout/popin (production 配線、両方向 noReconnect)。cinny popout 切断の変異で実クリック判定のみ FAIL
 - **別窓 close → attachedTo=main 復帰 / callViewState=attached (dispose 誤発火なし) / callDidNotEnd / bob 無影響**。ガード `!== "detached"` を反転する変異で closeWindowMainRevert が FAIL (attachedAfterClose=none) = 本物の回帰ガード
-- **残タスク**: 最前面ピン留めは LATER (実機ドッグフーディングで要否判断)。Discord 実機録画との最終突き合わせは運用者の目視 (§4)
+- **残タスク**: ~~最前面ピン留めは LATER~~ → **実装済み (2026-07-12、desktop af603ee)**: 運用者 GO
+  (「やらない理由がなければ載せる」) により実装。トレイ「通話の別窓を最前面に固定」(既定 OFF、
+  永続化、probe 3 段 + 変異ゲートで検証)。Discord 実機録画との突き合わせは参考程度に格下げ (§4)
 
 **検証環境の知見 (2026-07-12)**: 2 ユーザー E2E で (a) 中断ランが leftover Electron/node を残すと通話メンバーシップを更新し続け Voice Lounge に幽霊メンバーが溜まる、(b) E2E teardown で electron が閉じきらず npm がハングして完了通知が出ない (テスト自体は成功済み)、という脆さを観測。中断時は electron プロセスの一掃 + 幽霊 call member の掃除が必要。
 
 ## 5. 作らないもの (native-milestones M3 明記)
 
 開き方の設定 (このウィンドウ/別ウィンドウ・毎回選ぶ・二層保存) / ポップアップブロッカー対策。
-最前面ピン留めは LATER (実機ドッグフーディングで要否判断)。
+(最前面ピン留めは当初 LATER だったが 2026-07-12 に実装済み — §4b 参照。)

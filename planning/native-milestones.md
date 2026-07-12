@@ -300,6 +300,26 @@ Discord 実機録画 (2026-07-07 取得済み) との挙動突き合わせ。
 CI ドラフト → minisign 署名 → 公開) を回して実地確定する。M4 受け入れ (友達が手順書だけで
 インストール・通話、別の友達が web で合流) も初回リリース後に実測する。
 
+### M4 進捗・追記 (2026-07-12 午後) — 統合 + LATER 2 項目の実装
+
+運用者方針「やらない理由がなければ載せる」の確定を受けて同日中に消化:
+
+- **spike/native-shell → product 統合 ✅** (cinny merge 1d36c5c8): 未統合 4 コミット (About/AGPL、
+  M3 契約 + ⧉ 導線、R2 CI ガード) をコンフリクトなしで統合。product の CI (tree-shake ガード +
+  web イメージビルド) 両方 green。desktop のリリース CI は cinny を product 参照でビルドするため、
+  **この統合が初回リリースの前提条件だった** (未統合だと M3 UI がリリースに入らない)。
+  以後 native 作業は product ブランチ直で行う (spike は歴史保存)。
+- **最前面ピン留め ✅** (desktop af603ee): M3 LATER 項目を実装。トレイ「通話の別窓を最前面に固定」
+  (既定 OFF・永続化)。probe 3 段 + 変異ゲート。
+- **外部ミュート制御 A+B ✅** (設計は [external-mute-control.md](../design/external-mute-control.md)、
+  §8 運用者回答 + 実装記録参照): A = グローバルホットキー (プリセット 4 択・既定 OFF) + トレイ
+  ミュート項目 (desktop 902d1d02、cinny 29c7e08d で transport 契約 10→11 メソッド)。B = localhost
+  制御 API (127.0.0.1:58471、token + Origin 拒否 + レート制限、desktop 5fc3909)。C は LATER。
+  probe + 変異ゲートで受け入れ。**実通話でのミュート反転の目視確認は初回ドッグフーディング時に行う**。
+- check:eslint の既存 parse error (upstream 由来 src/index.css) を修復 (cinny 9ea79b8b) — 0 errors。
+- 運用者決定の記録: M3 受け入れの Discord 実機録画突き合わせは**参考程度に格下げ** (基本 Discord を
+  正とするが UI 等は作者の好みで変更)。
+
 ---
 
 ## 実行可能コードの workspace 運用ルール (2026-07-07 運用者承認)

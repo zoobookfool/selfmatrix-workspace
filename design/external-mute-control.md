@@ -1,8 +1,35 @@
-# 外部ミュート制御 (Stream Deck 等) — 検討ドラフト
+# 外部ミュート制御 (Stream Deck 等) — 設計確定 (実装着手)
 
-**ステータス: 検討ドラフト v0.1** (2026-07-12 起票、native-milestones.md M4 の該当項目「外部ミュート制御
-(Stream Deck) の設計着手 (native 側)」に対応)。運用者とAI (Claude/GPT等) が議論するための土台。
-合意後に requirements.md / native-milestones.md / web-native-parallel.md を改訂する。
+**ステータス: 設計確定 v1.0** (2026-07-12 起票、同日運用者回答により確定)。native-milestones.md M4 の
+「外部ミュート制御 (Stream Deck) の設計着手 (native 側)」に対応。
+
+## §8 への運用者回答 (2026-07-12) — 確定事項
+
+1. **A と B の両方を実装する** (A で止めない)。C (公式 Stream Deck プラグイン) は引き続き LATER。
+2. **トレイのミュートトグル項目は追加する** (§7「すぐ着手可」を承認)。
+3. **ホットキーの発見性要件 (新規)**: ホットキーは忘れられるため、トレイ右クリックメニューに
+   「ホットキー」項目 (サブメニュー) を設け、その中に「ミュート: <キーバインド>」のように
+   割り当てを常時表示し、その項目を選択するとホットキーの有効化 ON/OFF がトグルされること。
+   **既定は OFF** (初回はトレイから ON にする。他アプリのキーを無断で奪わない)。
+4. **既定キーバインドとプリセット切替 (2026-07-12 追加回答)**: 運用者の例示は「右Shift+M」だが、
+   Electron の accelerator は左右の修飾キーを区別できず (globalShortcut の仕様)、素の `Shift+M` は
+   全アプリの大文字 M 入力を乗っ取るため採用不可。既定は `Ctrl+Alt+M`、表示形式は
+   「ミュート: Ctrl+Alt+M」。加えて**プリセット切替**をトレイの「ホットキー」サブメニューに置く
+   (radio 4 択: `Ctrl+Alt+M` 既定 / `Ctrl+Shift+M` / `F13` / `F14`。F13/F14 は物理キーボードに
+   ほぼ存在せず衝突しない、Stream Deck の標準 Hotkey アクションが送出できるキー — Discord
+   ユーザーの慣習と同じ)。自由入力のバインド変更 UI は引き続き LATER。
+5. 公開する操作は当面**マイクミュートのみ** (デフンの追加は未決、必要になったら §4.2 の
+   基準で判断)。
+
+以下は起票時の検討本文 (§0〜§9)。上記回答で上書きされる箇所は回答が正。
+
+## 実装記録 (2026-07-12、A+B とも同日実装)
+
+| 段階 | 実装 | 検証 |
+| --- | --- | --- |
+| トレイのミュートトグル項目 + **A. グローバルホットキー** | desktop 902d1d02 + cinny 29c7e08d (transport 契約に `onExternalMuteToggle` を追加、契約メソッド 10→11。FORBIDDEN リストにも追加し web tree-shake ガード維持)。トレイ「ホットキー」サブメニュー: 「ミュート: <バインド>」checkbox (checked=実登録状態) + プリセット radio 4 択 (`Ctrl+Alt+M` 既定 / `Ctrl+Shift+M` / `F13` / `F14`)。**既定 OFF**。引き金は `triggerExternalMuteToggle()` に集約 (§4.4 の共有構造どおり) | `--external-mute-probe`: 既定 OFF / ON・OFF 永続化 / 配達実測 / プリセット切替 (新登録・旧解除) / will-quit 解除 / 変異ゲート (配線切断で FAIL→復元 PASS)。`npm test` 全体 green |
+| **B. localhost 制御 API** | desktop 5fc3909。Node 組み込み `http`、**`127.0.0.1` のみ bind**、固定ポート **58471** (IANA dynamic 範囲、obs-websocket 4455 や dev 常用ポートを回避)。`POST /v1/mute-toggle` + `GET /v1/ping` のみ、Bearer トークン (SHA-256 ハッシュ + `timingSafeEqual`、長さ差の早期 return なし)、**Origin ヘッダ存在で無条件 403**、認証失敗 5 連続で 60 秒ロックアウト (429)。トレイ「外部制御 API」サブメニュー: 有効化 (既定 OFF、checked=実 listen 状態) / トークンをコピー / トークンを再生成。cinny 変更なし (A の引き金関数と IPC を共有) | `--external-api-probe`: 既定 OFF / bind 先 127.0.0.1 / 誤トークン 401 / 正トークン配達 / Origin 403 / レート制限と回復 / 再生成で旧失効 / 再起動復元 / 変異ゲート (照合を常時 true 化で FAIL→復元 PASS)。`npm test` 全体 green。状態フィードバック (現在ミュート状態の取得/push) は v1 スコープ外 — C 検討時に再訪 |
+| **C. 公式 Stream Deck プラグイン** | LATER (未着手) | — |
 **この文書は単体で読める** — リポジトリを見られない読者 (他 AI を含む) でも、ここから検討に参加できる
 ことを意図している (design/native-client-rethink.md の構成を踏襲)。
 
