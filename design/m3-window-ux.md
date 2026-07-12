@@ -37,16 +37,25 @@ callViewState≠"none" を確認。※実測で判明: Electron 43 は親 Browse
 
 ## 2. サブステップ分解
 
-| # | サブステップ | 触る範囲 | 内容 |
+| # | サブステップ | 触る範囲 | 状態 |
 | --- | --- | --- | --- |
-| **0** | スパイク: callWindow 実 close 時の無再接続実証 | desktop main.cjs + probe/E2E | `"close"` で破棄前 removeChildView → win.destroy。実 close で RTCPeerConnection が生き残り再親子付けできることを実証。**NO-GO なら M3 設計を作り直し** |
-| **1** | 契約拡張 | cinny nativeBridge.ts + desktop shell-preload.cjs + main.cjs | `popoutCallView()`/`popinCallView()` (claim-once 内)、attach/detach 状態 push (`onCallViewPlacement` 等)。cinny 型 + desktop 実装を両輪 |
-| **2** | desktop: close=復帰 + 窓サイズ/位置記憶 | desktop main.cjs | close ハンドラ本実装 (detached の時だけ復帰、closeCallView と競合させない状態機械保護)。userData JSON に bounds 永続化。別窓 resize 追従 |
-| **3** | EC フッター出し分け | desktop main.cjs + call-control-preload.cjs | main→call view push で detached 時にフッター表示。web 版セレクタ (`leaveButton().parentElement.parentElement`) を移植。dom-ready 起点で初期化 (遅延 invoke 依存を外す) |
-| **4** | cinny popout 導線 | cinny useCallEmbed.ts + CallControls.tsx | native 分岐を新 transport 呼び出しに。⧉ ボタンの `!nativeShell` ガードを外し native 用ハンドラへ。placement push で「別窓表示中」を UI に反映 |
-| **5** | E2E 拡張 | desktop e2e | 往復 3→10。`__selfmatrixE2E` に closeCallWindow 窓口 → close→復帰を検証。判定: attachedTo="main" 復帰 / PC id セット不変 / **callViewState !== "none" (dispose 誤発火検知)** / bob 無影響 |
+| **0** | スパイク: callWindow 実 close 時の無再接続実証 | desktop main.cjs + probe | ✅ GO (desktop 1356638、close-preserve 採用) |
+| **1** | 契約拡張 (popout/popin/placement、claim-once 内) | cinny nativeBridge.ts + desktop | ✅ cinny ed0174a4 / desktop bd21123 |
+| **2** | desktop: close=復帰 + 窓サイズ/位置記憶 | desktop main.cjs | ✅ bd21123 (m3-window-probe で契約経路の無再接続往復 + 実 close 復帰 + サイズ復元) |
+| **3** | EC フッター出し分け | desktop call-control-preload.cjs + main.cjs | ✅ 6718bbf (E2E footerVisibilityToggle PASS) |
+| **4** | cinny popout 導線 (⧉ ボタン) | cinny useCallEmbed.ts + CallControls.tsx | 次 |
+| **5** | E2E 10 往復 + close→復帰 | desktop e2e | 残 (現 callflow は 3 往復。判定: attachedTo="main" 復帰 / PC id 不変 / callViewState≠"none" / bob 無影響) |
 
-順序: 0 → 1 → (2,3 並行可) → 4 → 5。1 はインターフェース確定を先に。
+**step 1〜3 のデバッグで見つかった 2 バグ (6718bbf で修正)**:
+- **userData 2 インスタンス衝突**: step 2 の窓サイズ記憶のテスト隔離 (`app.setPath("userData", 固定)`)
+  がハーネスの per-instance `--user-data-dir` を上書きし、alice/bob が同じ userData を共有 →
+  2 個目の rust-crypto IndexedDB がロックされ「起動中です」で無限ストール。E2E 全体を塞いでいた。
+  `--user-data-dir` 指定時は setPath しないよう修正
+- **戻り時 bounds 未復帰** (design §3-5 の既知項目が顕在化): 別窓から戻ると cinny のレイアウト変化が
+  無く setCallViewBounds 再 push が走らず、callView が detached 全面 bounds のまま。attachCallView で
+  最後の cinny bounds を再適用して修正
+
+順序: 0 → 1 → (2,3) → 4 → 5。
 
 ## 3. 主要な設計論点
 
