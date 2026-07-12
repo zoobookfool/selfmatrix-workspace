@@ -4,6 +4,7 @@
 
 | 日付 | ファイル | 対象 | 結論 / 状態 |
 | --- | --- | --- | --- |
+| 2026-07-12 | [gpt-review-full-project-20260712.md](gpt-review-full-project-20260712.md) | reviewed: workspace `1c17184` / desktop `5fc3909` / cinny `9ea79b8` / EC `db6693f` / selfmatrix `44f5c41` / hires `9e7775b` | 全体レビュー。**全Finding実装修正済み**: desktop `9b6e66d`+`75c5f23`、Cinny `08958070`+`ec64b637`、EC `e31f335f`、selfmatrix `d55ff4a`。packaged updater fail-closed、immutable配布、固定release入力、CI/audit、desktop作法を反映。残りは初回公開・実minisign・GitHub保護設定等の運用ゲート |
 | 2026-07-08 | [gpt-review-desktop-m2-readiness-followup-20260708.md](gpt-review-desktop-m2-readiness-followup-20260708.md) | selfmatrix-workspace `c57da2c` / selfmatrix-desktop `0db93ed` | GPT M2 readiness 対応後レビュー。実装 P1/P2 は概ね解消。残 P2: current-status/native-milestones に「対応中」「要運用者承認」「未対処」「更新予定」の古い表現が残る |
 | 2026-07-08 | [gpt-review-desktop-m2-readiness-20260708.md](gpt-review-desktop-m2-readiness-20260708.md) | selfmatrix-workspace `c47d857` / selfmatrix-desktop `be1e9aa` | M2 製品化前レビュー。P1: desktop 通常起動が harness / 正本 docs が承認待ちのまま / mainWindow navigation が origin のみ。P2: M1 注記 stale / prototype 名残り。**全対応済み (2026-07-08)**: docs は workspace aad8a72、desktop コードは 0db93ed (起動既定反転 / nav 厳格化 + smoke 回帰検証 / 改名。E2E 全 green で受け入れ)。GPT 指摘 D の前提「cinny が prototype WIDGET_ID を参照」は誤認と判明 (cinny は call-embed 固定) |
 | 2026-07-08 | [claude-review-m1-holistic-20260708.md](claude-review-m1-holistic-20260708.md) | M1 全体再レビュー (Fable、4 視点 + 敵対的検証) | 技術成立は維持、完成度主張を 2 点下方修正。critical 3 + major 3 を仕分け (今すぐ修正 / M2 格上げ)。GPT レビューと相補 |

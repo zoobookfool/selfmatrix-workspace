@@ -1,69 +1,73 @@
-# Current Status (2026-07-08)
+# Current Status (2026-07-12)
 
-**状態: 現在地の正本。** 長い履歴は [roadmap.md](roadmap.md) に残し、今どこまで進んだか・次に何を見るかをここにまとめる。
+**状態: 現在地の正本。** 未完了は[backlog.md](backlog.md)、長い履歴は[roadmap.md](roadmap.md)を正とする。
 
-## 最新 (2026-07-09): ネイティブ化 M2 実装完了 (残: 運用者の鍵生成 + 初回リリース)
+## 最新
 
-- **M1 (通話コアの技術成立) 完了**。cinny fork `spike/native-shell` + workspace `native-prototype` で、
-  実 dev バックエンドに対し **2 ユーザー通話 + 配信 + 無再接続の窓移動 3 往復** の E2E が PASS
-  (レビュアー独立再実行込み)。matrix-widget-api は無改造。bounds 同期 (実 UI でのビデオ位置追従 ≤1px) と
-  7 語彙の production 配線検証 (realClickVocabulary) も完了。正本は [native-milestones.md](native-milestones.md)、
-  設計は [native-widget-transport.md](../design/native-widget-transport.md)。
-- **案 B (WebContentsView 再親子付け) は 2026-07-08 に運用者が正式 GO を承認**。
-- **web/native 併走を決定** (2026-07-08)。web は撤収せず 2 系統で定常運用。運用ルールの正本は
-  [web-native-parallel.md](web-native-parallel.md) (1 コードベース 2 ビルド、新機能は共通コードに置けば両方に乗る)。
-- **M2 実装完了 (2026-07-09)**: 製品リポジトリ [selfmatrix-desktop](https://github.com/zoobookfool/selfmatrix-desktop)。
-  homeserver 選択制 / 画面共有ソース選択ピッカー + system audio / About+AGPL / トレイ常駐 /
-  通知・自動起動 / electron-builder パッケージング (NSIS 実ビルド) / minisign 更新検証 / リリース CI
-  まで実装・検証済み。**残るは運用者のオフライン作業のみ** (minisign 鍵生成 → 実公開鍵埋込 →
-  初回タグ push で CI 実走 → 手元署名 → publish → インストーラ実機確認)。詳細は native-milestones M2。
+- **M1 完了**: 実Matrix/LiveKitで2ユーザー通話、配信、system audio、無再接続の窓移動、localStorage契約をE2E確認。
+- **M2 実装完了**: Windows desktop、homeserver選択、自前画面共有ピッカー、トレイ、自動起動、通知、
+  NSIS packaging、minisign更新、Product CI、release draft workflowを実装。
+- **M3 完了**: 生きた`WebContentsView`を再親子付けする通話全体ポップアウト。10往復切断ゼロ、
+  別窓close=メイン復帰、位置/サイズ記憶、最前面固定を検証済み。
+- **M4 実装側の準備完了**: Cinny product統合、web/native build guard、外部ミュートA+B、友達向けガイド、
+  feature matrix、web/native同期ルールを整備。受け入れは初回公開とドッグフーディング待ち。
 
-## 現在の到達点
+## 2026-07-12 全体レビュー対応
 
-- SelfMatrix は Synapse + PostgreSQL + Cinny fork + Element Call fork + LiveKit SFU の構成で稼働済み。
-- UI 仕様の正本は [ui-design-notes.md](../design/ui-design-notes.md) v1.5。見た目合わせの視覚基準は [mocks/ui-mock.html](../design/mocks/ui-mock.html) v2.2。
-  モック v2.2 は v1.4 時点の内容を含むため、v1.5 の追加仕様と衝突する場合は ui-design-notes を優先する。
-- 通話 UI は画面共有特化、視聴オプトイン、画質/FPS ピッカー、話者オーバーレイ、配信タイル音量調整、RNNoise ノイズ抑制まで実装済み。
-  話者オーバーレイ右クリックからのユーザー単位音量調整は未実装扱いで、[backlog.md](backlog.md) を正とする。
-- 別ウィンドウ通話開始モードは web 版 [call-window-mode.md](../design/call-window-mode.md) の履歴 (web 版フォールバック専用)。
-  ネイティブ版は M3 で Discord 準拠の無再接続ポップアウトへ (call-window-mode の UX 案は M1 NO-GO 時のみ復活)。
+- desktopはstock updaterのhook代入を廃止し、sidecar `.minisig`を必ず取得する
+  `MinisignNsisUpdater`へ変更。生成済みunpacked製品から実download taskを駆動し、正常だけ受理、
+  署名欠落/改ざんは`ERR_UPDATER_INVALID_SIGNATURE`で拒否することを確認した。
+- desktopにsingle-instance lockと実2プロセスprobeを追加。2個目はwindow/tray/APIを作らず、既存画面を前面化する。
+- 通話窓の保存boundsを現行display work areaへclampし、モニター着脱/DPI変更後の画面外復元を防止した。
+- desktopの`product-lock.json`でCinny/Element Callを完全SHA固定。tag-version一致、EC lock一致、実checkout一致をCIで強制。
+- desktop push/PR CIとrelease gate、Element Call product CIを追加。Actionsはcommit SHA固定。
+- Cinnyのproduction auditを18件から0件へ解消。Aboutは`Client`/`Desktop`版と同梱commitを区別する。
+- web imageは自動`latest`を廃止し、pushはimmutable SHA tagのみ。`stable`/versionへの昇格は手動操作に限定。
 
-## 次にやること (M2 の製品化タスク。native-milestones.md M2 節が正本)
+## 現在の製品入力
 
-1. web ビルドの native 分岐 tree-shake **実装 + product 統合 完了** (cinny 661c7e06)。
-   **web 本番は次回デプロイ (自宅 `docker compose pull cinny`) で反映**。
-2. mainWindow のセキュリティ監査は**完了** (nav 封じ込め 0db93ed / API 露出面整理 +
-   sandbox:true 化 3346787。本番露出は claimWidgetTransport のみ、恒久回帰ゲート付き)。
-3. homeserver 選択制、画面共有ソース選択 UI + system audio トグル、トレイ常駐、About/AGPL。
-4. リリース CI (electron-builder → Releases) + minisign 更新検証 + SmartScreen 手順書。
+- Cinny: `ec64b637438dd79bc96f0c0c4dae95aeee8cdc9f` (`product/discord-style-shell`)
+- Element Call: `e31f335f93a16b20fa1767ee8605c3eec2e2e398` (`product/discord-style-shell`)
+- Desktop: `75c5f23e3c6150e9d3912978299fb792b59a82f1` (`main`)。上記2 SHAを`product-lock.json`で固定する。
+- Web deploy: selfmatrix `d55ff4a556acb9c69b343692ebc8f2b2f8b6eaa3` (`main`) が、同じCinny commitから
+  生成された`ghcr.io/zoobookfool/selfmatrix-cinny:sha-ec64b63`を既定にする。
 
-### 並行検討 (M2 とは独立)
+## UIと配布の正本
 
-- **ユーザーカスタム機構** ([user-customization.md](../design/user-customization.md)、ドラフト): プラグイン (サンドボックス型) /
-  テーマ (トークンのみ確定) / 音声フィルタ。運用者回答 4 問反映済み、GPT レビュー待ち。
-- **アプリ単位音声**: OBS (WASAPI プロセスループバック) 参考の再調査済み ([app-audio-capture-spike.md](../spikes/app-audio-capture-spike.md))。
-  技術リスクは低いが工数中。**M2 MUST にはせず M3 以降の独立項目**が推奨。
+- UI仕様: [ui-design-notes.md](../design/ui-design-notes.md) v1.5。
+- 視覚基準: [mocks/ui-mock.html](../design/mocks/ui-mock.html) v2.2。衝突時はUI仕様を優先。
+- web/native差分: [feature-matrix.md](feature-matrix.md)。
+- native milestone: [native-milestones.md](native-milestones.md)。
+- リリース信頼モデル: [release-pipeline.md](../design/release-pipeline.md)。
+- 実リリース操作: desktopの`RELEASING.md`。
+
+## 次にやること
+
+1. desktop `main` / `v*`のGitHub保護方針を設定する。ruleset/branch protectionは現在未設定。
+2. selfmatrix本番へ`sha-ec64b63`をpull/deployし、ブラウザから版表示と通話を確認する。
+3. desktop `v0.1.0`初回tag workflowを実走し、実minisign binaryで署名をクロスチェックする。
+4. `.minisig`をdraftへ添付してpublishし、旧版からの実自動更新を確認する。
+5. 友達1人のnative導入 + 別ユーザーのweb合流でM4受け入れを実測する。
+
+Element Call product CI、Cinny tree-shake/image CI、selfmatrix CI、desktop Product CIは上記入力で
+すべてgreen確認済み。
 
 ## 直近の未完了
 
-未完了・保留・検証待ちは [backlog.md](backlog.md) を正とする。主なもの:
-
-- M2 の製品化タスク一式 (上記)
-- グリッド配信タイルのストリーム単体ポップアウト `🗗`
-- 話者オーバーレイ右クリックからのユーザー単位音量調整
-- SFU 切断時の自動再参加
-- 4K60 x 3 本 + 10 人相当の負荷・品質検証
-- RNNoise 既定 ON の聴感評価
-- ネイティブ版の外部ミュート制御 (Stream Deck 等 / obs-websocket 風 API は user-customization で検討)
+- 話者オーバーレイ右クリックからのユーザー単位音量調整。
+- 配信タイル単体ポップアウト。
+- SFU切断時の自動再参加。
+- 4K60 x 3本 + 10人相当の負荷・品質検証。
+- RNNoise既定ONの聴感評価。
+- 外部ミュートA+Bの実通話目視確認。公式Stream Deck pluginは需要確認後。
+- アプリ単位音声キャプチャ、ユーザーカスタム機構。
 
 ## 読み順
-
-新しい AI / 人に渡す場合は、次の順で読むと迷いにくい。
 
 1. [README.md](../README.md)
 2. [requirements.md](requirements.md)
 3. この文書
-4. [native-milestones.md](native-milestones.md) (ネイティブ版の現況)
-5. [ui-design-notes.md](../design/ui-design-notes.md)
-6. [backlog.md](backlog.md)
-7. 必要に応じて [roadmap.md](roadmap.md) と [reviews/README.md](../reviews/README.md)
+4. [backlog.md](backlog.md)
+5. [native-milestones.md](native-milestones.md)
+6. [ui-design-notes.md](../design/ui-design-notes.md)
+7. [reviews/README.md](../reviews/README.md)

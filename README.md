@@ -58,9 +58,9 @@
 | [native-widget-transport.md](design/native-widget-transport.md) | 正本 (M1 設計) | ネイティブ版アダプタ設計。iframe シム + 素通しルータ / CallControl の RPC 移設 |
 | [m3-window-ux.md](design/m3-window-ux.md) | 正本 (M3 設計) | Discord 準拠の無再接続ポップアウト窓体験。⧉ / 閉じる=メイン復帰 / EC フッター出し分け |
 | [user-customization.md](design/user-customization.md) | ドラフト | OBS 風カスタム機構 (プラグイン/テーマ/フィルタ) の検討。セキュリティ最優先、GPT レビュー待ち |
-| [release-pipeline.md](design/release-pipeline.md) | ドラフト | M2 のリリース CI + 自動更新 + minisign 自前署名の実装計画。鍵生成は運用者オフライン作業 |
-| [native-client-rethink.md](design/native-client-rethink.md) | ドラフト | クライアントのネイティブアプリ化。小型 prototype 着手可、最終 LiveKit join 待ち |
-| [test-harness.md](design/test-harness.md) | ドラフト | ネイティブ版の前段として Web UI / Widget protocol CLI / Electron smoke の検証入口を整理。最小実装あり |
+| [release-pipeline.md](design/release-pipeline.md) | 正本 | 実装済みの release CI、自動更新、minisign 信頼境界。実操作は desktop の RELEASING.md |
+| [native-client-rethink.md](design/native-client-rethink.md) | 履歴 | ネイティブ化の初期検討。GO 後の現行仕様は requirements / native-milestones / release-pipeline を優先 |
+| [test-harness.md](design/test-harness.md) | 履歴 + 検証入口 | ネイティブ版前段の Web UI / Widget protocol CLI / Electron smoke。製品実装は desktop へ卒業済み |
 | [ec-tile-ui-plan.md](design/ec-tile-ui-plan.md) | 履歴 | EC タイル UI の実装計画と進捗 |
 | [i18n.md](design/i18n.md) | 正本 | 多言語対応 (言語パック方式) の設計 |
 
@@ -68,7 +68,7 @@
 
 | 文書 | 状態 | 次アクション / 読み方 |
 | --- | --- | --- |
-| [desktop-window-spike.md](spikes/desktop-window-spike.md) | 一部実測済み | 小型 prototype 着手可。最終 LiveKit join / 共有中移動 / system audio 検証待ち |
+| [desktop-window-spike.md](spikes/desktop-window-spike.md) | 履歴 (成立確認済み) | 結果は native-milestones M1〜M3 へ反映済み。現行の未完了は backlog を見る |
 | [client-spike.md](spikes/client-spike.md) / [client-spike-results.md](spikes/client-spike-results.md) | 履歴 | クライアント選定スパイク (Phase 2a) |
 | [popout-spike.md](spikes/popout-spike.md) | 履歴 | ポップアウト検証 (+ [popout-spike-evidence/](spikes/popout-spike-evidence)) |
 | [hires-spike.md](spikes/hires-spike.md) | 履歴 | ハイレゾ音声スパイク (JackTrip) |

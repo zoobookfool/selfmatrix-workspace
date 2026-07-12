@@ -43,7 +43,7 @@ native 固有 API に依存しない。
 | 配信タイル単位の音量調整 | ✅ | ✅ | element-call 側の per-tile ボリューム制御 |
 | RNNoise ノイズ抑制 (Krisp 相当、既定 ON・トグル可) | ✅ | ✅ | `element-call/src/livekit/NoiseSuppressionProcessor.ts` + `AudioProcessorContext.tsx`。[requirements.md](requirements.md) §3 |
 | Discord 風コントロールバー (マイク/サウンド/画面共有/設定 等) | ✅ | ✅ | `cinny/src/app/features/call/Controls.tsx`, `CallControls.tsx`, `PrescreenControls.tsx` |
-| About 画面 + AGPL コンプライアンス表記 (fork 元/変更概要/ライセンス) | ✅ | ✅ | cinny 5ccf01fe、i18n en/ja。[native-milestones.md](native-milestones.md) M2 |
+| About 画面 + AGPL コンプライアンス表記 (fork 元/変更概要/ライセンス) | ✅ | ✅ | Cinny `ec64b637`。Client版を常時表示し、nativeではDesktop版と同梱Cinny/EC commitも表示。[native-milestones.md](native-milestones.md) M2 |
 | E2EE ルーム標準運用 | ✅ | ✅ | [requirements.md](requirements.md) §2、Matrix/E2EE 層は web/native で同一 |
 
 ### 1.2 native 限定 (原理的に web 不可、実装済み)
@@ -59,7 +59,7 @@ native 固有 API に依存しない。
 | 通知クリックで前面化 | ⚠ Notification API のクリックでタブはアクティブにできるが、アプリウィンドウの復元・最前面化はできない | ✅ | Web Notification のクリックイベントはブラウザタブの活性化はできるが、OS ウィンドウの復元/フォーカスまでは制御できない。Electron は通知クリックから直接 `BrowserWindow.show()`/`focus()` を呼べる | [native-milestones.md](native-milestones.md) M2 |
 | システム音声 (全体ミックス) をどのソース共有でも付与 | ⚠ 画面全体共有時のみ (Chrome の標準ピッカーが音声共有チェックボックスを画面全体選択時にしか出さない仕様上の制約) | ✅ どのソースでも | web はブラウザ標準ピッカーの UI 制約に従うしかない。native は Electron の `session.setDisplayMediaRequestHandler` で自前ピッカーを実装しているため、この制約を回避できる | [requirements.md](requirements.md) §3、[web-native-parallel.md](web-native-parallel.md) R3、実機確認は[app-audio-capture-spike.md](../spikes/app-audio-capture-spike.md) タスク A (`audioModeUsed: "loopback"` 実測 PASS) |
 | 画面共有ソース選択ピッカー (Discord 風の自前 UI) | ⚠ ブラウザ標準ピッカーは使える (ソース選択自体は web でも可能) | ✅ 自前実装 | 上記のシステム音声をどのソースでも付与するために `setDisplayMediaRequestHandler` を登録すると Chromium 標準ピッカーが表示されなくなり、`desktopCapturer.getSources()` から自前でソース一覧 UI を構築する必要が生じる (cinny レンダラに生の画面キャプチャ能力を渡さない contractSurfaceGate 設計込み)。web は標準ピッカーをそのまま使えるため実装不要 — **ソース選択そのものは web でも可能な点に注意**(不可能なのは「どのソースでもシステム音声を付与」の組み合わせ) | [native-milestones.md](native-milestones.md) M2 (desktop 3a2d088) |
-| 自前署名 (minisign/Ed25519) による自動更新 | 該当なし (概念が存在しない) | ✅ | web は配布がサーバー側の即時反映であり「更新」という概念自体がない。native はローカルにインストールされた実行ファイルを差し替える必要があり、GitHub アカウント乗っ取り等に対する検証つき自動更新の仕組みが要る | [native-milestones.md](native-milestones.md) M2 (`src/minisign-verify.cjs`、`RELEASE_PUBLIC_KEY` 埋め込み) |
+| 自前署名 (minisign/Ed25519) による自動更新 | 該当なし (概念が存在しない) | ✅ | web は配布がサーバー側の即時反映であり「更新」という概念自体がない。native はローカルにインストールされた実行ファイルを差し替える必要があり、GitHub アカウント乗っ取り等に対する検証つき自動更新の仕組みが要る | desktop `9b6e66d`。実`NsisUpdater`がinstallerとsidecarを取得し、packaged製品で正常署名のみ受理、欠落/改ざん拒否を確認。[native-milestones.md](native-milestones.md) M2 |
 | 最前面ピン留め (通話別窓を常に手前に表示) | ✗ | ✅ | ブラウザには自ウィンドウを他の OS ウィンドウより常に手前へ固定する Web API がない (Electron の `BrowserWindow.setAlwaysOnTop` が前提) | 2026-07-12 実装 (desktop af603ee)。トレイ「通話の別窓を最前面に固定」、既定 OFF・永続化。probe 3 段 + 変異ゲートで検証 |
 | 外部ミュート制御 (グローバルホットキー / トレイ / localhost 制御 API) | ✗ | ✅ | ブラウザ JS はフォーカスの無いタブでは OS 全体のキー入力を捕捉できず、タブのライフサイクルに縛られない常駐ローカルサーバーも持てない ([external-mute-control.md](../design/external-mute-control.md) §6) | 2026-07-12 実装。A=グローバルホットキー (プリセット 4 択・既定 OFF、desktop 902d1d02 + cinny 29c7e08d の transport 契約拡張) / B=localhost HTTP API (127.0.0.1 bind + token 定数時間比較 + Origin 拒否 + レート制限、desktop 5fc3909)。C (公式 Stream Deck プラグイン) は LATER |
 

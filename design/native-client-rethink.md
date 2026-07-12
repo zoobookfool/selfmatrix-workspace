@@ -1,9 +1,19 @@
 # クライアントのネイティブアプリ化 — 要件の再定義 (検討、2026-07-07)
 
-**ステータス: 検討ドラフト v0.3 / 条件付き GO** — 運用者の方針転換提案を受けた要件の練り直し。
-複数の AI (Claude / GPT 等) と運用者で議論するための土台。合意後に requirements.md と roadmap.md を改訂する。
-合否判断は [native-client-decision.md](native-client-decision.md) を正とする。
+**ステータス: 履歴 (2026-07-12、GO 後の初期検討記録)** — 運用者の方針転換提案を受けた要件の
+練り直し。合否判断時点の根拠は [native-client-decision.md](native-client-decision.md)、現在の仕様と
+未完了は [requirements.md](../planning/requirements.md)、[native-milestones.md](../planning/native-milestones.md)、
+[backlog.md](../planning/backlog.md) を正とする。
 この文書は**単体で読める** — リポジトリや過去の経緯を参照できない読者でも、ここから検討に参加できることを意図している。
+
+## 0. GO 後の結論 (2026-07-12)
+
+- 自前 Electron シェル案を採用し、M0〜M3を実装・実E2E確認済み。無再接続の通話窓移動も成立した。
+- web版は廃止せず、同じCinny/Element Call入力から作る受け皿としてnativeと並走する。
+- 更新は完全SHAのproduct lock、commit SHA固定Actions、最小CI権限、manifest/attestation/checksum、
+  オフラインminisign鍵によるfail-closed検証で保護する。実装の正本は
+  [release-pipeline.md](release-pipeline.md)。
+- 以下の「未確定」「blocker」は当時の問いを保存した履歴であり、現在のbacklogではない。
 
 ## 1. 前提知識 (このプロジェクトを知らない読者向け)
 
