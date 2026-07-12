@@ -274,6 +274,32 @@ Discord 実機録画 (2026-07-07 取得済み) との挙動突き合わせ。
 **受け入れ**: 友達 1 人以上が手順書だけで native をインストール・通話でき、かつ別の友達が web で
 同じ会話・通話に参加できる (2 系統併走が実運用で回る)。
 
+### M4 進捗 (2026-07-12) — 定常運用の下ごしらえ完了、受け入れは実リリース待ち
+
+上記 4 項目のうち、実リリース (運用者オフライン作業) に依存しないものを完了:
+
+- **R2 の CI 恒久化 ✅** (cinny e5d1a93b): web ビルドの `dist/` を走査し native シェル専用識別子
+  (selfmatrixNative / claimWidgetTransport / popoutCallView 等 14 種) が混入すれば失敗する
+  `.selfmatrix/check-web-no-native.mjs` + `.github/workflows/web-native-treeshake.yml`。
+  spike/native-shell と product/discord-style-shell の push/PR で発火。**変異ゲート方式**: native
+  ビルドに対する `--expect-fail` 負の対照でガード自体の健全性 (FORBIDDEN 空化等) も CI で自己検証。
+  ローカル通し検証で web→pass / native→本判定 FAIL / native→負の対照 pass の 4 判定成立を確認。
+- **フィーチャーマトリクスの制定 ✅** ([feature-matrix.md](feature-matrix.md)、workspace e8b43c9):
+  R3 の詳細版・正本。共通コード 13 / native 限定 (実装済み) 7 / web 優位 3 / 未実装・LATER 11。
+  新機能の判断基準 (既定は共通コード、native 限定は API 制約を 1 行で書ける場合のみ) を保守ルール化。
+- **外部ミュート制御 (Stream Deck) の設計着手 ✅** ([external-mute-control.md](../design/external-mute-control.md)、
+  workspace 799e14e): 検討ドラフト v0.1。選択肢 A (globalShortcut) → B (localhost WS + token) →
+  C (公式プラグイン、LATER)。PTT 不要ゆえ低レベルキーフック依存が不要になる単純化、ミュートが
+  widget action (DeviceMute、カテゴリ A) 経由で新設不要なことをコード根拠つきで提示。運用者確認 6 項目。
+- **友達向けインストールガイド骨子 ✅** ([INSTALL-GUIDE.md](../../selfmatrix-desktop/docs/INSTALL-GUIDE.md)、
+  desktop 0c30954): SmartScreen 対処 / homeserver 入力 / 完全性確認 (SHA256SUMS + gh attestation、
+  release.yml の 3 層と整合) / E2EE デバイス認証 / トレイ常駐 / web 混在参加。実物依存は [TODO] 化。
+- requirements §7 に feature-matrix.md 参照と「R2 は CI 常設ガード」を追記 (2026-07-12)。
+
+**残り (実リリース依存、運用者オフライン)**: リリース同期ルールの定常化は初回リリース (タグ push →
+CI ドラフト → minisign 署名 → 公開) を回して実地確定する。M4 受け入れ (友達が手順書だけで
+インストール・通話、別の友達が web で合流) も初回リリース後に実測する。
+
 ---
 
 ## 実行可能コードの workspace 運用ルール (2026-07-07 運用者承認)

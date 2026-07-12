@@ -103,8 +103,13 @@
   - (2026-07-08 改訂) 配布物は **web 版 / native 版の 2 系統**で、いずれも同一 fork
     (`product/discord-style-shell`) 由来。「全員同じクライアント」は**同一コードベース由来の 2 ビルド**の
     意味に緩める。機能パリティは capability ベースで差が出る (native 固有: 無再接続ポップアウト・
-    system audio・トレイ等)。運用ルールの正本は [web-native-parallel.md](web-native-parallel.md)。
+    system audio・トレイ等)。運用ルールの正本は [web-native-parallel.md](web-native-parallel.md)、
+    機能ごとの詳細な web/native 対応表は [feature-matrix.md](feature-matrix.md) (R3 の詳細版・正本)。
     web ビルドは native 分岐を無効化する `MUST` (同文書 R2、セキュリティ)
+  - (2026-07-12 補足) 上記 R2 の `MUST` は CI で常設ガードするようになった: web ビルドの `dist/` に
+    native シェル専用の識別子が混入していないことを検証し、混入すれば失敗する
+    (cinny `.github/workflows/web-native-treeshake.yml` + `.selfmatrix/check-web-no-native.mjs`、
+    native ビルドに対する負の対照でガード自体の健全性も自己検証)
 - 第一候補は Cinny fork。採用可否はスパイク(roadmap Phase 2a)の判断ゲートで確定する
 - fork の改修対象:
   - Discord 風の UI / 文言 / テーマ(従来方針)

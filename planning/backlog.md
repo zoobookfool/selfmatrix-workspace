@@ -14,7 +14,7 @@
 | P1 | SFU 切断時の自動再参加 | 未実施 | [roadmap.md](roadmap.md) Phase 8 | LiveKit ルーム消失後、手動再参加なしで通話へ戻れる、または明確な再参加導線が出る |
 | P1 | 4K60 x 3 本 + 10 人相当の負荷・品質検証 | 保留 | [requirements.md](requirements.md) §3, [roadmap.md](roadmap.md) Phase 3/5 | 帯域・CPU・画質の実測を記録し、運用可能な既定値を確認する |
 | P2 | RNNoise 既定 ON の聴感評価 | 未実施 | [requirements.md](requirements.md) §3, [roadmap.md](roadmap.md) Phase 8 | 運用者が実通話で評価し、体感が悪ければ既定 OFF または設定文言を見直す |
-| P2 | ネイティブ化時の外部ミュート制御 | 検討待ち | [native-client-rethink.md](../design/native-client-rethink.md) | Stream Deck 等から安全にミュート制御できる方式を決める |
+| P2 | ネイティブ化時の外部ミュート制御 | 設計ドラフト起票・運用者確認待ち | [external-mute-control.md](../design/external-mute-control.md) | Stream Deck 等から安全にミュート制御できる方式を決める。選択肢 A (globalShortcut) → B (localhost WS + token) → C (公式プラグイン、LATER)、推奨は A→B。運用者確認 6 項目 (§8) 待ち |
 | P2 | periodic security/audit 棚卸し | 継続 | [roadmap.md](roadmap.md) Phase 8 | EC/Cinny/Electron の依存監査と upstream security 差分確認を定期化する |
 | P2 | E2EE オンライン鍵バックアップの運用者設定確認 | 推奨 | [roadmap.md](roadmap.md) Phase 8 | 運用者アカウントで鍵バックアップを有効化し、復元手順を確認する |
 
