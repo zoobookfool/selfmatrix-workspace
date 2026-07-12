@@ -43,8 +43,8 @@ callViewState≠"none" を確認。※実測で判明: Electron 43 は親 Browse
 | **1** | 契約拡張 (popout/popin/placement、claim-once 内) | cinny nativeBridge.ts + desktop | ✅ cinny ed0174a4 / desktop bd21123 |
 | **2** | desktop: close=復帰 + 窓サイズ/位置記憶 | desktop main.cjs | ✅ bd21123 (m3-window-probe で契約経路の無再接続往復 + 実 close 復帰 + サイズ復元) |
 | **3** | EC フッター出し分け | desktop call-control-preload.cjs + main.cjs | ✅ 6718bbf (E2E footerVisibilityToggle PASS) |
-| **4** | cinny popout 導線 (⧉ ボタン) | cinny useCallEmbed.ts + CallControls.tsx | 次 |
-| **5** | E2E 10 往復 + close→復帰 | desktop e2e | 残 (現 callflow は 3 往復。判定: attachedTo="main" 復帰 / PC id 不変 / callViewState≠"none" / bob 無影響) |
+| **4** | cinny popout 導線 (⧉ ボタン) | cinny useCallEmbed.ts + CallControls.tsx | ✅ cinny 7bbb17d1 |
+| **5** | E2E 10 往復 + 実 ⧉ クリック + close→復帰 | desktop e2e | ✅ desktop 5e34e86 (2 回連続 PASS + 変異でガード実証) |
 
 **step 1〜3 のデバッグで見つかった 2 バグ (6718bbf で修正)**:
 - **userData 2 インスタンス衝突**: step 2 の窓サイズ記憶のテスト隔離 (`app.setPath("userData", 固定)`)
@@ -82,6 +82,17 @@ callViewState≠"none" を確認。※実測で判明: Electron 43 は親 Browse
 - bob (別ユーザー) 無影響
 - Discord 実機録画 (2026-07-07 取得、運用者ローカル) との挙動突き合わせ 4 点: 映像/音声継続 /
   別窓での操作がフッターだけで完結 / 閉じてメイン側状態が正しく復元 / 窓切り替えの体感
+
+## 4b. M3 完了 (2026-07-12)
+
+受け入れ条件「10 往復切断ゼロ + 別窓 close でメイン復帰 (通話継続)」を実 E2E で成立
+(クリーン環境で 2 回連続 PASS、desktop 5e34e86):
+- window-move 10 往復で RTCPeerConnection id 不変・connected 維持
+- 実 ⧉ ボタンクリックでの popout/popin (production 配線、両方向 noReconnect)。cinny popout 切断の変異で実クリック判定のみ FAIL
+- **別窓 close → attachedTo=main 復帰 / callViewState=attached (dispose 誤発火なし) / callDidNotEnd / bob 無影響**。ガード `!== "detached"` を反転する変異で closeWindowMainRevert が FAIL (attachedAfterClose=none) = 本物の回帰ガード
+- **残タスク**: 最前面ピン留めは LATER (実機ドッグフーディングで要否判断)。Discord 実機録画との最終突き合わせは運用者の目視 (§4)
+
+**検証環境の知見 (2026-07-12)**: 2 ユーザー E2E で (a) 中断ランが leftover Electron/node を残すと通話メンバーシップを更新し続け Voice Lounge に幽霊メンバーが溜まる、(b) E2E teardown で electron が閉じきらず npm がハングして完了通知が出ない (テスト自体は成功済み)、という脆さを観測。中断時は electron プロセスの一掃 + 幽霊 call member の掃除が必要。
 
 ## 5. 作らないもの (native-milestones M3 明記)
 
