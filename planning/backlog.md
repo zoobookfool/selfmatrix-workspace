@@ -9,8 +9,6 @@
 | P1 | 画面共有ができない (単独時に顕著) | ドッグフーディング検出 (2026-07-13)。GPT対応予定。CallControl.ts の DOM クリック対象不在の疑い、既知「単独参加中の共有開始クリック喪失」と同クラス。要再現切り分け | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ⑦ | 通話中に画面共有が開始でき、相手に映る (単独/複数とも) |
 | P1 | 通話 WebContentsView 上に cinny の⋮メニュー/ポップオーバーが隠れる | ドッグフーディング検出 (2026-07-13、native限定)。GPT対応予定 | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ① | 通話中でもヘッダー⋮等のメニューが前面に出て操作できる |
 | P2 | 後追い参加時に過去の通話参加/終了イベントが洪水 | ドッグフーディング検出 (2026-07-13、web共通)。GPT対応予定。RoomTimeline.tsx でコールイベントの集約が無い | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ② | 連続する通話参加/終了イベントが折りたたまれ、履歴で洪水にならない |
-| P2 | スピーカーミュートが単独時に ON にできない | ドッグフーディング検出 (2026-07-13、web共通)。GPT対応予定。setSound がリモートaudioのみ対象 + mic-on時の自動sound-on結合 | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ⑧ | 単独でもスピーカーミュートの状態が保持・反映される |
-| P2 | Electronメニューバー(英語 File/Edit/…)の除去 or 日本語化 | ドッグフーディング検出 (2026-07-13、native限定)。GPT対応予定 | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ④ | Discord風に不要なメニューが出ない or 日本語 |
 | P2 | ポップアウト窓とメイン通話のUI一貫性 | ドッグフーディング検出 (2026-07-13、native限定)。M3のフッター出し分け起因、設計判断含む | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ⑥ | 別窓とメインで操作系の見た目が一貫する |
 | P2 | デバイス認証ができない (要切り分け) | ドッグフーディング検出 (2026-07-13)。web版で再現するか等、切り分け待ち | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ⑤ | 新デバイスでE2EE認証が完了できる |
 | P2 | UI総点検 (Discord実物突き合わせ) + チャンネル/ユーザーの描き分け | ドッグフーディング総評「UIは基本カス」(2026-07-13)。個別修正と別軸のテーマ | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ③⑨ | 主要画面のレイアウト/文言/描き分けをDiscord基準で点検し改善する |
@@ -27,6 +25,8 @@
 
 ## 完了した今回の指摘
 
+- native の Electron 既定メニューバー除去 (`selfmatrix-desktop` `ec5c207`)。
+- native 単独参加中のスピーカーミュート状態保持と、後から現れた audio への適用 (`selfmatrix-desktop` `ec5c207`)。
 - stock updaterの署名検証迂回と`.minisig`未取得。
 - mutable web `latest`既定。
 - native releaseのbranch入力、Actions major tag、tag-version不一致余地。
