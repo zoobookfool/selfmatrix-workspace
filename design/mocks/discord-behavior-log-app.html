@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Discord 動作ログ (アプリ実測、2026-07-14) — SelfMatrix UI 総点検 基準器</title>
+<style>
+  :root{
+    --page-bg:#151518; --panel:#1c1c21; --panel2:#202024; --line:#2c2c33;
+    --text:#f2f3f5; --muted:#96979d; --accent:#5865F2; --warn:#f0b232; --ok:#23a55a; --bad:#da373c;
+    --radius:10px;
+
+    /* Discord 実測トークン (web 2026-07-13、参照用) */
+    --dc-blurple:#5865F2; --dc-link:#4d96ee; --dc-textmuted:#949ba4;
+    --dc-bg-low:#202024; --dc-bg-lower:#1a1a1e; --dc-bg-lowest:#121214;
+    --dc-live-red:#da3e44; --dc-voice-green:#5eb479; --dc-ring-web:#23a55a;
+    --dc-online-web:#3ba55d; --dc-destructive:#f87e7a; --dc-hover:#94949c1f;
+
+    /* Discord 実測トークン (アプリ 2026-07-14) */
+    --app-rail:#121214; --app-selected-row:#2C2C30; --app-callview-bg:#000000;
+    --app-panel-bg:#202024; --app-live-red:#DA3E44; --app-voice-green:#5EB479;
+    --app-ring:#3D9E60; --app-online-dot:#45A366; --app-sharetext:#9a9ba1;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--page-bg);color:var(--text);
+    font-family:"Segoe UI","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+    font-size:14px;line-height:1.6}
+
+  header.hero{padding:26px 20px 18px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#1a1a20,#151518)}
+  header.hero .inner{max-width:1120px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 6px}
+  h1 .ver{display:inline-block;font-size:11px;font-weight:700;background:var(--app-live-red);color:#fff;
+    padding:3px 8px;border-radius:999px;vertical-align:middle;margin-left:8px}
+  .lead{color:var(--muted);font-size:13.5px;margin:0 0 14px;max-width:780px}
+  .method{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+  .method h2{font-size:12px;letter-spacing:.06em;color:var(--muted);margin:0 0 8px;text-transform:uppercase}
+  .method ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:12.5px;color:#c8ccd1}
+  .method li b{color:var(--text)}
+
+  nav.toc{position:sticky;top:0;z-index:50;background:#101013ee;backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);display:flex;gap:4px;flex-wrap:wrap;padding:8px 20px}
+  nav.toc a{color:var(--muted);text-decoration:none;font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:7px}
+  nav.toc a:hover{background:var(--panel);color:var(--text)}
+
+  main{max-width:1120px;margin:0 auto;padding:24px 20px 0}
+  section{margin-bottom:46px;scroll-margin-top:52px}
+  section .shd{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+  section h2{font-size:17px;margin:0}
+  section .shd .tag{font-size:11px;color:var(--muted);background:var(--panel);border:1px solid var(--line);
+    padding:2px 8px;border-radius:999px}
+  section .shd .tag.todo{color:var(--warn);border-color:var(--warn)}
+  section > .desc{color:#c8ccd1;font-size:13px;margin:0 0 16px;max-width:860px}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;margin-bottom:14px}
+  .card h3{font-size:13px;margin:0 0 10px;color:#dcdee3}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+
+  table.tok{width:100%;border-collapse:collapse}
+  table.tok td,table.tok th{padding:7px 10px;border-bottom:1px solid var(--line);font-size:12.5px;
+    text-align:left;vertical-align:middle}
+  table.tok th{color:var(--muted);font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+  .swatch{width:30px;height:18px;border-radius:4px;display:inline-block;vertical-align:middle;
+    margin-right:8px;border:1px solid rgba(255,255,255,.18)}
+  code.v{background:#000;padding:1px 6px;border-radius:4px;font-size:12px;color:#ffd166;border:1px solid var(--line)}
+  .diffcell{color:#f0d9a8}
+  .samecell{color:#8fd6a8}
+
+  .diagram{position:relative;display:inline-block;background:#0b0b0d;border:1px dashed #3a3c43;
+    border-radius:8px;padding:22px 16px 16px;margin:6px 10px 6px 0;max-width:100%}
+  .diagram::before{content:"再現図";position:absolute;top:0;left:0;background:var(--warn);color:#161616;
+    font-size:10px;font-weight:800;padding:2px 7px;border-radius:8px 0 8px 0}
+  .capnote{margin-top:8px;font-size:11.5px;color:var(--muted);max-width:560px}
+  .dimtag{position:absolute;background:#000;color:#ffd166;font-size:10px;font-weight:600;padding:1px 6px;
+    border-radius:4px;border:1px solid #3a3c43;white-space:nowrap;z-index:6;pointer-events:none}
+  .diagram-scroll{overflow-x:auto;max-width:100%}
+
+  .obs-note{background:#191b1f;border-left:3px solid var(--accent);padding:8px 12px;border-radius:0 6px 6px 0;
+    font-size:12.5px;color:#c8ccd1;margin:8px 0}
+  .obs-note.diff{border-left-color:var(--app-live-red)}
+  .obs-note.diff b{color:#ff9d94}
+  .todo-note{background:#241d10;border:1px solid var(--warn);border-radius:8px;padding:12px 14px;
+    font-size:12.5px;color:#f0d9a8}
+  .todo-note b{color:var(--warn)}
+
+  /* サーバーレール / チャンネル列 */
+  .shell-diagram{display:flex;height:120px;border-radius:8px;overflow:hidden;width:420px;max-width:100%}
+  .shell-diagram .rail{width:72px;background:var(--app-rail);display:flex;flex-direction:column;
+    align-items:center;gap:8px;padding-top:12px;position:relative}
+  .shell-diagram .rail .dot{width:32px;height:32px;border-radius:16px;background:#2c2c33}
+  .shell-diagram .chlist{flex:1;background:var(--app-rail);padding:10px;position:relative}
+  .shell-diagram .chlist .vcrow{background:var(--app-selected-row);border-radius:4px;padding:6px 8px;
+    font-size:11.5px;color:#dcdee3;margin-top:8px}
+  .shell-diagram .noboundary{position:absolute;left:0;top:0;bottom:0;width:1px;
+    background:repeating-linear-gradient(0deg,#ff9d94,#ff9d94 4px,transparent 4px,transparent 8px)}
+
+  /* 接続パネル (web版と同一構造クラスを再利用、色はアプリ実測値) */
+  .conn-panel{width:358px;max-width:100%;background:var(--app-panel-bg);border-radius:8px;overflow:hidden;font-size:12.5px}
+  .conn-panel .row1{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 12px}
+  .conn-panel .row1 .status{color:var(--app-voice-green);font-size:16px;font-weight:700}
+  .conn-panel .row1 .chan{color:var(--dc-textmuted);font-size:11px;margin-top:2px}
+  .conn-panel .row1 .icons{display:flex;gap:10px;color:var(--dc-textmuted);font-size:14px}
+  .conn-panel .row2{display:flex;gap:6px;padding:0 10px 10px}
+  .conn-panel .row2 button{flex:1;background:#26262b;border:0;color:#dbdee1;border-radius:6px;
+    padding:8px 2px;font-size:10.5px;cursor:pointer}
+  .conn-panel .row3{display:flex;align-items:center;gap:8px;background:#18181c;padding:8px 12px}
+  .conn-panel .row3 .av{width:26px;height:26px;border-radius:50%;background:var(--dc-blurple);flex:0 0 auto;
+    box-shadow:0 0 0 2px var(--app-ring);position:relative}
+  .conn-panel .row3 .av .dot{position:absolute;right:-2px;bottom:-2px;width:8px;height:8px;border-radius:50%;
+    background:var(--app-online-dot);border:2px solid #18181c}
+  .conn-panel .row3 .who{font-size:12.5px;font-weight:700}
+  .conn-panel .row3 .sub{font-size:10.5px;color:var(--app-sharetext);display:flex;align-items:center;gap:4px}
+  .conn-panel .row3 .sub .ic{color:var(--app-online-dot)}
+  .conn-panel .row3 .sp{flex:1}
+  .conn-panel .row3 .ic2{color:var(--dc-textmuted);font-size:13px;margin-left:6px}
+
+  /* VC サイドバー参加者行 */
+  .member-list{width:264px;max-width:100%;background:var(--app-rail);border-radius:8px;padding:8px}
+  .member-list .sect{font-size:11px;color:var(--dc-textmuted);text-transform:uppercase;letter-spacing:.04em;
+    padding:8px 8px 4px}
+  .member-list .row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;font-size:13.5px}
+  .member-list .row:hover{background:#1c1c21}
+  .member-list .av{width:26px;height:26px;border-radius:50%;position:relative;display:flex;align-items:center;
+    justify-content:center;font-size:11px;font-weight:800;color:#fff;flex:0 0 auto}
+  .member-list .av.speaking{box-shadow:0 0 0 2px var(--app-ring)}
+  .member-list .sp{flex:1}
+  .member-list .mute-ic{color:var(--dc-textmuted);font-size:11px}
+  .live-badge-app{background:var(--app-live-red);color:#fff;border-radius:16px;font-size:11px;font-weight:700;
+    padding:2px 9px;white-space:nowrap}
+
+  /* フィルムストリップ (8タイル実測構成) */
+  .filmstrip8{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+  .fs-tile{width:133px;height:111px;border-radius:9px;background:#3a3350;position:relative;flex:0 0 auto;
+    overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;
+    font-size:10.5px;color:#c8ccd1;padding:4px}
+  .fs-tile.game{background:linear-gradient(135deg,#2a2f3a,#12141a)}
+  .fs-tile.avatar{background:linear-gradient(135deg,#5a4f7a,#3a3350)}
+  .fs-tile.card{background:#1c1d22}
+  .fs-tile.overflow{background:var(--app-live-red)}
+  .fs-tile .badge{position:absolute;top:5px;left:5px;background:var(--app-live-red);color:#fff;
+    border-radius:14px;font-size:9px;font-weight:700;padding:1px 7px}
+
+  /* 通話ビュー ホバー動くデモ */
+  .callview-demo{background:var(--app-callview-bg);border-radius:10px;padding:10px;position:relative;
+    cursor:default}
+  .stage-header-ov{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;
+    align-items:center;padding:6px 10px;opacity:0;transition:opacity .15s;pointer-events:none;z-index:4;
+    background:linear-gradient(180deg,rgba(0,0,0,.55),transparent)}
+  .callview-demo:hover .stage-header-ov{opacity:1}
+  .stage-header-ov .left{font-size:11.5px;color:#e4e5e8;display:flex;align-items:center;gap:6px}
+  .stage-header-ov .right{display:flex;align-items:center;gap:6px}
+  .avstack{display:flex}
+  .avstack .av{width:20px;height:20px;border-radius:50%;background:var(--dc-blurple);margin-left:-6px;
+    border:2px solid #000;font-size:9px;display:flex;align-items:center;justify-content:center;color:#fff}
+  .quality-pill{background:#000000cc;color:#fff;font-size:10px;font-weight:700;padding:3px 9px;
+    border-radius:999px;white-space:nowrap}
+  .stage-area-demo{width:100%;aspect-ratio:16/9;border-radius:8px;position:relative;overflow:hidden;
+    background:radial-gradient(120% 90% at 30% 20%,#3a3350,transparent 60%),
+                radial-gradient(120% 100% at 80% 90%,#22303f,#0a0a0c 70%)}
+  .stage-name-ov{position:absolute;left:10px;bottom:10px;background:#000000a0;color:#f2f3f5;
+    padding:4px 12px;border-radius:999px;font-size:11px;opacity:0;transition:opacity .15s}
+  .callview-demo:hover .stage-name-ov{opacity:1}
+  .stage-corner-ic{position:absolute;right:10px;bottom:10px;display:flex;gap:6px;opacity:0;
+    transition:opacity .15s;color:#e4e5e8;font-size:12px}
+  .callview-demo:hover .stage-corner-ic{opacity:1}
+  .filmstrip-demo{display:flex;gap:8px;margin-top:8px}
+  .fsd-tile{width:110px;height:92px;border-radius:8px;position:relative;flex:0 0 auto;overflow:hidden;
+    background:linear-gradient(135deg,#2a2f3a,#12141a)}
+  .fsd-tile.avatar{background:linear-gradient(135deg,#5a4f7a,#3a3350)}
+  .fsd-tile .badge{position:absolute;top:5px;left:5px;background:var(--app-live-red);color:#fff;
+    border-radius:14px;font-size:9px;font-weight:700;padding:1px 6px}
+  .fsd-tile .decor-name{position:absolute;bottom:5px;left:5px;font-size:9.5px;color:#f2f3f5;
+    background:#00000090;padding:1px 6px;border-radius:4px;opacity:0;transition:opacity .15s}
+  .fsd-tile .decor-mute{position:absolute;bottom:5px;right:5px;width:18px;height:18px;border-radius:50%;
+    background:#00000090;display:flex;align-items:center;justify-content:center;font-size:10px;color:#ff9d94;
+    opacity:0;transition:opacity .15s}
+  .callview-demo:hover .fsd-tile .decor-name,
+  .callview-demo:hover .fsd-tile .decor-mute{opacity:1}
+  .fsd-tile.pinned .decor-pin{position:absolute;top:5px;right:5px;display:flex;gap:3px;opacity:0;
+    transition:opacity .15s;font-size:10px;color:#e4e5e8}
+  .callview-demo:hover .fsd-tile.pinned .decor-pin{opacity:1}
+  .ctlbar-ov{margin-top:10px;display:flex;gap:8px;align-items:center;justify-content:center;opacity:0;
+    transition:opacity .15s;pointer-events:none}
+  .callview-demo:hover .ctlbar-ov{opacity:1}
+  .ctlbar-ov .grp{display:flex;gap:4px;align-items:center;background:#18181c;border-radius:9px;padding:4px}
+  .ctlbar-ov button{background:transparent;border:0;color:#dbdee1;border-radius:6px;padding:6px 8px;
+    font-size:12px;cursor:default}
+  .ctlbar-ov .stopshare{background:var(--app-live-red);color:#fff;font-weight:700;border-radius:8px;
+    padding:6px 10px;display:flex;align-items:center;gap:4px}
+  .hoverhint{text-align:center;font-size:11px;color:var(--muted);margin-top:6px}
+
+  /* VC行 経過時間カウンタ */
+  .shell-diagram .chlist .vcrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .shell-diagram .chlist .vcrow .counter{color:var(--dc-textmuted);font-size:10.5px;font-variant-numeric:tabular-nums}
+
+  /* §4 ポップアウト: 別OSウィンドウ */
+  .popout-win{width:300px;max-width:100%;background:#0b0b0d;border:1px solid #3a3c43;border-radius:6px;overflow:hidden}
+  .popout-titlebar{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;
+    background:#18181c;font-size:11px;color:#dcdee3}
+  .popout-titlebar .wbtns{letter-spacing:4px;color:var(--dc-textmuted);font-size:11px}
+  .popout-body{padding:8px}
+  .popout-tiles{display:flex;gap:6px;margin-top:6px}
+  .popout-tiles .fs-tile{width:64px;height:53px;border-radius:6px;font-size:8px}
+  .popout-tiles .fs-tile .badge{font-size:7px;padding:1px 5px;top:3px;left:3px}
+
+  /* §4 ポップアウト: アプリ内PiP */
+  .pip-player{width:190px;max-width:100%;background:#000;border-radius:8px;overflow:hidden;font-size:10px}
+  .pip-top{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;
+    background:#00000090;color:#e4e5e8}
+  .pip-video{aspect-ratio:16/9;background:radial-gradient(120% 90% at 30% 20%,#3a3350,transparent 60%),
+    radial-gradient(120% 100% at 80% 90%,#22303f,#0a0a0c 70%)}
+  .pip-bottom{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;
+    background:#00000090;color:#e4e5e8;gap:6px}
+  .pip-plain{width:190px;max-width:100%;aspect-ratio:16/9;border-radius:8px;
+    background:radial-gradient(120% 90% at 30% 20%,#3a3350,transparent 60%),
+    radial-gradient(120% 100% at 80% 90%,#22303f,#0a0a0c 70%)}
+
+  /* §5 参加者右クリックメニュー */
+  .ctx-menu{width:270px;max-width:100%;background:#28282d;border-radius:8px;padding:6px;font-size:13.5px;
+    box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  .ctx-menu .item{min-height:36px;display:flex;align-items:center;justify-content:space-between;
+    padding:2px 10px;border-radius:4px;color:#dbdee1;cursor:default;gap:6px;font-size:12.5px}
+  .ctx-menu .item:hover{background:#3a3c43}
+  .ctx-menu .item .ic{opacity:.75;font-size:11px}
+  .ctx-menu .item.danger{color:var(--dc-destructive)}
+  .ctx-menu .item.placeholder{color:#ff9d94}
+  .ctx-menu .item.placeholder .ic{opacity:1}
+  .ctx-menu .sep{height:1px;background:#3a3c43;margin:4px 4px}
+  .ctx-menu .item.sub::after{content:"›";margin-left:auto;padding-left:8px;opacity:.6}
+  .ctx-menu .item.sub{justify-content:flex-start}
+  .ctx-menu .chk{width:13px;height:13px;border:1.5px solid var(--dc-textmuted);border-radius:3px;
+    display:inline-block;margin-right:6px;vertical-align:-2px}
+  .ctx-menu .chk.on{background:var(--dc-blurple);border-color:var(--dc-blurple)}
+  .ctx-menu .subtext{display:block;font-size:9.5px;color:var(--dc-textmuted)}
+  .ctx-menu .vol-row{padding:6px 10px 8px}
+  .ctx-menu .vol-row label{font-size:10px;color:var(--dc-textmuted);display:block;margin-bottom:5px}
+  .ctx-menu .vol-track{height:4px;border-radius:2px;background:linear-gradient(to right,#5865F2 45%,#4a4c53 45%)}
+  table.tok tr.addrow td{color:#8fd6a8}
+  table.tok tr.removerow td{color:#ff9d94;text-decoration:line-through;text-decoration-color:#ff9d9480}
+
+  table.matrix{width:100%;border-collapse:collapse}
+  table.matrix td,table.matrix th{padding:8px 10px;border-bottom:1px solid var(--line);font-size:12.5px;
+    text-align:left;vertical-align:top}
+  table.matrix th{color:var(--muted);font-size:11px}
+  a{color:var(--dc-link)}
+  a:hover{text-decoration:underline}
+  .footer{color:var(--muted);font-size:11.5px;text-align:center;padding:30px 0 16px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <h1>Discord 動作ログ<span class="ver">アプリ実測版</span></h1>
+    <p class="lead">SelfMatrix「UI 総点検 (Discord 実物突き合わせ)」の基準器。
+      <a href="discord-behavior-log.html">discord-behavior-log.html (web 実測版、2026-07-13)</a> の姉妹編で、
+      Discord Windows デスクトップアプリで<b>どう見えて・どう動くか</b>を観察した記録。
+      デザイン提案ではない。web 版と重複する項目は差分のみ、web 版に無い項目 (通話ビューのホバー chrome など)
+      は新規に記録する。</p>
+    <div class="method">
+      <h2>方法論</h2>
+      <ul>
+        <li><b>実測日</b>: 2026-07-14、Discord Windows デスクトップアプリを対象に観察</li>
+        <li><b>キャプチャ手法</b>: PrintWindow によるウィンドウキャプチャ (DOM 越しの DevTools 実測ではない)。
+          表示スケール 150% 環境のため、物理px→CSS px は <code class="v">÷1.5</code> で換算</li>
+        <li><b>観察のみ</b>: 非公開 API・DOM 改変・裏技的操作は行っていない。見えている挙動をそのまま記録</li>
+        <li><b>秘匿</b>: 実サーバー名・実ユーザー表示名・ゲームタイトルは非掲載。再現図の名前は
+          「User A」等のプレースホルダ、自分自身は「運用者」と表記。チャンネル名もプレースホルダ
+          (Voice Lounge はローカル開発環境の部屋名で、観察対象の実サーバーとは無関係)</li>
+        <li><b>アセット非使用</b>: Discord のロゴ・アイコン画像・音は一切含まない。CSS・図形・絵文字のみで近似再現</li>
+        <li><b>web 版との対応</b>: 同一トークン・寸法は「一致」、値が異なる/web 未測定の項目は各節の
+          obs-note で明示する</li>
+        <li><b>情報源の種別</b>: 本文中の記述は4種類を区別する — 「実測」(画像からの直接観測)、「証言」
+          (Discord実ユーザーである運用者本人からの申告)、「推測」(未確認の解釈。断定はしない)、
+          「未確認」(裏取りできていない事項)。証言・推測・未確認はいずれも実測ではないため、その旨を
+          明記した上で参考情報として扱う</li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#s1">§1 トークン実測 (アプリ)</a>
+  <a href="#s2">§2 通話ビュー構成</a>
+  <a href="#s3">§3 視聴ホバーUI</a>
+  <a href="#s4">§4 ポップアウト (別OSウィンドウ / アプリ内PiP)</a>
+  <a href="#s5">§5 参加者メニュー</a>
+  <a href="#s6">§6 通話イベント</a>
+  <a href="#s7">§7 DMの通話表示</a>
+  <a href="#s8">§8 画面共有ピッカー</a>
+  <a href="#s9">§9 SelfMatrixへの示唆</a>
+</nav>
+
+<main>
+
+<section id="s1">
+  <div class="shd"><h2>§1 デザイントークン実測表 (アプリ)</h2><span class="tag">色・寸法・web版との差分</span></div>
+  <p class="desc">PrintWindow キャプチャからのスポイト実測 (<code class="v">measure-sample.ps1</code>) と
+    グリッド定規 (<code class="v">measure-grid.ps1</code>) による寸法逆算。DevTools computed style ではなく
+    画像ピクセルからの実測である点が web 版との方法論上の違い。値は
+    <a href="discord-behavior-log.html#s1">web 実測版 §1</a> と突き合わせた。</p>
+
+  <div class="card">
+    <h3>色トークン — アプリ実測 × web実測 差分</h3>
+    <table class="tok">
+      <tr><th>トークン</th><th>アプリ実測</th><th>web実測 (§1)</th><th>差分メモ</th></tr>
+      <tr><td>server_rail_bg</td>
+        <td><span class="swatch" style="background:#121214"></span><code class="v">#121214</code></td>
+        <td><code class="v">≈#121214</code> (background_base_lowest)</td>
+        <td class="samecell">一致</td></tr>
+      <tr><td>channel_list_bg</td>
+        <td><span class="swatch" style="background:#121214"></span><code class="v">#121214</code> (レールと同一)</td>
+        <td><code class="v">≈#1a1a1e</code> (background_base_lower)</td>
+        <td class="diffcell">差分: アプリはレールとチャンネル列が<b>完全同一色</b>で境界線も無し。
+          webは1段階明るい別トークン</td></tr>
+      <tr><td>selected_vc_row_bg</td>
+        <td><span class="swatch" style="background:#2C2C30"></span><code class="v">#2C2C30</code></td>
+        <td>web報告に対応項目なし</td>
+        <td class="diffcell">新規観測 (選択中チャンネル行の背景)</td></tr>
+      <tr><td>call_view_bg (ステージ外余白)</td>
+        <td><span class="swatch" style="background:#000000;border-color:#444"></span><code class="v">#000000</code> (純黒)</td>
+        <td>web報告に対応項目なし</td>
+        <td class="diffcell">新規観測</td></tr>
+      <tr><td>conn_panel_bg / user_bar_bg</td>
+        <td><span class="swatch" style="background:#202024"></span><code class="v">#202024</code></td>
+        <td><code class="v">#202024</code> (background_base_low)</td>
+        <td class="samecell">一致</td></tr>
+      <tr><td>live_badge_red</td>
+        <td><span class="swatch" style="background:#DA3E44"></span><code class="v">#DA3E44</code></td>
+        <td><code class="v">#da3e44</code> (live_badge_red)</td>
+        <td class="samecell">一致</td></tr>
+      <tr><td>voice_status_text_green (「通話中」文字)</td>
+        <td><span class="swatch" style="background:#5EB479"></span><code class="v">#5EB479</code></td>
+        <td><code class="v">#5eb479</code> (voice_connected_green)</td>
+        <td class="samecell">一致</td></tr>
+      <tr><td>speaking_ring_green (発話中リング)</td>
+        <td><span class="swatch" style="background:#3D9E60"></span><code class="v">#3D9E60</code></td>
+        <td><code class="v">≈#23a55a</code> (§4 capnote実測)</td>
+        <td class="diffcell">差分: 緑の色相・彩度が異なる (アプリはやや黄みがかった緑)。
+          同じ「発話リング」でも実測値が食い違う</td></tr>
+      <tr><td>online_status_dot</td>
+        <td><span class="swatch" style="background:#45A366"></span><code class="v">#45A366</code></td>
+        <td><code class="v">≈#3ba55d</code> (status_online_green)</td>
+        <td class="diffcell">微差: 近縁色だが同一値ではない</td></tr>
+      <tr><td>share-status label text (「画面共有しています」)</td>
+        <td><code class="v">#8B8C92〜#ABACB2</code> (グレー。緑ではない — 実測時に訂正済み)</td>
+        <td><code class="v">≈#949ba4</code> (textMuted、参考)</td>
+        <td>web textMuted と近い範囲。直接対応する文言はweb側で未測定のため参考程度</td></tr>
+      <tr><td>brand_blurple / linkColor / channeltextarea_bg / bg_surface_raised</td>
+        <td>未測定 (今回のキャプチャ範囲に該当UIが写っていない)</td>
+        <td>実測済み (§1)</td>
+        <td class="diffcell">アプリ側の宿題。メッセージ入力欄・埋め込み等は通話ビュー画面には映らない</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>寸法実測 — アプリ実測 × web版比較</h3>
+    <table class="tok">
+      <tr><th>項目</th><th>アプリ実測 (CSS px 換算)</th><th>web版</th><th>差分メモ</th></tr>
+      <tr><td>サーバーレール幅</td><td>約72px (逆算推定)</td><td>明記なし</td>
+        <td>Discord標準72pxと一致する値。直接の境界検出ではなく逆算のため参考値</td></tr>
+      <tr><td>接続パネル (幅×高さ)</td><td>約358×157px</td><td>359×158px (実測)</td>
+        <td class="samecell">ほぼ完全一致 (誤差1px、キャプチャ手法の違いによる丸め)</td></tr>
+      <tr><td>フィルムストリップ ミニタイル1枚</td><td>約133×111px (比率≈1.2:1)</td>
+        <td>再現図は150×86px想定 (比率≈1.74:1、実測記載なし)</td>
+        <td class="diffcell">差分: アプリ実測はより正方形に近い比率。web側は16:9想定の仮置きで、
+          実測値としての記載はなかった</td></tr>
+      <tr><td>フィルムストリップ タイル間ガター</td><td>約8px</td><td>8px (CSS想定)</td>
+        <td class="samecell">一致</td></tr>
+      <tr><td>タイル角丸半径</td><td>約9〜11px</td><td>8px (CSS想定)</td>
+        <td>ほぼ一致 (誤差程度)</td></tr>
+      <tr><td>ライブバッジ (幅×高さ)</td><td>約47〜48×16px</td><td>明記なし</td>
+        <td class="diffcell">新規測定値。サイドバー版・フィルムストリップ版で同一 (同一コンポーネント)</td></tr>
+    </table>
+    <p class="capnote">接続パネルの寸法がキャプチャ手法の異なる2回の実測でほぼ一致した点は、
+      Discord のレイアウト値が web/デスクトップ間で高い再現性を持つことの傍証になる。</p>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="shd"><h2>§2 通話ビューの構成 (ホバー前)</h2><span class="tag">動くデモ: 発話リング</span></div>
+  <p class="desc">VC「Voice Lounge」で通話中の画面。マウスをステージに乗せていない状態では、ステージとフィルムストリップの
+    映像・ライブバッジ以外の chrome (ヘッダー/コントロールバー/タイルの名前・ミュートボタン) は一切表示されない。
+    左下の接続パネルと右のVCサイドバーはホバーと無関係に常時表示。</p>
+
+  <div class="card">
+    <h3>サーバーレール / チャンネル列 (境界なし)</h3>
+    <div class="diagram">
+      <div class="dimtag" style="top:2px;right:2px">rail 72px / 同一色 #121214</div>
+      <div class="shell-diagram">
+        <div class="rail"><div class="dot"></div><div class="dot"></div></div>
+        <div class="chlist">
+          <div class="noboundary" title="実際の境界線は無い — レール/チャンネル列の継ぎ目の位置を示す目印"></div>
+          <div style="font-size:11px;color:#dcdee3">テキストチャンネル</div>
+          <div class="vcrow"><span>🔊 Voice Lounge</span><span class="counter">15:36:27</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="capnote">実測: レール背景とチャンネル列背景が<b>完全に同一の hex 値 (#121214)</b>。
+      境界線・シャドウも確認できず、視覚的な区切りはサーバーアイコンの余白のみで作られている
+      (web の background_base_lowest / background_base_lower のような2トークン分離が無い、AMOLED的な単色構成)。
+      選択中チャンネル行のみ #2C2C30 でわずかに明るい。図中のピンク破線は実際の境界線ではなく、
+      レール/チャンネル列の継ぎ目の位置を示す目印。</p>
+    <div class="obs-note diff">
+      <b>新規観察 (web版に記録なし)</b>: 接続中の VC チャンネル行には、チャンネル名の右に
+      <code class="v">HH:MM:SS</code> 形式の経過時間カウンタが常時表示され、リアルタイムでカウントアップする
+      (複数キャプチャで確認。同一セッション内で <code class="v">15:33:42</code> → <code class="v">16:22:48</code>
+      と進んでいた)。web実測版にはこのカウンタに対応する記録が無い。
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>接続パネル (358×157px、構成分解)</h3>
+      <div class="diagram">
+        <div class="dimtag" style="top:2px;right:2px">358×157px</div>
+        <div class="conn-panel">
+          <div class="row1">
+            <div><div class="status">通話中</div><div class="chan">Voice Lounge / サーバー</div></div>
+            <div class="icons"><span title="マイクミュート(斜線)">🎙̸</span><span title="切断">📞</span></div>
+          </div>
+          <div class="row2">
+            <button>📷 カメラオフ</button><button>🖥 画面共有</button><button>◈ レイアウト</button><button>✨ エフェクト</button>
+          </div>
+          <div class="row3">
+            <div class="av"><span class="dot"></span></div>
+            <div><div class="who">運用者</div><div class="sub"><span class="ic">🖥</span>画面共有しています</div></div>
+            <div class="sp"></div>
+            <span class="ic2">🎙▾</span><span class="ic2">🎧▾</span><span class="ic2">⚙</span>
+          </div>
+        </div>
+      </div>
+      <p class="capnote">実測: 幅358px・高さ157px・背景 #202024 — <a href="discord-behavior-log.html#s4">web版§4</a>の
+        359×158pxとほぼ完全一致。行構成 = 通話中(緑) + チャンネル名/マイクミュート斜線・切断アイコン /
+        4ボタン行 (カメラオフ・画面共有・<b>レイアウト切替</b>・エフェクト) / ユーザー行 (アバター+発話リング+
+        オンラインドット、名前、<b>「画面共有しています」(グレー文字+緑アイコン)</b>、マイク▾・ヘッドホン▾・設定)。</p>
+      <div class="obs-note diff">
+        <b>web版との差分</b>: 4ボタン行の3番目が web実測では「アクティビティ」、アプリ実測では
+        「レイアウト切替」(ひし形2つのアイコン) だった。1行目右端も web実測は「ノイズ抑制」、
+        アプリ実測は「マイクミュート斜線」アイコン — ただしどちらもキャプチャ時点の状態 (マイクON/OFF等)
+        に左右される可能性があり、アイコン種別そのものの platform 差と断定はできない (要再確認)。
+        ユーザー行の2行目 (「画面共有しています」) も、キャプチャ時に配信中だったための表示で、
+        アイドル時は web実測同様「接続済み」相当の表示になっている可能性が高い。
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>VCサイドバー参加者行</h3>
+      <div class="diagram">
+        <div class="dimtag" style="top:2px;right:2px">width 264px</div>
+        <div class="member-list">
+          <div class="sect">Voice Lounge — 参加者</div>
+          <div class="row"><div class="av" style="background:#5865F2">A</div>User A<span class="sp"></span>
+            <span class="live-badge-app">ライブ</span></div>
+          <div class="row"><div class="av" style="background:#8b5cf6">B</div>User B<span class="sp"></span>
+            <span class="live-badge-app">ライブ</span></div>
+          <div class="row"><div class="av" style="background:#f0b232">C</div>User C<span class="sp"></span>
+            <span class="mute-ic">🎙̸</span><span class="live-badge-app">ライブ</span></div>
+          <div class="row"><div class="av" style="background:#6b6f76">D</div>User D</div>
+          <div class="row"><div class="av speaking" style="background:#8b5cf6">E</div>User E (発話中)</div>
+        </div>
+      </div>
+      <p class="capnote">実測パターン: [丸アバター][表示名] … [右端: ミュートアイコン(あれば) → 赤
+        「ライブ」バッジ(配信中のみ)]。発話中のみアバターに緑リング(#3D9E60)が付き、バッジ類は付かない。
+        バッジなしの参加者 (User D 相当) も存在する — 配信もミュートもしていない通常状態。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>フィルムストリップ (8タイル実測構成、ホバー前)</h3>
+    <div class="diagram-scroll"><div class="diagram">
+      <div class="dimtag" style="top:2px;right:2px">133×111px / gap 8px</div>
+      <div class="filmstrip8">
+        <div class="fs-tile game"><span class="badge">ライブ</span>ゲーム画面</div>
+        <div class="fs-tile game"><span class="badge">ライブ</span>ゲーム画面</div>
+        <div class="fs-tile game"><span class="badge">ライブ</span>ゲーム画面</div>
+        <div class="fs-tile game"><span class="badge">ライブ</span>ゲーム画面</div>
+        <div class="fs-tile avatar">User E</div>
+        <div class="fs-tile avatar" id="ringTile">User F<br>(発話中)</div>
+        <div class="fs-tile card">アイテム風<br>オーバーレイ</div>
+        <div class="fs-tile overflow">🔴 ロゴ</div>
+      </div>
+    </div></div>
+    <p class="capnote">実測: 8タイル中1〜4はゲーム画面配信タイル (右上に赤「ライブ」バッジ)、5はアバタータイル
+      (配信なし)、6は発話中アバタータイル (緑リング#3D9E60、フィルムストリップ・サイドバーで同一トークン)、
+      7は濃色背景にアイテム風の情報が乗った特殊タイル、8は赤地に白ロゴのみのタイル。</p>
+    <div class="obs-note">
+      <b>推測 (未確認)</b>: 7番目のタイルはゲーム側のツールチップ/オーバーレイがそのままタイル化されたもの、
+      または何らかの共有アプリのプレビューの可能性 — 断定不可。8番目の赤ロゴタイルは、個別映像を持たない
+      残りメンバーをまとめた「+N人」的なオーバーフロー/プレースホルダタイルの可能性が高いが、これも推測の域。
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="card" style="margin-bottom:0">
+        <h3 style="margin-bottom:6px">発話リング (実測: 動くデモ)</h3>
+        <button id="ringToggle" style="background:var(--accent);border:0;color:#fff;
+          padding:7px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer">発話シミュレート: ON (自動点滅中)</button>
+        <p class="capnote">6番目のタイルで自動点滅します。色はアプリ実測値 #3D9E60 (web実測 ≈#23a55a とは別値)。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="shd"><h2>§3 視聴ホバーUI</h2><span class="tag">動くデモ: ホバー</span></div>
+  <p class="desc">サーバー VC で通話中、他参加者の画面配信 (「User B さんのスクリーン」) を視聴中にマウスを
+    ステージへ乗せて静止させたときの chrome 一式。<b>マウスを下のデモ領域に乗せてみてください</b>
+    (CSS :hover による見た目の再現。実際のキャプチャは
+    <code class="v">burst-hover/f0006</code>、150%スケール環境での1フレーム)。</p>
+
+  <div class="card">
+    <h3>通話ビュー ホバー再現 (実測: 動くデモ)</h3>
+    <div class="callview-demo">
+      <div class="stage-header-ov">
+        <div class="left">🔊 Voice Lounge · <span style="opacity:.8">[配信者アバター]</span> User Bさんのスクリーン</div>
+        <div class="right">
+          <div class="avstack"><div class="av">A</div><div class="av">C</div><div class="av">D</div></div>
+          <span class="quality-pill">720p 30 FPS</span>
+          <span class="live-badge-app">ライブ</span>
+          <span style="color:#e4e5e8;font-size:13px">💬</span>
+        </div>
+      </div>
+      <div class="stage-area-demo">
+        <div class="stage-name-ov">🖥 User B</div>
+        <div class="stage-corner-ic"><span>📷</span><span>⚪</span><span>🔍</span></div>
+      </div>
+      <div class="filmstrip-demo">
+        <div class="fsd-tile"><span class="badge">ライブ</span>
+          <div class="decor-name">🖥 User B</div></div>
+        <div class="fsd-tile"><span class="badge">ライブ</span>
+          <div class="decor-name">🖥 User A</div><div class="decor-mute">🔇</div></div>
+        <div class="fsd-tile"><span class="badge">ライブ</span>
+          <div class="decor-name">🖥 User C</div><div class="decor-mute">🔇</div></div>
+        <div class="fsd-tile avatar pinned">
+          <div class="decor-pin"><span>⌄</span><span>👤</span></div>
+          <div class="decor-name">User D</div></div>
+      </div>
+      <div class="ctlbar-ov">
+        <button title="参加者を招待">👤+</button>
+        <div class="grp"><button>🎙▾</button><button>📷̸▾</button></div>
+        <div class="grp"><button>🖥</button><button>✨</button><button>👏</button><button>⋯</button></div>
+        <div class="stopshare">🖥̸ 配信停止<span>▾</span></div>
+        <div class="grp"><button>🔇</button><button title="ポップアウト">⧉</button><button title="全画面">⛶</button></div>
+      </div>
+    </div>
+    <p class="hoverhint">↑ マウスを乗せると chrome が出現します (実際の挙動と同じくホバー限定表示)</p>
+    <p class="capnote">実測: ホバー前はステージ・フィルムストリップの映像と「ライブ」バッジのみが常時表示。
+      ホバーで (1) 上端ヘッダー (チャンネル名・配信者名 / 視聴者アバター列+画質ピル+ライブバッジ+チャット
+      アイコン)、(2) 下端中央のコントロールバー、(3) フィルムストリップ各タイルの名前ラベルとミュートボタン、
+      (4) 視聴対象ではないアバタータイルの上に出た ⌄+👤 アイコン (どのタイルに・いつ出るかは未確認、
+      機能は未同定) が出現する。</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>web版との差分・未確認点</h3>
+      <div class="obs-note diff">
+        <b>音量調整の置き場所は web/app 共通</b>: 参加者右クリックメニュー内のスライダーが本体
+        (<a href="discord-behavior-log.html#s5">web実測版§5</a>で実測済み)。映像上にスライダーが浮くという
+        想定は誤りだったため、ここでは差分として扱わない。アプリ版の右クリックメニュー自体は§5で宿題として
+        別途確認する。
+      </div>
+      <div class="obs-note diff">
+        <b>タイル単位ミュートボタン (🔇)</b> はアプリのホバーで確認できたが、<b>web に同じものがあるかは
+        今回未確認</b> (web実測版のホバーデモは通常メッセージ行が対象で、通話タイルのホバーは検証していない)。
+      </div>
+      <div class="obs-note diff">
+        <b>画質ピル「720p 30 FPS」</b>がヘッダーに常設表示される (ホバー時)。<b>web実測ログには対応する
+        記録が無い</b> (web側未確認 — 見落としの可能性と、そもそも表示されない可能性の両方が残る)。
+      </div>
+      <div class="obs-note diff">
+        <b>ポップアウト (⧉)</b> はコントロールバー右端 (全画面の隣) にあり、ステージ上ではなくビュー全体の
+        chrome に属する。<a href="discord-behavior-log.html#s7">web実測版§7</a>では「配信者側の操作範囲では
+        document PiP は一度も開かなかった」までが実測だった。アプリ版では<a href="#s4">§4</a>で
+        「別OSウィンドウの全体ポップアウト」と「アプリ内PiPミニプレイヤー」の2メカニズムが実測できたが、
+        このアイコンがどちらを起動するのかは未確定のまま (§4 の todo-note を参照)。
+      </div>
+    </div>
+    <div class="card">
+      <h3>再現度への留保</h3>
+      <div class="obs-note">
+        フィルムストリップの実キャプチャでは、ライブ (配信中) タイル3枚のうち2枚のみにタイル単位の
+        ミュートボタン (🔇) が写っており、残り1枚には出ていなかった。全タイル共通の挙動か、特定条件下
+        でのみ出るのか、出現条件は未確認。
+      </div>
+      <div class="obs-note">
+        ステージ右下の小アイコン2〜3個 (スクリーンショット風カメラ・丸型・拡大鏡) は用途を明確に特定できて
+        いない。上のデモでは形状のみ再現し、機能名の当て推量はしていない。
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s4">
+  <div class="shd"><h2>§4 ポップアウト (別OSウィンドウ / アプリ内PiP)</h2><span class="tag">実測: 2メカニズム</span></div>
+  <p class="desc">運用者提供のスクリーンショットにより、「ポップアウト」と一括りにできない
+    <b>2つの別メカニズム</b>があることが実測で判明した。本書ではメカニズム1を「別OSウィンドウ」、
+    メカニズム2を「アプリ内PiP」と呼ぶ。§3の「コントロールバー右端のポップアウトアイコン」と
+    「参加者右クリックメニューのユーザーをポップアウト」がそれぞれどちらに対応するかは未確認 (下記 todo-note)。</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>メカニズム1: 別OSウィンドウのポップアウト (実測)</h3>
+      <div class="diagram">
+        <div class="popout-win">
+          <div class="popout-titlebar"><span>🔊 Voice Lounge — 通話ビュー</span><span class="wbtns">─ ▢ ✕</span></div>
+          <div class="popout-body">
+            <div class="stage-area-demo" style="aspect-ratio:16/9">
+              <div class="stage-name-ov" style="opacity:1">🖥 User B</div>
+            </div>
+            <div class="popout-tiles">
+              <div class="fs-tile game"><span class="badge">ライブ</span></div>
+              <div class="fs-tile avatar">User A</div>
+              <div class="fs-tile avatar">User C</div>
+              <div class="fs-tile avatar">User D</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="capnote">実測: 通話ビュー一式 (視聴ステージ+下部タイル列) が<b>独立した OS ウィンドウ</b>として
+        分離し、タイトルバー右に最小化/最大化/閉じるの標準ウィンドウボタンが付く。分離中、メインウィンドウは
+        自由にテキストチャンネルを閲覧できる (実測 — 分離した状態でメインウィンドウがテキストチャンネルを
+        表示していた画面を確認)。</p>
+    </div>
+
+    <div class="card">
+      <h3>メカニズム2: アプリ内 PiP ミニプレイヤー (実測)</h3>
+      <div class="grid2" style="gap:10px">
+        <div>
+          <div class="diagram">
+            <div class="pip-player">
+              <div class="pip-top"><span>← Voice Lounge</span><span>⋮</span></div>
+              <div class="pip-video"></div>
+              <div class="pip-bottom"><span>🖥 User B</span><span>👁 12</span><span>⧉</span><span>📷̸</span></div>
+            </div>
+          </div>
+          <p class="capnote" style="margin-top:2px">ホバー時の構成</p>
+        </div>
+        <div>
+          <div class="diagram"><div class="pip-plain"></div></div>
+          <p class="capnote" style="margin-top:2px">非ホバー時 (推測 — 下記参照)</p>
+        </div>
+      </div>
+      <p class="capnote">実測: メインウィンドウ内で通話ビューからテキストチャンネルへ移動すると、
+        ウィンドウ内の隅に<b>小さなフローティングプレイヤー</b>が出る。ホバー時は上部に「← VC名」(戻る導線)
+        と ⋮、映像、下部に配信者名+視聴者数 (👁 アイコン+数字)+ポップアウトアイコン+画面オフアイコンが並ぶ
+        (ここまで実測)。</p>
+      <div class="obs-note diff">
+        <b>推測 (未確認)</b>: 非ホバー時は chrome が消えて映像のみの無装飾タイルになると見られる
+        (別ショットでは左下に無装飾の映像タイルが写っていた)。ただし最初のホバー時ショットとは
+        位置が右下→左下と異なっており、ドラッグで移動できるのか、状況によってドッキング位置が変わるのかは
+        未確認。</div>
+    </div>
+  </div>
+
+  <div class="todo-note">
+    <b>未確認点</b> — トリガーの正確な対応関係: §3で確認したビュー右下のポップアウトアイコン (⧉) と、
+    §5参加者右クリックメニューの「ユーザーをポップアウト」が、メカニズム1・2のどちらを起動するのか
+    (推測: ビュー右下＝通話全体の別OSウィンドウ化、右クリックメニュー＝ユーザー単位のPiP寄せ) は今回のスクリーンショットからは
+    断定できない。<a href="discord-behavior-log.html#s7">web実測版§7</a>の宿題「native M3『web は原理的に
+    無再接続ポップアウト不可』という前提の確認」についても、どちらのメカニズムと比較すべきかを含めて
+    次回の実測で詰める。
+  </div>
+</section>
+
+<section id="s5">
+  <div class="shd"><h2>§5 参加者右クリックメニュー (アプリ版)</h2><span class="tag">実測: 2パターン</span></div>
+  <p class="desc">運用者提供のスクリーンショットにより、サーバー VC 内での参加者右クリックメニューを2パターン実測。
+    対象ユーザーによって項目が変わる (関係性/権限依存と推測)。パターン1 (配信中の参加者) を全項目再現し、
+    パターン2 (フレンド系項目のあるユーザー) は差分のみ記録する。</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>パターン1: 全項目 (実測: 順序どおり)</h3>
+      <div class="ctx-menu">
+        <div class="item">プロフィール</div>
+        <div class="item">メッセージ</div>
+        <div class="item">メモを追加<span class="subtext">自分だけに表示</span></div>
+        <div class="vol-row">
+          <label>ユーザーの音量</label>
+          <div class="vol-track"></div>
+        </div>
+        <div class="item"><span class="chk"></span>ミュート</div>
+        <div class="item"><span class="chk"></span>サウンドボードをミュート</div>
+        <div class="item"><span class="chk"></span>動画の無効化</div>
+        <div class="item">認証コードを表示</div>
+        <div class="item">ニックネームの変更</div>
+        <div class="item sub">アプリ</div>
+        <div class="item">無視</div>
+        <div class="item danger">ブロック</div>
+        <div class="sep"></div>
+        <div class="item sub">ロール</div>
+        <div class="item sub">移動先を指定</div>
+        <div class="item">ユーザーをポップアウト <span class="ic">⧉</span></div>
+        <div class="item"><span class="chk on"></span>ビデオ不使用の参加者を表示</div>
+        <div class="item">Modビューで開く</div>
+        <div class="sep"></div>
+        <div class="item danger"><span class="chk"></span>サーバーミュート</div>
+        <div class="item danger"><span class="chk"></span>サーバー側スピーカーミュート</div>
+        <div class="item danger">切断</div>
+        <div class="item danger placeholder">「???(開発中) をタイムアウト」</div>
+        <div class="item danger placeholder">「???(開発中)を追放」</div>
+        <div class="sep"></div>
+        <div class="item" style="color:var(--dc-textmuted);font-size:12px">ユーザーIDをコピー <span class="ic">🆔</span></div>
+      </div>
+      <p class="capnote">実測: 項目の並び順・種別 (スライダー/チェックボックス/サブメニュー›/破壊的赤/
+        プレースホルダ露出) は実測どおり。区切り線の正確な位置までは1px単位で確認していないため、
+        web版§5の構成に倣った近似配置。音量スライダーは<b>数値 (%) の表示が無い</b> — web実測版は数値表示ありだった。
+        トラックの塗り位置は実測ではなく illustrative (既定値は未計測)。</p>
+    </div>
+
+    <div class="card">
+      <h3>パターン2との差分 (フレンド系項目のあるユーザー)</h3>
+      <table class="tok">
+        <tr><th>変更点</th><th>詳細</th></tr>
+        <tr class="addrow"><td>追加</td><td>通話を開始 (メッセージの直後)</td></tr>
+        <tr class="addrow"><td>追加</td><td>フレンドのニックネームを追加 (メモを追加の後)</td></tr>
+        <tr class="addrow"><td>追加</td><td>サーバーに招待 › (アプリ›の後)</td></tr>
+        <tr class="addrow"><td>追加</td><td>フレンドを削除</td></tr>
+        <tr class="removerow"><td>非表示</td><td>ニックネームの変更</td></tr>
+        <tr class="removerow"><td>非表示</td><td>「???(開発中)をタイムアウト」「???(開発中)を追放」の2行</td></tr>
+      </table>
+      <p class="capnote">それ以外の並び・項目 (音量スライダー、ミュート系、ロール›、ポップアウト等) は
+        パターン1と共通。差分はいずれもフレンド関係の有無・モデレーション権限の有無で説明が付きそうだが、
+        判定条件そのものは推測の域を出ない。</p>
+      <div class="todo-note" style="margin-top:10px">
+        チェック状態の実測: ミュート系3つ (ミュート/サウンドボードをミュート/動画の無効化) は全て OFF、
+        「ビデオ不使用の参加者を表示」のみ ON — この既定値がユーザーごとの設定かグローバル設定かは未確認。
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>web版§5との比較</h3>
+    <div class="obs-note">
+      <b>一致</b>: ユーザー音量スライダーの位置は <a href="discord-behavior-log.html#s5">web実測版§5</a> と同じ
+      「プロフィール/メッセージ/メモの直下、ミュート系チェックボックスの手前」。メニュー構成の骨格は web/app で
+      概ね一致している。
+    </div>
+    <div class="obs-note diff">
+      <b>差分</b>: 「動画の無効化」チェックボックスは web実測版§5の記録に無い項目。
+    </div>
+    <div class="obs-note diff">
+      <b>差分</b>: 「移動先を指定 ›」も web実測版§5の記録に無い。サーバー VC 固有の項目 (別チャンネルへの
+      強制移動) と推測— DM やグループ通話には出ない可能性がある (未確認)。
+    </div>
+    <div class="obs-note diff">
+      <b>差分 (プレースホルダ露出、推測込み)</b>: タイムアウト/追放の表記が
+      「<b>???(開発中) をタイムアウト</b>」「<b>???(開発中)を追放</b>」— 本来ユーザー名が入るべき位置に
+      未置換のプレースホルダ文字列がそのまま露出していた。ローカライズ漏れ、または実験的機能のラベル漏れと
+      推測 (断定不可)。web実測時はこの2項目とも「タイムアウト」「追放」という単純な表記だった。
+    </div>
+  </div>
+</section>
+
+<section id="s6">
+  <div class="shd"><h2>§6 テキストチャンネルの通話イベント有無</h2><span class="tag">証言 + 実測</span></div>
+  <div class="obs-note">
+    <b>運用者証言 (2026-07-14)</b>: サーバー VC の出入り・通話開始/終了は、テキストチャンネルのタイムラインに
+    一切表示されない。「通話イベント行」という概念自体が Discord には存在しない、とのこと。
+  </div>
+  <div class="card">
+    <h3>実測での裏取り (2026-07-14、証言と一致)</h3>
+    <div class="obs-note">
+      同一サーバーの VC で 16 時間超の通話が継続 (サイドバーの経過時間カウンタが
+      <code class="v">15:33:42</code> → <code class="v">16:22:48</code> とキャプチャ間でカウントアップ、
+      その間に複数人の出入り・配信あり) した状況で、対応するテキストチャンネルのタイムラインを確認したところ
+      <b>通話系イベント行はゼロ</b>だった。
+    </div>
+    <div class="obs-note">
+      同じタイムラインに「〇〇 がメッセージをチャンネルにピン留めしました。」という<b>システムメッセージ行は
+      表示されている</b> — つまりシステム行という仕組み自体は Discord に存在するが、通話イベントには
+      一切使われないことが実測で確定した (証言→実測に格上げ)。
+    </div>
+    <div class="obs-note">
+      テキストチャンネル表示中の右側メンバーリストは、ロール別グルーピング+オフラインという構成。
+      通話中のメンバーは名前の下に「<b>🔊 会話中</b>」と表示される — 通話の状態はタイムラインではなく、
+      プレゼンス表示 (サイドバー/メンバーリスト) 側で見せるという Discord の設計方針を裏付ける。
+    </div>
+    <p class="capnote">証言と実測が一致したため、この項目の裏取りはここで完了とする。</p>
+  </div>
+</section>
+
+<section id="s7">
+  <div class="shd"><h2>§7 DMの通話表示 (存在せず — 証言)</h2><span class="tag">証言あり</span></div>
+  <div class="obs-note">
+    <b>運用者証言 (2026-07-14)</b>: DM でも「〇〇が通話を開始しました」等の通話メッセージはタイムラインに
+    表示されない。サーバー VC (§6) と同様、DM 側にも通話イベントのシステムメッセージという概念自体が無い、
+    とのこと。
+  </div>
+  <div class="obs-note diff">
+    <b>正直な注記</b>: 当初「DM/グループDM の通話でタイムラインにシステムメッセージが残る」という想定を
+    持っていたが、これは実測ではなく AI の学習知識ベースによる思い込みだった。今回この想定は検証できておらず、
+    旧仕様だった可能性・そもそもの誤認の可能性の両方が残る。少なくとも運用者の使用範囲では一度も観察された
+    ことがない、という証言のみが手元にある。
+  </div>
+  <div class="todo-note">
+    <b>裏取りは任意</b> — スクリーンキャプチャによる確認ができれば添えたいが必須ではない。今回のキャプチャ
+    対象がサーバー VC のみだったため、DM 画面そのものの実測は依然として未取得。
+  </div>
+</section>
+
+<section id="s8">
+  <div class="shd"><h2>§8 画面共有ピッカー (アプリ独自UI)</h2><span class="tag todo">宿題</span></div>
+  <div class="todo-note">
+    <b>未実測</b> — このセッションで追加予定。<a href="discord-behavior-log.html#s6">web実測版§6</a>では
+    Chrome ネイティブの getDisplayMedia ピッカーがそのまま使われることを確認済みで、これは
+    <a href="../../planning/feature-matrix.md">feature-matrix.md</a> 1.2「システム音声をどのソース共有でも
+    付与」が native (デスクトップ) 限定である根拠になっている。アプリ版は Discord 独自の画面/ウィンドウ選択
+    UI を持つはずで、そのタブ構成・音声トグルの既定値がこのセッションでの本丸の宿題。
+  </div>
+</section>
+
+<section id="s9">
+  <div class="shd"><h2>§9 SelfMatrixへの示唆</h2></div>
+  <p class="desc">今回のアプリ実測と feature-matrix / backlog の突き合わせ。web実測版§8と合わせて読むこと。</p>
+  <div class="card">
+    <table class="matrix">
+      <tr><th>観察</th><th>示唆</th><th>関連文書</th></tr>
+      <tr>
+        <td>フィルムストリップの各タイルにホバーで単位ミュートボタン(🔇)が出る (§3)。ただし音量調整の
+          本体は web/app 共通で参加者右クリックメニュー</td>
+        <td>backlog P1 の主参照実装は web実測版§5の右クリックメニューのまま変更なし。タイル単位ミュートは
+          「素早いミュートのショートカット」的な補助動線として、右クリックメニュー実装後の追加検討候補
+          にとどめる</td>
+        <td><a href="../../planning/backlog.md">backlog.md</a> P1「話者オーバーレイ右クリックからの
+          ユーザー単位音量調整」</td>
+      </tr>
+      <tr>
+        <td>通話ビューの chrome (ヘッダー/コントロールバー/タイル装飾) をマウス静止で出し分ける挙動 (§3)。
+          ホバー前は映像とライブバッジのみ</td>
+        <td>cinny の通話コントロールは現状常時表示 — Discord 実物のホバー出し分けとは設計が異なる。
+          UI総点検で「常時表示のままにするか、ホバー式に寄せるか」を比較検討する材料として記録</td>
+        <td><a href="../../planning/backlog.md">backlog.md</a> P2「UI総点検 (Discord実物突き合わせ) +
+          チャンネル/ユーザーの描き分け」</td>
+      </tr>
+      <tr>
+        <td>画質ピル「720p 30 FPS」がホバー時に常設表示される (§3、web側は未確認)</td>
+        <td>配信品質の可視化パターンとして参考になる。現時点で対応する backlog 項目は無いため、
+          将来 UI 検討時の参考情報として記録のみに留める</td>
+        <td>該当項目なし (今回は記録のみ)</td>
+      </tr>
+      <tr>
+        <td>ポップアウトは<b>別OSウィンドウの全体ポップアウト</b>と<b>アプリ内 PiP ミニプレイヤー</b>の
+          2つの別メカニズムだと判明 (§4、実測)。トリガーの正確な対応・非ホバー時の挙動は一部未確定</td>
+        <td>SelfMatrix の native M3 (通話全体ポップアウト) は前者の別OSウィンドウ方式に相当する。backlog P1
+          「グリッド配信タイルのストリーム単体ポップアウト」は後者の PiP ミニプレイヤーの参照実装になりうる。
+          2つのメカニズムが共存する設計は、P2「ポップアウト窓とメイン通話のUI一貫性」の検討時にそのまま
+          参考にできる</td>
+        <td><a href="../../planning/backlog.md">backlog.md</a> P1「グリッド配信タイルのストリーム単体
+          ポップアウト」/ P2「ポップアウト窓とメイン通話のUI一貫性」</td>
+      </tr>
+      <tr>
+        <td>通話系イベントはタイムラインのどこにも出ない — サーバー側は証言+実測で確定 (§6)、DM側は
+          証言のみで実測未了 (§7)</td>
+        <td>cinny が現状出している「〇〇が通話に参加しました」行 (RoomTimeline.tsx の
+          org.matrix.msc3401.call.member 描画) は、Discord には対応物が一切無い表示だとわかった。
+          Discord は通話の状態をタイムラインではなく、サイドバー (VC 参加者リスト) と通話パネルだけで見せる
+          — UI 総点検の基準としてそのまま記録する</td>
+        <td><a href="../../planning/backlog.md">backlog.md</a> P2「後追い参加時に過去の通話参加/終了イベントが
+          洪水」および P2「UI総点検 (Discord実物突き合わせ)」</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<div class="footer">Discord 動作ログ (アプリ実測版) — 2026-07-14 / SelfMatrix UI 総点検基準器 /
+  <a href="discord-behavior-log.html">discord-behavior-log.html (web実測版)</a> の姉妹編 /
+  design/mocks/ui-mock.html と同じ配布形態 (単一 HTML・外部依存なし)</div>
+
+<script>
+(() => {
+  // §2 発話リング: 自動点滅 + 手動トグル
+  const ringTile = document.getElementById('ringTile');
+  const ringBtn = document.getElementById('ringToggle');
+  let ringAuto = true;
+  let ringOn = true;
+  function applyRing() {
+    if (!ringTile) return;
+    ringTile.style.boxShadow = ringOn ? '0 0 0 3px #3D9E60 inset' : 'none';
+  }
+  applyRing();
+  setInterval(() => {
+    if (!ringAuto) return;
+    ringOn = !ringOn;
+    applyRing();
+  }, 1100);
+  if (ringBtn) {
+    ringBtn.addEventListener('click', () => {
+      ringAuto = !ringAuto;
+      ringBtn.textContent = '発話シミュレート: ' + (ringAuto ? 'ON (自動点滅中)' : 'OFF (クリックで再開)');
+      if (!ringAuto) { ringOn = true; applyRing(); }
+    });
+  }
+})();
+</script>
+</body>
+</html>
