@@ -1,14 +1,14 @@
 # M3 設計: Discord 準拠の無再接続ポップアウト窓体験
 
-**状態: 正本 (M3 設計)** — 2026-07-09 制定。[native-milestones.md](../planning/native-milestones.md) M3 の
-実装設計。現状調査 (desktop main.cjs / cinny native / EC フッター / E2E) に基づく。前提は
-step 0 スパイクで実証してから確定する。
+**状態: 正本 (M3 設計、2026-07-14 UI追補)** — 2026-07-09 制定。
+[native-milestones.md](../planning/native-milestones.md) M3 の実装設計。初期M3の「メイン=Cinnyバー、
+別窓=ECフッター」はドッグフーディング後に改訂し、現在は両配置ともEC共通フッターを使う。
 
 ## 0. 結論サマリ
 
 **再親子付け機構 (無再接続の窓移動) は M1 で実証済み** (windowMoveReparenting E2E、3 往復)。
-M3 はその上に UX を載せる: ⧉ ポップアウト導線 / 別窓 close = メイン復帰 (通話継続) /
-別窓に EC フッター表示 / 窓サイズ・位置記憶。
+M3 はその上に UX を載せる: 明示ポップアウト導線 / 別窓 close = メイン復帰 (通話継続) /
+メイン・別窓共通の EC フッター / 窓サイズ・位置記憶。
 
 **最大の未検証リスクだった項目 → step 0 で GO 確定 (2026-07-09、desktop 1356638)**:
 別窓を実際に閉じた時、子 WebContentsView (生きた RTCPeerConnection) が無再接続でメイン復帰できるかを
@@ -26,7 +26,7 @@ callViewState≠"none" を確認。※実測で判明: Electron 43 は親 Browse
 | `createCallWindow()` の close 挙動 | `"closed"` で callView 残存なら attachCallView | **`"close"` (破棄前) に変更**して removeChildView 退避 → win.destroy (step 0/2) |
 | bounds 同期 (`applyCallViewBoundsFromCinny`) | attached 中のみ適用、detached は無視 (M3 引き継ぎ済み) | 別窓 bounds は callWindow 側で全面表示 + resize 追従を新設 |
 | cinny `useCallPopout`/`useCallPopin` | native では `hasSelfmatrixNativeBridge()` ガードで no-op、⧉ ボタン非描画 | native 分岐を新 transport メソッド呼び出しに。⧉ ボタンを native でも描画 |
-| EC フッター (メイン埋め込みで非表示) | **web 版は CallControl.ts の onBodyMutation が DOM で visibility:hidden。native 側は未移植 = 現状フッターが隠れている根拠が無い (要実機確認)** | step 3 で出し分けを実装 (別窓=表示 / メイン=非表示) |
+| EC フッター | 初期M3では別窓=表示/メイン=非表示で実装したが、UI不一致とCinny DOMメニューのz-order問題が発生 | **2026-07-14改訂**: nativeは両配置で表示し、Cinny側の重複通話バーをnativeだけ非表示 |
 | 窓サイズ/位置の永続化 | **機構が一切無い** | userData の JSON に最小実装 (依存追加なし) |
 | `onCallControlState` push 配線 | screenshare/spotlight 等専用 | 新規 placement push チャンネルのテンプレートに流用 |
 
@@ -42,7 +42,7 @@ callViewState≠"none" を確認。※実測で判明: Electron 43 は親 Browse
 | **0** | スパイク: callWindow 実 close 時の無再接続実証 | desktop main.cjs + probe | ✅ GO (desktop 1356638、close-preserve 採用) |
 | **1** | 契約拡張 (popout/popin/placement、claim-once 内) | cinny nativeBridge.ts + desktop | ✅ cinny ed0174a4 / desktop bd21123 |
 | **2** | desktop: close=復帰 + 窓サイズ/位置記憶 | desktop main.cjs | ✅ bd21123 (m3-window-probe で契約経路の無再接続往復 + 実 close 復帰 + サイズ復元) |
-| **3** | EC フッター出し分け | desktop call-control-preload.cjs + main.cjs | ✅ 6718bbf (E2E footerVisibilityToggle PASS) |
+| **3** | EC フッター出し分け | desktop call-control-preload.cjs + main.cjs | ✅ 初期実装 6718bbf。**2026-07-14に両配置表示へ改訂** (EC `e662d28` / desktop `095bbe9`) |
 | **4** | cinny popout 導線 (⧉ ボタン) | cinny useCallEmbed.ts + CallControls.tsx | ✅ cinny 7bbb17d1 |
 | **5** | E2E 10 往復 + 実 ⧉ クリック + close→復帰 | desktop e2e | ✅ desktop 5e34e86 (2 回連続 PASS + 変異でガード実証) |
 
@@ -66,8 +66,10 @@ callViewState≠"none" を確認。※実測で判明: Electron 43 は親 Browse
    callWindow close 時の復帰は別関数。callWindow close ハンドラは **`callViewState === "detached"` の
    時だけ**発火。退出ボタン押下と窓 close がほぼ同時のレースは「hangup が先なら callViewState は
    既に "none" → close ハンドラは何もしない」で保護。この状態機械を E2E で守る。
-3. **EC フッター出し分けは実機確認が先**: native (メイン埋め込み) でフッターが今どう見えているか、
-   コード上は隠す処理が未移植で不明。step 3 の頭で実機/スクショ確認してから実装方式を確定。
+3. **通話操作面はECフッターへ一本化**: WebContentsViewはCinny DOMより常に手前に描画されるため、
+   Cinny側ポップオーバーを通話View上へ重ねる設計は成立しない。nativeではCinnyの重複通話バーを隠し、
+   ECフッターを両配置で表示する。別窓操作はraw IPCを公開せず、通話Viewのmain frameだけを許可する
+   `selfmatrixCallWindow`の狭いAPIで行う。
 4. **bounds と detached の相互作用**: `isCinnyShell` ガードで本番 topology の resize 追従が無効。
    別窓では callView を全面 (`{x:0,y:0,width,height}`) にし、callWindow の resize 追従を detached
    限定で新設 (attached の cinny push 経路とは分離)。
@@ -98,7 +100,23 @@ callViewState≠"none" を確認。※実測で判明: Electron 43 は親 Browse
 
 **検証環境の知見 (2026-07-12)**: 2 ユーザー E2E で (a) 中断ランが leftover Electron/node を残すと通話メンバーシップを更新し続け Voice Lounge に幽霊メンバーが溜まる、(b) E2E teardown で electron が閉じきらず npm がハングして完了通知が出ない (テスト自体は成功済み)、という脆さを観測。中断時は electron プロセスの一掃 + 幽霊 call member の掃除が必要。
 
+## 4c. UI追補 (2026-07-14)
+
+nativeドッグフーディングの①「メニューが通話Viewの下に隠れる」と⑥「メイン/別窓でUIが違う」を受け、
+初期M3のフッター出し分けを次の形へ改訂した。
+
+- メイン埋め込み/別窓ともElement Callの同じフッターを表示する。Cinny側の通話バーはnativeのみ非表示。
+- フッターへ受信音声、画面共有設定、設定、popout/popin、最前面固定、全画面を集約する。
+- 明示popinは同じWebContentsViewをメインへ戻した後、空になったcallWindowを破棄する。
+- `m3-window-probe`は実preloadから`getState -> popout -> pin往復 -> popin`を通し、WebContents ID、
+  RTC接続、ロードマーカーの不変と空窓破棄を検証する。
+- 自動追従するアプリ内PiPは作らない。webの配信単体手動popoutは維持し、native host連携はM3とは
+  別の保留機能。nativeで動かないrenderer版ボタンは非表示にする。
+
+実装: Cinny `ffefe11` / Element Call `e662d28` / desktop `095bbe9`。
+
 ## 5. 作らないもの (native-milestones M3 明記)
 
-開き方の設定 (このウィンドウ/別ウィンドウ・毎回選ぶ・二層保存) / ポップアップブロッカー対策。
+開き方の設定 (このウィンドウ/別ウィンドウ・毎回選ぶ・二層保存) / ポップアップブロッカー対策 /
+画面遷移へ自動追従するアプリ内PiP。
 (最前面ピン留めは当初 LATER だったが 2026-07-12 に実装済み — §4b 参照。)

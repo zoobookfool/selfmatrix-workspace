@@ -1,4 +1,4 @@
-# Current Status (2026-07-12)
+# Current Status (2026-07-14)
 
 **状態: 現在地の正本。** 未完了は[backlog.md](backlog.md)、長い履歴は[roadmap.md](roadmap.md)を正とする。
 
@@ -24,17 +24,32 @@
 - Cinnyのproduction auditを18件から0件へ解消。Aboutは`Client`/`Desktop`版と同梱commitを区別する。
 - web imageは自動`latest`を廃止し、pushはimmutable SHA tagのみ。`stable`/versionへの昇格は手動操作に限定。
 
+## 2026-07-14 native 通話 UI 修正
+
+- native の通話操作面を、メイン埋め込み/別窓とも Element Call の共通フッターへ統一した。Cinny 側の
+  重複通話バーは native だけ非表示にし、WebContentsView より下へメニューが隠れる構造を解消した。
+- 共通フッターへ受信音声、画面共有設定、ポップアウト/メインへ戻す、最前面固定、全画面を集約した。
+  明示的な popout/popin は同じ WebContentsView を再親子付けし、通話を再接続しない。
+- Discord に合わせ、通話参加/終了イベントはタイムラインへ一切表示しない。折りたたみではなく非表示を採用。
+- 自動追従するアプリ内 PiP/ミニプレイヤーは作らない。ユーザーが明示的に開始する配信単体ポップアウトは
+  別機能として扱う。webの手動ポップアウトは維持し、nativeは`window.open`を拒否するため死んだボタンを
+  非表示化。secureなnative host連携は保留を維持する。
+- desktop の認証不要 RTC probe で、共通フッター用 bridge の `main -> window -> main`、同一
+  WebContents ID、接続維持、明示 popin 後の空窓破棄を確認した。実アカウント2名の画面共有再確認は残る。
+
 ## 現在の製品入力
 
-- Cinny: `ec64b637438dd79bc96f0c0c4dae95aeee8cdc9f` (`product/discord-style-shell`)
-- Element Call: `e31f335f93a16b20fa1767ee8605c3eec2e2e398` (`product/discord-style-shell`)
-- Desktop: `75c5f23e3c6150e9d3912978299fb792b59a82f1` (`main`)。上記2 SHAを`product-lock.json`で固定する。
-- Web deploy: selfmatrix `d55ff4a556acb9c69b343692ebc8f2b2f8b6eaa3` (`main`) が、同じCinny commitから
-  生成された`ghcr.io/zoobookfool/selfmatrix-cinny:sha-ec64b63`を既定にする。
+- Cinny: `ffefe11c3ec466d33212e0ad113bb16d9983c033` (`product/discord-style-shell`)
+- Element Call: `e662d2868dacffa48270345b3d9fa49e8300edf4` (`product/discord-style-shell`)
+- Desktop: `095bbe9` (`main`)。上記2 SHAを`product-lock.json`で固定する。
+- Web deploy: selfmatrix `d55ff4a556acb9c69b343692ebc8f2b2f8b6eaa3` (`main`) は、旧Cinny入力の
+  `ghcr.io/zoobookfool/selfmatrix-cinny:sha-ec64b63`を現在の既定にする。
+- 新Cinny入力のimmutable image `ghcr.io/zoobookfool/selfmatrix-cinny:sha-ffefe11`はCIで生成済み。
+  本番既定への昇格は未実施。
 
 ## UIと配布の正本
 
-- UI仕様: [ui-design-notes.md](../design/ui-design-notes.md) v1.5。
+- UI仕様: [ui-design-notes.md](../design/ui-design-notes.md) v1.6。
 - 視覚基準: [mocks/ui-mock.html](../design/mocks/ui-mock.html) v2.2。衝突時はUI仕様を優先。
 - web/native差分: [feature-matrix.md](feature-matrix.md)。
 - native milestone: [native-milestones.md](native-milestones.md)。
@@ -44,18 +59,18 @@
 ## 次にやること
 
 1. desktop `main` / `v*`のGitHub保護方針を設定する。ruleset/branch protectionは現在未設定。
-2. selfmatrix本番へ`sha-ec64b63`をpull/deployし、ブラウザから版表示と通話を確認する。
+2. Cinny `ffefe11`のimmutable imageをselfmatrix本番へdeployし、ブラウザから版表示と通話を確認する。
 3. desktop `v0.1.0`初回tag workflowを実走し、実minisign binaryで署名をクロスチェックする。
 4. `.minisig`をdraftへ添付してpublishし、旧版からの実自動更新を確認する。
 5. 友達1人のnative導入 + 別ユーザーのweb合流でM4受け入れを実測する。
 
-Element Call product CI、Cinny tree-shake/image CI、selfmatrix CI、desktop Product CIは上記入力で
-すべてgreen確認済み。
+2026-07-14 修正は Cinny typecheck/unit/build、Element Call unit/lint/type/i18n/build、desktop 全 probe を
+ローカルで green 確認済み。push 後も Cinny image/tree-shake、Element Call product、desktop Product CIが
+すべてgreen。実アカウント2名の画面共有だけ別途確認する。
 
 ## 直近の未完了
 
-- 話者オーバーレイ右クリックからのユーザー単位音量調整。
-- 配信タイル単体ポップアウト。
+- native配信タイル単体ポップアウト (web版は実装済み、native host連携待ち)。
 - SFU切断時の自動再参加。
 - 4K60 x 3本 + 10人相当の負荷・品質検証。
 - RNNoise既定ONの聴感評価。

@@ -323,7 +323,7 @@
     <li><b>4.</b> ミニタイルは実映像を流し続ける (simulcast 低解像度層)</li>
     <li><b>5.</b> ミニタイル位置は上下左右から選択</li>
     <li><b>6.</b> 話者表示は StreamKit 風オーバーレイ (緑リング/ミュートアイコン、ピルはドラッグ可 — 掴んで動かせます)</li>
-    <li><b>7.★</b> ポップアウトの主対象は<b>通話 UI 全体</b> (目的: 通話 UI とチャット UI を同時に見て・触る)。モックではフローティング疑似窓で表現 — 実物は別 OS ウィンドウ。配信単体のポップアウト (実装済み・再接続なし) は補助機能として残す</li>
+    <li><b>7.★</b> ポップアウトの主対象は<b>通話 UI 全体</b> (目的: 通話 UI とチャット UI を同時に見て・触る)。モックではフローティング疑似窓で表現 — 実物は別 OS ウィンドウ。配信単体の手動ポップアウトは web 実装済み/native 保留で、自動追従 PiP にはしない</li>
     <li><b>8.</b> シェル: サーバー枠・チャンネル枠とも上下左右 (上下配置時はチップ列)</li>
     <li><b>9.</b> 既定は Discord 風: 枠は左、ミニタイル下、注視モード</li>
     <li><b>10.★</b> 配置セットアップの案内は <b>SelfMatrix の初回利用時に 1 回だけ</b> (デモボタンで表示)。通話参加時には毎回出さない</li>
@@ -445,7 +445,7 @@
       const id = b.dataset.id, p = peers.find(x => x.id === id);
       if (b.dataset.act === 'focus') { mode = 'focus'; focusId = id; syncMode(); }
       if (b.dataset.act === 'unwatch') { p.watching = false; selected.delete(id); }
-      if (b.dataset.act === 'tilepop') { /* 補助: 配信単体ポップアウト (v1.2 実装済み) */ }
+      if (b.dataset.act === 'tilepop') { /* 補助モック: 配信単体ポップアウト (web 実装済み / native host 連携は保留) */ }
       render(); return;
     }
     if (!emph || mode !== 'grid') return;
