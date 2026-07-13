@@ -69,7 +69,14 @@ desktopの`MinisignNsisUpdater`は次を強制する。
 3. updater標準のSHA512確認付きでinstallerをダウンロードする。
 4. installer URLへ`.minisig`を足したURLからsidecarを同じrequest contextで取得する。
 5. `src/update-signature-verify.cjs`が埋め込み公開鍵でminisignを検証する。
-6. 正常時だけ`update-downloaded`へ進む。欠落・HTTP失敗・形式不正・別鍵・内容改ざんは
+6. **バージョン束縛 (2026-07-12 追加、desktop c51fafc)**: 署名の trusted comment (グローバル署名で
+   改ざん検出される領域) は正規フォーマット `selfmatrix-desktop <version> <installer名>` を必須とし、
+   `update-trusted-comment.cjs` がパースして updateInfo.version・installer ファイル名との一致を
+   fail-closed で強制する (フォーマット外/旧式・version 不一致・filename 不一致・期待値未指定は
+   すべて拒否)。これにより「過去の正規署名済み installer を高い version の latest.yml で再ラベルする」
+   **サイレントダウングレード攻撃を遮断**する (`allowDowngrade=false` は latest.yml の自己申告比較
+   なので単体では無力)。
+7. 正常時だけ`update-downloaded`へ進む。欠落・HTTP失敗・形式不正・別鍵・内容改ざん・version不一致は
    `ERR_UPDATER_INVALID_SIGNATURE`で拒否する。
 
 実装はfull NSIS installerだけを許可し、web installerは無効。`allowDowngrade=false`。
@@ -88,18 +95,28 @@ desktopの`MinisignNsisUpdater`は次を強制する。
 - published GitHub Releaseを使う旧版からの更新。
 - 通話中に適用を保留し、通話終了後に適用する実機確認。
 
+### 既知の設計上の制約 (2026-07-12 全体レビューで明文化)
+
+**ダウンロード後キャッシュの TOCTOU**: minisign 検証はダウンロード完了時に 1 回だけ実行され、
+`quitAndInstall()` はキャッシュ内の installer を再検証せずに起動する (electron-updater の
+標準アーキテクチャで、実行時の再検証を挟む口が無い)。したがって**対象ユーザーの書き込み権限を
+既に持つローカル攻撃者**は、検証後のキャッシュを差し替えることで検証を迂回できる。これは
+「GitHub 非依存の信頼の根」(リモートの配布経路侵害への防御) の対象外であり、その権限を持つ
+攻撃者はアプリ本体の差し替え等より直接的な手段を他に持つため、受容する。
+
 ## 5. 署名鍵
 
 公開鍵は`src/update-signature-verify.cjs`へ実鍵として埋め込み済み
 (`key_id = 671E2DDA2737FAE3`)。対応する秘密鍵は運用者の手元だけにある。
 
-リリース毎:
+リリース毎 (**`-t` の trusted comment は必須** — 無い署名は正規リリースでもアプリが拒否する):
 
 ```sh
-minisign -S -s selfmatrix.sec -m SelfMatrix-Setup-X.Y.Z.exe
+minisign -S -s selfmatrix.sec -t "selfmatrix-desktop X.Y.Z SelfMatrix-Setup-X.Y.Z.exe" -m SelfMatrix-Setup-X.Y.Z.exe
 ```
 
-生成された`SelfMatrix-Setup-X.Y.Z.exe.minisig`をdraftへ追加する。sidecarが無いdraftをpublishしては
+`X.Y.Z` は latest.yml / package.json の version と完全一致させる (先頭 v なし)。生成された
+`SelfMatrix-Setup-X.Y.Z.exe.minisig`をdraftへ追加する。sidecarが無いdraftをpublishしては
 ならない。鍵漏洩時は旧鍵で署名した既存版を上書きせず、鍵ローテーションを含む新しい上位versionを配る。
 
 ## 6. 完全性の4層

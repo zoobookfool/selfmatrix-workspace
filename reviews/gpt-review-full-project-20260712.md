@@ -223,7 +223,7 @@ Cinny の [About](https://github.com/zoobookfool/selfmatrix-cinny/blob/9ea79b8bc
 | desktop `npm test` | PASS (smoke/memory/cinny-shell/tray/external mute/API/minisign/update/M3/probe 一式) |
 | desktop `npm run package:win` | PASS。NSIS 生成成功。ただし実物 `app-update.yml` に `publisherName` 無しを確認 |
 | Cinny `npm run typecheck` | PASS |
-| Cinny `npm run check:eslint` | PASS (既存 warning 3 件) |
+| Cinny `npm run check:eslint` | PASS (既存 warning 3 件) ※訂正 (2026-07-12 Claude 検証): `eslint src/*`→`eslint src` の変更で lint 実効範囲が広がっており、HEAD ec64b637 での実測は **0 errors / 139 warnings** (no-explicit-any 72 / no-non-null-assertion 37 / no-console 28 / no-constant-condition 2)。ゲートは 0 errors で green。詳細は [claude-review-full-project-20260712.md](claude-review-full-project-20260712.md) ③ |
 | Cinny web build + no-native guard | PASS |
 | Cinny native build + guard negative control | PASS (native 識別子 8 種を検知) |
 | Cinny `npm run check:prettier` | FAIL。既存 baseline/改行差を含む 773 ファイル。今回の差分固有とは判定せず |
