@@ -32,6 +32,14 @@
 - Desktop: product input SHA検証と全 probe を2回通過。最終 lock は Cinny `41970348` / EC `3dd4d29`。
 - GitHub Actions: Element Call product、Cinny image/tree-shake、Desktop Product CI が最終SHAで全て green。
 
+## 実働テスト環境への反映
+
+- 2026-07-14にCinny `sha-4197034`へ即時反映し、コンテナの実imageが対象tagであることを確認した。
+- 公開入口、Element Call、日本語locale、メインJavaScriptはすべてHTTP 200。localeのカメラ設定文言と、
+  JavaScriptの`cameraEnabled` / `disableVideo`制御マーカーも確認した。
+- selfmatrix `0c7eb67`で`.env.example`、Compose fallback、CI検証用tagを同じimmutable imageへ同期した。
+- この稼働先は一般公開の本番ではなく実働テスト環境であり、自動ゲートgreenのimmutable imageは即時反映する。
+
 ## 残余リスク / 受け入れ
 
 自動テストは物理カメラ、OS/ブラウザの実権限ダイアログ、相手側への実映像到達までは検証できない。これは

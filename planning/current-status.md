@@ -53,10 +53,10 @@
 - Cinny: `41970348be2e8e8694ddd30f624ce97089be6dc3` (`product/discord-style-shell`)
 - Element Call: `3dd4d2915f74a0f23ff6f096468f84a4443ffc96` (`product/discord-style-shell`)
 - Desktop: `d30b36a` (`main`)。上記2 SHAを`product-lock.json`で固定する。
-- Web deploy: selfmatrix `d55ff4a556acb9c69b343692ebc8f2b2f8b6eaa3` (`main`) は、旧Cinny入力の
-  `ghcr.io/zoobookfool/selfmatrix-cinny:sha-ec64b63`を現在の既定にする。
-- 新Cinny入力のimmutable image `ghcr.io/zoobookfool/selfmatrix-cinny:sha-4197034`はCIで生成済み。
-  本番既定への昇格は未実施。
+- Web deploy: selfmatrix `0c7eb67b33ff1a68794afdfefa73bc42cae30d0d` (`main`) と実働テスト環境は、
+  `ghcr.io/zoobookfool/selfmatrix-cinny:sha-4197034`を現在の既定にする。2026-07-14に反映済み。
+- Webの稼働先は一般公開の本番環境ではなく、運用者が実動作を確認する実働テスト環境として扱う。
+  製品ブランチの自動ゲートがgreenで、反映対象のimmutable SHAを確認できた変更は承認待ちにせず即時反映する。
 
 ## UIと配布の正本
 
@@ -70,15 +70,17 @@
 ## 次にやること
 
 1. desktop `main` / `v*`のGitHub保護方針を設定する。ruleset/branch protectionは現在未設定。
-2. Cinny `4197034`のimmutable imageをselfmatrix本番へdeployし、ブラウザから版表示、通話、カメラ既定OFFを確認する。
+2. 実働テスト環境でweb版の物理カメラ受け入れを行い、既定OFF、明示ON時だけの権限要求/publish、
+   次回参加時のOFF復帰を確認する。
 3. desktop `v0.1.0`初回tag workflowを実走し、実minisign binaryで署名をクロスチェックする。
 4. `.minisig`をdraftへ添付してpublishし、旧版からの実自動更新を確認する。
 5. 友達1人のnative導入 + 別ユーザーのweb合流でM4受け入れを実測する。
 
 2026-07-14 カメラ修正は Cinny typecheck/unit/web+native build、Element Call unit/lint/type/i18n/embedded build、
 desktop 全 probe をローカルで green 確認済み。push 後は Cinny image/tree-shake と Element Call product CIが
-green。desktop Product CI も最終 product lock で green。実アカウント2名の画面共有と物理カメラの
-安全契約は別途確認する。
+green。desktop Product CI も最終 product lock で green。webは `sha-4197034` を実働テスト環境へ反映し、
+公開入口、Element Call、日本語locale、メインJSのHTTP 200とカメラ制御マーカーを確認済み。実アカウント2名の
+画面共有と物理カメラの安全契約は別途確認する。
 
 ## 直近の未完了
 

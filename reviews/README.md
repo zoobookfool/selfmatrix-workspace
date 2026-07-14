@@ -4,9 +4,9 @@
 
 | 日付 | ファイル | 対象 | 結論 / 状態 |
 | --- | --- | --- | --- |
-| 2026-07-14 | [gpt-review-opt-in-camera-20260714.md](gpt-review-opt-in-camera-20260714.md) | Cinny/EC/Desktop の既定OFFカメラ opt-in、安全契約、権限要求 | 初回実装レビューで web iframe の camera permission 残存を検出し Cinny `41970348` で解消。EC `3dd4d29`、desktop lock `d30b36a`。自動ゲートはgreen、物理カメラの実権限/publish確認をP1運用ゲートとして継続 |
+| 2026-07-14 | [gpt-review-opt-in-camera-20260714.md](gpt-review-opt-in-camera-20260714.md) | Cinny/EC/Desktop の既定OFFカメラ opt-in、安全契約、権限要求 | 初回実装レビューで web iframe の camera permission 残存を検出し Cinny `41970348` で解消。EC `3dd4d29`、desktop lock `d30b36a`。web実働テスト環境へ`sha-4197034`を反映し公開アセット確認済み。物理カメラの実権限/publish確認をP1運用ゲートとして継続 |
 | 2026-07-14 | [gpt-review-native-ui-followup-20260714.md](gpt-review-native-ui-followup-20260714.md) | nativeドッグフーディング①②⑥⑦、Discordアプリ実測、Cinny/EC/desktop通話UI | ①z-order構造、②通話イベント洪水、⑥メイン/別窓UI不一致を解消。⑦画面共有経路をEC実ボタンへ統一し自動probe green。nativeで動かない配信単体popoutボタンも非表示。実2ユーザー画面共有はP1運用ゲートとして継続。Cinny `ffefe11` / EC `e662d28` / desktop `095bbe9` |
-| 2026-07-13 | [dogfooding-native-20260713.md](dogfooding-native-20260713.md) | native アプリ実使用フィードバック (運用者、本番サーバー実使用) | 9所見をtriage。④⑧はdesktop `ec5c207`、①②⑥と⑦の実装側は2026-07-14修正で対応。⑤、③⑨、⑦の実通話受け入れを継続 |
+| 2026-07-13 | [dogfooding-native-20260713.md](dogfooding-native-20260713.md) | native アプリ実使用フィードバック (運用者、実働テストサーバー使用) | 9所見をtriage。④⑧はdesktop `ec5c207`、①②⑥と⑦の実装側は2026-07-14修正で対応。⑤、③⑨、⑦の実通話受け入れを継続 |
 | 2026-07-12 | [claude-review-full-project-20260712.md](claude-review-full-project-20260712.md) | GPT 修正パス (desktop `9b6e66d`..`75c5f23` / cinny `08958070`+`ec64b637` / EC `e31f335f` / workspace `9bf8426`) の独立検証 (Fable、5 領域並列 + 敵対的反証) | GPT 修正は実体ありと確認 (packaged updater 3 ケース・SHA 固定・latest 廃止・audit 0 を実測)。反証通過の実指摘 3 件: **① P1 ダウングレード攻撃 → desktop `c51fafc` でバージョン束縛を実装・解消** (packaged 4 ケース + 変異ゲート)、② TOCTOU → 既知制約として release-pipeline へ文書化、③ GPT 文書の eslint warning 数誤り → 訂正注記。P3 は cinny `34d46f15` / EC `198a8bc0` で対応 |
 | 2026-07-12 | [gpt-review-full-project-20260712.md](gpt-review-full-project-20260712.md) | reviewed: workspace `1c17184` / desktop `5fc3909` / cinny `9ea79b8` / EC `db6693f` / selfmatrix `44f5c41` / hires `9e7775b` | 全体レビュー。**全Finding実装修正済み**: desktop `9b6e66d`+`75c5f23`、Cinny `08958070`+`ec64b637`、EC `e31f335f`、selfmatrix `d55ff4a`。packaged updater fail-closed、immutable配布、固定release入力、CI/audit、desktop作法を反映。残りは初回公開・実minisign・GitHub保護設定等の運用ゲート。※検証表の Cinny eslint warning 数は Claude 検証で訂正済み (3→139、本文注記参照) |
 | 2026-07-08 | [gpt-review-desktop-m2-readiness-followup-20260708.md](gpt-review-desktop-m2-readiness-followup-20260708.md) | selfmatrix-workspace `c57da2c` / selfmatrix-desktop `0db93ed` | GPT M2 readiness 対応後レビュー。実装 P1/P2 は概ね解消。残 P2: current-status/native-milestones に「対応中」「要運用者承認」「未対処」「更新予定」の古い表現が残る |
@@ -30,7 +30,7 @@
 
 - 新しいレビューを追加したら、この表へ 1 行追加する。
 - 未対応の P1/P2 指摘は [backlog.md](../planning/backlog.md) にも追加する。
-- 対応済みにした場合は、修正 commit / 実装記録 / 本番反映日を「結論 / 状態」に追記する。
+- 対応済みにした場合は、修正 commit / 実装記録 / 実働テスト環境への反映日を「結論 / 状態」に追記する。
 - 古いレビュー本文は削除しない。判断の履歴として残す。
 - [claude-review-native-prototype-20260707.md](claude-review-native-prototype-20260707.md) — ネイティブ化スパイク実測 + prototype (f7d0e4b..beb7d85)。技術クレームは独立再現で確認 (案 B 成立)。must-fix 5 件 (widget-protocol CLI のトートロジー等)、対応待ち
 - [claude-review-m0-20260707.md](claude-review-m0-20260707.md) — M0 受け入れレビュー (9b45b6b)。差し戻し → **4c82206 で解消・完了** (変異 a〜f 全検知を実測)
