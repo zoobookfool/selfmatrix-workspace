@@ -13,6 +13,8 @@
 - 更新は完全SHAのproduct lock、commit SHA固定Actions、最小CI権限、manifest/attestation/checksum、
   オフラインminisign鍵によるfail-closed検証で保護する。実装の正本は
   [release-pipeline.md](release-pipeline.md)。
+- 本文の「カメラなし」は当時の前提。2026-07-14 に既定 OFF の opt-in へ改訂され、現行契約は
+  [requirements.md](../planning/requirements.md) §3 と [ui-design-notes.md](ui-design-notes.md) v1.7 を正とする。
 - 以下の「未確定」「blocker」は当時の問いを保存した履歴であり、現在のbacklogではない。
 
 ## 1. 前提知識 (このプロジェクトを知らない読者向け)

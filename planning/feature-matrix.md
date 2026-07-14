@@ -36,13 +36,14 @@ native 固有 API に依存しない。
 | i18n (日本語/英語) | ✅ | ✅ | 全 1,538 キー翻訳済み (cinny-i18n-incremental 系の成果、`public/locales/`) |
 | テーマ (Light/Silver/Dark/Butter/SelfMatrix の 5 種) | ✅ | ✅ | `cinny/src/colors.css.ts` (vanilla-extract のビルド時 CSS)、`useTheme.ts`/`ThemeManager.tsx` |
 | 通話参加 / 配信 / 視聴 (Element Call embed) | ✅ | ✅ | `cinny/src/app/plugins/call/CallEmbed.ts` 経由の widget 埋め込み。[web-native-parallel.md](web-native-parallel.md) R3 |
+| カメラ (既定 OFF の opt-in、各通話で明示 ON) | ✅ | ✅ | 共通設定と widget capability で制御。設定 ON だけでは送信せず、状態を次回へ持ち越さない。web iframe permission もOFF時は除外。Cinny `41970348` / EC `3dd4d29`。[requirements.md](requirements.md) §3 |
 | 画質/FPS ピッカー (配信開始時に 720p/1080p/ソース解像度 × 15/30/60fps) | ✅ | ✅ | webはCinny、nativeはElement Call共通フッターから同じ選択肢を操作。nativeはEC `e662d28` + desktop `095bbe9`。[requirements.md](requirements.md) §3 |
 | 視聴オプトイン (見る配信を視聴者が選ぶ。未視聴配信は購読しない) | ✅ | ✅ | element-call の LiveKit track subscription 制御。[design/ui-design-notes.md](../design/ui-design-notes.md) |
 | 表示モード (注視/グリッド) + グリッド中の強調選択トグル | ✅ | ✅ | `cinny/src/app/plugins/call/CallControl.ts` の emphasis 制御、element-call の grid/spotlight tile |
 | 話者オーバーレイ (発話中ユーザー表示 + 右クリックのユーザー別ミュート/音量) | ✅ | ✅ | `element-call/src/tile/SpeakerOverlay.tsx` (EC `dd8966aa`) |
 | 配信タイル単位の音量調整 | ✅ | ✅ | element-call 側の per-tile ボリューム制御 |
 | RNNoise ノイズ抑制 (Krisp 相当、既定 ON・トグル可) | ✅ | ✅ | `element-call/src/livekit/NoiseSuppressionProcessor.ts` + `AudioProcessorContext.tsx`。[requirements.md](requirements.md) §3 |
-| Discord 風コントロールバー (マイク/受信音声/画面共有/設定 等) | ✅ | ✅ | webはCinnyバー。nativeはWebContentsViewのz-order制約を避けるため、メイン/別窓ともElement Call共通フッターを使用 (Cinny `ffefe11` / EC `e662d28` / desktop `095bbe9`) |
+| Discord 風コントロールバー (マイク/受信音声/画面共有/設定 等) | ✅ | ✅ | webはCinnyバー。nativeはWebContentsViewのz-order制約を避けるため、メイン/別窓ともElement Call共通フッターを使用。現在の製品入力は Cinny `41970348` / EC `3dd4d29` / desktop `d30b36a` |
 | About 画面 + AGPL コンプライアンス表記 (fork 元/変更概要/ライセンス) | ✅ | ✅ | Cinny product branch。Client版を常時表示し、nativeではDesktop版と同梱Cinny/EC commitも表示。[native-milestones.md](native-milestones.md) M2 |
 | E2EE ルーム標準運用 | ✅ | ✅ | [requirements.md](requirements.md) §2、Matrix/E2EE 層は web/native で同一 |
 

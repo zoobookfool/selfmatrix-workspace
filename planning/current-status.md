@@ -37,19 +37,30 @@
 - desktop の認証不要 RTC probe で、共通フッター用 bridge の `main -> window -> main`、同一
   WebContents ID、接続維持、明示 popin 後の空窓破棄を確認した。実アカウント2名の画面共有再確認は残る。
 
+## 2026-07-14 カメラ opt-in
+
+- カメラを「非対応」から**既定 OFF の opt-in 機能**へ改訂した。`設定 > 全般 > 通話` で機能を ON にした
+  場合だけ参加前/通話中の操作とビデオ設定を表示する。設定 ON だけでは送信せず、各通話で明示 ON が必要。
+- 起動時に古い `video: true` を OFF へ正規化し、参加前の ON 選択もその参加だけで破棄する。通話中は
+  feature 設定を変更不可にして、widget URL の video capability を通話中に変えない。
+- 機能 OFF 時は `hideVideoButton` と `disableVideo` を同時に有効化し、web iframe の `allow` からも
+  `camera` を外す。Element Call の音声設定/音声デバイスメニューは camera label を取得せず、ビデオ設定を
+  明示的に開いた時だけカメラ権限を要求する。
+- web/native 共通実装。物理カメラを使った権限・publish の実機受け入れは backlog P1 に残す。
+
 ## 現在の製品入力
 
-- Cinny: `ffefe11c3ec466d33212e0ad113bb16d9983c033` (`product/discord-style-shell`)
-- Element Call: `e662d2868dacffa48270345b3d9fa49e8300edf4` (`product/discord-style-shell`)
-- Desktop: `095bbe9` (`main`)。上記2 SHAを`product-lock.json`で固定する。
+- Cinny: `41970348be2e8e8694ddd30f624ce97089be6dc3` (`product/discord-style-shell`)
+- Element Call: `3dd4d2915f74a0f23ff6f096468f84a4443ffc96` (`product/discord-style-shell`)
+- Desktop: `d30b36a` (`main`)。上記2 SHAを`product-lock.json`で固定する。
 - Web deploy: selfmatrix `d55ff4a556acb9c69b343692ebc8f2b2f8b6eaa3` (`main`) は、旧Cinny入力の
   `ghcr.io/zoobookfool/selfmatrix-cinny:sha-ec64b63`を現在の既定にする。
-- 新Cinny入力のimmutable image `ghcr.io/zoobookfool/selfmatrix-cinny:sha-ffefe11`はCIで生成済み。
+- 新Cinny入力のimmutable image `ghcr.io/zoobookfool/selfmatrix-cinny:sha-4197034`はCIで生成済み。
   本番既定への昇格は未実施。
 
 ## UIと配布の正本
 
-- UI仕様: [ui-design-notes.md](../design/ui-design-notes.md) v1.6。
+- UI仕様: [ui-design-notes.md](../design/ui-design-notes.md) v1.7。
 - 視覚基準: [mocks/ui-mock.html](../design/mocks/ui-mock.html) v2.2。衝突時はUI仕様を優先。
 - web/native差分: [feature-matrix.md](feature-matrix.md)。
 - native milestone: [native-milestones.md](native-milestones.md)。
@@ -59,18 +70,20 @@
 ## 次にやること
 
 1. desktop `main` / `v*`のGitHub保護方針を設定する。ruleset/branch protectionは現在未設定。
-2. Cinny `ffefe11`のimmutable imageをselfmatrix本番へdeployし、ブラウザから版表示と通話を確認する。
+2. Cinny `4197034`のimmutable imageをselfmatrix本番へdeployし、ブラウザから版表示、通話、カメラ既定OFFを確認する。
 3. desktop `v0.1.0`初回tag workflowを実走し、実minisign binaryで署名をクロスチェックする。
 4. `.minisig`をdraftへ添付してpublishし、旧版からの実自動更新を確認する。
 5. 友達1人のnative導入 + 別ユーザーのweb合流でM4受け入れを実測する。
 
-2026-07-14 修正は Cinny typecheck/unit/build、Element Call unit/lint/type/i18n/build、desktop 全 probe を
-ローカルで green 確認済み。push 後も Cinny image/tree-shake、Element Call product、desktop Product CIが
-すべてgreen。実アカウント2名の画面共有だけ別途確認する。
+2026-07-14 カメラ修正は Cinny typecheck/unit/web+native build、Element Call unit/lint/type/i18n/embedded build、
+desktop 全 probe をローカルで green 確認済み。push 後は Cinny image/tree-shake と Element Call product CIが
+green。desktop Product CI も最終 product lock で green。実アカウント2名の画面共有と物理カメラの
+安全契約は別途確認する。
 
 ## 直近の未完了
 
 - native配信タイル単体ポップアウト (web版は実装済み、native host連携待ち)。
+- カメラ opt-in の物理デバイス実機受け入れ (既定OFF、権限要求、明示publish、状態持ち越しなし)。
 - SFU切断時の自動再参加。
 - 4K60 x 3本 + 10人相当の負荷・品質検証。
 - RNNoise既定ONの聴感評価。

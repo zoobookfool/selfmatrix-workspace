@@ -7,6 +7,7 @@
 | --- | --- | --- | --- | --- |
 | P0 | M2/M4 初回native公開と混在受け入れ | **v0.1.0 draft 作成済み (2026-07-14)、署名/publish 待ち**。初回tag CI green・BUILD-MANIFEST 3コミット一致・SHA256SUMS 確認済み (installer 4dec8c47…)。残り: 運用者の minisign 署名 (-t 必須) → publish → 初回確認6項目。GitHub branch/tag保護は未設定のまま | [native-milestones.md](native-milestones.md), [release-pipeline.md](../design/release-pipeline.md) | desktop main/v*保護方針を設定 → ~~初回tag CI green~~ → 実minisignクロスチェック → publish → 旧版から自動更新 → 友達native + web混在通話を実測 |
 | P1 | 画面共有ができない (単独時に顕著) | **修正実装済み、実通話再確認待ち** (2026-07-14)。native の可視操作面を Element Call フッターへ統一し、実ボタンからネイティブ共有元ピッカーへ到達する経路へ変更。desktop source-picker probeは通過し、更新済みE2Eコードは構文確認済みだが、認証情報が無いため実アカウント2名の `e2e:callflow` は未実行 | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ⑦、desktop `095bbe9` | 単独で共有開始でき、2名通話で相手に映像/音声が届くことを実機確認する |
+| P1 | カメラ opt-in の実機受け入れ | **実装済み、物理デバイス確認待ち** (2026-07-14)。web/native共通で既定OFF、二段階同意、状態リセット、機能OFF時のEC video無効化、audio/video権限要求分離を実装。単体/ビルド/CIはgreen | [ui-design-notes.md](../design/ui-design-notes.md) v1.7、[gpt-review-opt-in-camera-20260714.md](../reviews/gpt-review-opt-in-camera-20260714.md) | web/nativeで、初期状態にカメラ導線/権限要求が無いこと、設定ONだけでは送信しないこと、明示ON時だけ相手へ届くこと、再起動/次回参加でOFFへ戻ることを物理カメラで確認する |
 | P2 | デバイス認証ができない (要切り分け) | ドッグフーディング検出 (2026-07-13)。web版で再現するか等、切り分け待ち | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ⑤ | 新デバイスでE2EE認証が完了できる |
 | P2 | UI総点検 (Discord実物突き合わせ) + チャンネル/ユーザーの描き分け | ドッグフーディング総評「UIは基本カス」(2026-07-13)。個別修正と別軸のテーマ | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ③⑨ | 主要画面のレイアウト/文言/描き分けをDiscord基準で点検し改善する |
 | P1 | nativeの配信タイル単体ポップアウト `🗗` | web/ECの手動`window.open`版は実装済み。native shellはrenderer生成窓を安全上拒否するため未対応で、2026-07-14に死んだnativeボタンだけ非表示化。自動追従PiPは不採用 | [ui-design-notes.md](../design/ui-design-notes.md), [call-window-mode.md](../design/call-window-mode.md) | secureなhost契約で、視聴中配信だけを再接続なしで明示的に別窓表示できる。画面遷移への自動追従はしない |
@@ -28,6 +29,9 @@
 - メイン/別窓の通話UI不一致: 同じ Element Call フッターを再親子付け先にかかわらず表示し解消 (同上)。
 - Discord に存在しない通話参加/終了タイムライン行: 折りたたみではなく完全非表示 (Cinny `2280a26`)。
 - 話者オーバーレイ右クリックからのユーザー別ミュート/音量スライダー (Element Call `dd8966aa`)。
+- カメラの既定OFF opt-in、各通話での明示同意、状態持ち越し防止、audio/video権限要求分離、
+  web iframe permission gate (Cinny `41970348`、Element Call `3dd4d29`、desktop lock `d30b36a`)。
+  物理デバイス受け入れは上表P1。
 - stock updaterの署名検証迂回と`.minisig`未取得。
 - mutable web `latest`既定。
 - native releaseのbranch入力、Actions major tag、tag-version不一致余地。

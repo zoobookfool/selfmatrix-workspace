@@ -1,6 +1,6 @@
 # ユーザーカスタム機構 (OBS 風) — 検討ドラフト
 
-**ステータス: 検討ドラフト v0.1** (2026-07-08 起票)。運用者の決定により、対象は次の 3 本に確定している。
+**ステータス: 検討ドラフト v0.1** (2026-07-08 起票、2026-07-14 前提更新)。運用者の決定により、対象は次の 3 本に確定している。
 
 1. アプリ内プラグイン (BetterDiscord 風)
 2. テーマ / 見た目
@@ -35,8 +35,8 @@
 
 ## 1. 前提知識 (このプロジェクトを知らない読者向け)
 
-**SelfMatrix** は Matrix プロトコル上に Discord 代替のチャット + 通話 (音声・画面配信中心、カメラなし)
-体験を作る個人プロジェクト。参加者は運用者の友人サークル (~10 人規模)。
+**SelfMatrix** は Matrix プロトコル上に Discord 代替のチャット + 通話 (音声・画面配信中心、カメラは
+既定 OFF の opt-in) 体験を作る個人プロジェクト。参加者は運用者の友人サークル (~10 人規模)。
 
 - **サーバー側**: 自宅 Synapse (Matrix ホームサーバー) + PostgreSQL。通話は MatrixRTC + LiveKit (SFU)。
 - **クライアント側**: 2 つの upstream OSS の fork を組み合わせている。
@@ -67,14 +67,14 @@
     の 1 段トグルのみ**で、複数フィルタの連結や並べ替えはできない。
   - **映像処理**: `element-call/src/livekit/BlurBackgroundTransformer.ts` が
     `@livekit/track-processors` の `BackgroundTransformer` を拡張し、MediaPipe の
-    `ImageSegmenter` でセグメンテーションした背景ぼかしを実装済み (要件では映像はカメラ非対応 `OUT`
-    だが、画面共有の背景処理等ではなく「映像トラックに対する変換パイプライン」という**仕組み自体**は
-    既にある)。
+    `ImageSegmenter` でセグメンテーションした背景ぼかしを実装済み。カメラは既定 OFF の opt-in だが、
+    有効化した利用者向けには「映像トラックに対する変換パイプライン」という**仕組み自体**が既にある。
   - **プラグイン**: 相当する仕組みは**一切ない**。UI 拡張点・スクリプト実行環境ともにゼロから設計する。
 - **cinny の widget ホスティングの実装詳細** (プラグイン設計の土台になるため精読済み):
   `cinny/src/app/plugins/call/CallEmbed.ts` の `getIframe()` で
   `iframe.sandbox = 'allow-forms allow-scripts allow-same-origin allow-popups allow-modals allow-downloads'`、
-  `iframe.allow = 'microphone; camera; display-capture; autoplay; clipboard-write;'` を設定し、
+  `iframe.allow` に microphone/display-capture/autoplay/clipboard-write を設定する。`camera` は既定では省き、
+  widget URL が `disableVideo=false` の時だけ追加する。さらに
   `ClientWidgetApi` (npm `matrix-widget-api`) 経由で `CallWidgetDriver` (`sendEvent` /
   `sendToDevice` / `readRoomState` / `askOpenID` 等、`mx: MatrixClient` を直接持つが widget 側には
   一切公開しない) とブリッジしている。widget の URL は `new URL(..., window.location.origin)` で
@@ -352,13 +352,13 @@ web 版・native 版の両方の精読から確認できた。プラグインの
   拒否 (通話品質の劣化) やタイミング解析等の副チャネルはゼロではないため、v1 は宣言的パラメータ化に
   留め、コード実行版は LATER として明示するに留める。
 
-**映像フィルタについて (要件上カメラは対象外、実現性のみ言及)**: 映像トラックへの変換パイプライン
+**映像フィルタについて (カメラは opt-in、実現性のみ言及)**: 映像トラックへの変換パイプライン
 自体は `element-call/src/livekit/BlurBackgroundTransformer.ts` (LiveKit `BackgroundTransformer`
 + MediaPipe セグメンテーション) で既に実証されている。将来 insertable streams
 (`MediaStreamTrackProcessor`/`MediaStreamTrackGenerator` を Worker に渡してフレーム単位で変換する
 API) を使えば、画面共有等の映像トラックにも同様のフィルタチェーンを Worker 内で完結させることは
 技術的には可能。ただし Worker 内であっても WebGL/WebGPU 経由のシェーダーコード実行は
-GPU リソース枯渇や副チャネルのリスクがゼロではなく、要件上カメラが `OUT` であることも合わせ、
+GPU リソース枯渇や副チャネルのリスクがゼロではない。カメラを有効にした利用者へ適用できる余地はあるが、
 本ドラフトでは「実現性のみ記録し、設計は行わない」に留める。
 
 ### 5.3 アプリ内プラグイン

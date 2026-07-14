@@ -4,6 +4,7 @@
 
 | 日付 | ファイル | 対象 | 結論 / 状態 |
 | --- | --- | --- | --- |
+| 2026-07-14 | [gpt-review-opt-in-camera-20260714.md](gpt-review-opt-in-camera-20260714.md) | Cinny/EC/Desktop の既定OFFカメラ opt-in、安全契約、権限要求 | 初回実装レビューで web iframe の camera permission 残存を検出し Cinny `41970348` で解消。EC `3dd4d29`、desktop lock `d30b36a`。自動ゲートはgreen、物理カメラの実権限/publish確認をP1運用ゲートとして継続 |
 | 2026-07-14 | [gpt-review-native-ui-followup-20260714.md](gpt-review-native-ui-followup-20260714.md) | nativeドッグフーディング①②⑥⑦、Discordアプリ実測、Cinny/EC/desktop通話UI | ①z-order構造、②通話イベント洪水、⑥メイン/別窓UI不一致を解消。⑦画面共有経路をEC実ボタンへ統一し自動probe green。nativeで動かない配信単体popoutボタンも非表示。実2ユーザー画面共有はP1運用ゲートとして継続。Cinny `ffefe11` / EC `e662d28` / desktop `095bbe9` |
 | 2026-07-13 | [dogfooding-native-20260713.md](dogfooding-native-20260713.md) | native アプリ実使用フィードバック (運用者、本番サーバー実使用) | 9所見をtriage。④⑧はdesktop `ec5c207`、①②⑥と⑦の実装側は2026-07-14修正で対応。⑤、③⑨、⑦の実通話受け入れを継続 |
 | 2026-07-12 | [claude-review-full-project-20260712.md](claude-review-full-project-20260712.md) | GPT 修正パス (desktop `9b6e66d`..`75c5f23` / cinny `08958070`+`ec64b637` / EC `e31f335f` / workspace `9bf8426`) の独立検証 (Fable、5 領域並列 + 敵対的反証) | GPT 修正は実体ありと確認 (packaged updater 3 ケース・SHA 固定・latest 廃止・audit 0 を実測)。反証通過の実指摘 3 件: **① P1 ダウングレード攻撃 → desktop `c51fafc` でバージョン束縛を実装・解消** (packaged 4 ケース + 変異ゲート)、② TOCTOU → 既知制約として release-pipeline へ文書化、③ GPT 文書の eslint warning 数誤り → 訂正注記。P3 は cinny `34d46f15` / EC `198a8bc0` で対応 |
