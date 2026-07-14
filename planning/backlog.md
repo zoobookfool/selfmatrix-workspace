@@ -5,7 +5,7 @@
 
 | 優先 | 項目 | 状態 | 参照 | 完了条件 |
 | --- | --- | --- | --- | --- |
-| P0 | M2/M4 初回native公開と混在受け入れ | **実装完了、運用ゲート待ち**。packaged製品の実NsisUpdaterで正常/欠落/改ざん検証済み。product lock、CI、実公開鍵、draft workflowも実装済み。GitHub branch/tag保護は未設定 | [native-milestones.md](native-milestones.md), [release-pipeline.md](../design/release-pipeline.md) | desktop main/v*保護方針を設定 → 初回tag CI green → 実minisignクロスチェック → publish → 旧版から自動更新 → 友達native + web混在通話を実測 |
+| P0 | M2/M4 初回native公開と混在受け入れ | **v0.1.0 draft 作成済み (2026-07-14)、署名/publish 待ち**。初回tag CI green・BUILD-MANIFEST 3コミット一致・SHA256SUMS 確認済み (installer 4dec8c47…)。残り: 運用者の minisign 署名 (-t 必須) → publish → 初回確認6項目。GitHub branch/tag保護は未設定のまま | [native-milestones.md](native-milestones.md), [release-pipeline.md](../design/release-pipeline.md) | desktop main/v*保護方針を設定 → ~~初回tag CI green~~ → 実minisignクロスチェック → publish → 旧版から自動更新 → 友達native + web混在通話を実測 |
 | P1 | 画面共有ができない (単独時に顕著) | **修正実装済み、実通話再確認待ち** (2026-07-14)。native の可視操作面を Element Call フッターへ統一し、実ボタンからネイティブ共有元ピッカーへ到達する経路へ変更。desktop source-picker probeは通過し、更新済みE2Eコードは構文確認済みだが、認証情報が無いため実アカウント2名の `e2e:callflow` は未実行 | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ⑦、desktop `095bbe9` | 単独で共有開始でき、2名通話で相手に映像/音声が届くことを実機確認する |
 | P2 | デバイス認証ができない (要切り分け) | ドッグフーディング検出 (2026-07-13)。web版で再現するか等、切り分け待ち | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ⑤ | 新デバイスでE2EE認証が完了できる |
 | P2 | UI総点検 (Discord実物突き合わせ) + チャンネル/ユーザーの描き分け | ドッグフーディング総評「UIは基本カス」(2026-07-13)。個別修正と別軸のテーマ | [dogfooding-native-20260713.md](../reviews/dogfooding-native-20260713.md) ③⑨ | 主要画面のレイアウト/文言/描き分けをDiscord基準で点検し改善する |
